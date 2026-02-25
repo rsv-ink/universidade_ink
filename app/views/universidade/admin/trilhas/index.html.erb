@@ -1,0 +1,41 @@
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Trilhas</h1>
+    <p class="text-sm text-gray-500 mt-1"><%= @trilhas.size %> trilha(s) cadastrada(s)</p>
+  </div>
+    <%= link_to new_admin_trilha_path,
+      data: { turbo_frame: "modal" },
+      class: "inline-flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    Nova Trilha
+  <% end %>
+</div>
+
+<% if @trilhas.empty? %>
+  <div class="text-center py-16 bg-white rounded-xl border border-gray-200">
+    <p class="text-gray-400 text-sm">Nenhuma trilha cadastrada ainda.</p>
+        <%= link_to "Criar a primeira trilha", new_admin_trilha_path,
+          data: { turbo_frame: "modal" },
+          class: "mt-2 inline-block text-pink-600 hover:underline text-sm font-medium" %>
+  </div>
+<% else %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <table class="w-full text-sm text-left text-gray-600">
+      <thead class="text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="px-4 py-3 w-16">Ordem</th>
+          <th class="px-4 py-3">Nome</th>
+          <th class="px-4 py-3">Módulo</th>
+          <th class="px-4 py-3 w-28">Tempo Est.</th>
+          <th class="px-4 py-3 w-28 text-center">Visível</th>
+          <th class="px-4 py-3 w-48 text-right">Ações</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @trilhas.each do |trilha| %>
+          <%= render "trilha", trilha: trilha %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

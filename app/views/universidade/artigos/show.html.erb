@@ -1,0 +1,174 @@
+<%# ————— Layout: sidebar + conteúdo principal ————— %>
+<div class="flex gap-8 items-start">
+
+  <%# Sidebar de navegação (só aparece quando o artigo pertence a uma trilha) %>
+  <% if @trilha %>
+    <%= render "sidebar_trilha",
+          trilha:         @trilha,
+          artigos:        @trilha_artigos,
+          concluidos_ids: @concluidos_ids,
+          artigo_ativo:   @artigo %>
+  <% end %>
+
+  <%# Conteúdo principal %>
+  <main class="flex-1 min-w-0 max-w-3xl">
+
+    <%# Breadcrumb %>
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
+      <%= link_to "Início", root_path, class: "hover:text-pink-600 transition-colors" %>
+      <% if @trilha %>
+        <span class="text-gray-300">/</span>
+        <%= link_to @trilha.nome, trilha_path(@trilha), class: "hover:text-pink-600 transition-colors" %>
+      <% end %>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-700 font-medium truncate max-w-xs"><%= @artigo.titulo %></span>
+    </nav>
+
+    <%# Barra de progresso da trilha %>
+    <% if @trilha && current_lojista_id %>
+      <div id="artigo_progresso"
+           class="bg-white border border-gray-200 rounded-xl px-5 py-3 mb-6">
+        <%= render "progresso_bar",
+              trilha:         @trilha,
+              artigos:        @trilha_artigos,
+              concluidos_ids: @concluidos_ids %>
+      </div>
+    <% end %>
+
+    <%# Container com fundo branco para o artigo %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8 mb-6">
+      <%# Título do artigo %>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2 leading-tight"><%= @artigo.titulo %></h1>
+
+      <% if @artigo.tempo_estimado_minutos.present? %>
+        <p class="text-sm text-gray-400 mb-8 flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <%= @artigo.tempo_estimado_minutos %> min de leitura
+        </p>
+      <% end %>
+
+      <%# Conteúdo renderizado ————————————————————————————————— %>
+      <article class="mb-0">
+        <% if @artigo.corpo.present? %>
+          <%= render_blocks(@artigo.corpo) %>
+        <% else %>
+          <p class="text-gray-400 italic">Este artigo ainda não possui conteúdo.</p>
+        <% end %>
+      </article>
+    </div>
+
+    <%# ———————— Navegação: anterior / próximo ———————— %>
+    <% if @trilha %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-6 py-4">
+        <div class="flex items-center justify-between gap-4">
+          
+          <% if @artigo_anterior %>
+            <%= link_to artigo_path(@artigo_anterior),
+                  class: "flex items-center gap-2 text-sm text-gray-600 hover:text-pink-600 transition-colors group" do %>
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+              <span>
+                <span class="block text-xs text-gray-400 group-hover:text-pink-400">Anterior</span>
+                <span class="font-medium truncate block max-w-[12rem]"><%= @artigo_anterior.titulo %></span>
+              </span>
+            <% end %>
+          <% else %>
+            <div></div>
+          <% end %>
+
+          <% if @proximo_artigo %>
+            <% if current_lojista_id && !@progresso&.concluido? %>
+              <%# Se houver próximo artigo e o artigo atual não foi concluído, marcar como concluído ao clicar %>
+              <%= form_with url: concluir_artigo_path(@artigo), method: :post, 
+                    data: { turbo: false }, 
+                    class: "inline-block" do %>
+                <%= hidden_field_tag :redirect_to, artigo_path(@proximo_artigo) %>
+                <%= button_tag type: "submit", 
+                      class: "flex items-center gap-2 text-sm text-pink-600 hover:text-pink-700 transition-colors group" do %>
+                  <span>
+                    <span class="block text-xs text-gray-400 group-hover:text-pink-400">Próximo</span>
+                    <span class="font-medium truncate block max-w-[12rem]"><%= @proximo_artigo.titulo %></span>
+                  </span>
+                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+                <% end %>
+              <% end %>
+            <% else %>
+              <%# Se já foi concluído, apenas navegar %>
+              <%= link_to artigo_path(@proximo_artigo),
+                    class: "flex items-center gap-2 text-sm text-pink-600 hover:text-pink-700 transition-colors group text-right" do %>
+                <span>
+                  <span class="block text-xs text-gray-400 group-hover:text-pink-400">Próximo</span>
+                  <span class="font-medium truncate block max-w-[12rem]"><%= @proximo_artigo.titulo %></span>
+                </span>
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              <% end %>
+            <% end %>
+          <% else %>
+            <%# Último artigo da trilha %>
+            <% if current_lojista_id && !@progresso&.concluido? %>
+              <%= form_with url: concluir_artigo_path(@artigo), method: :post, 
+                    data: { turbo: false }, 
+                    class: "inline-block" do %>
+                <%= hidden_field_tag :redirect_to, curso_path(@trilha.modulo.curso) if @trilha.modulo&.curso %>
+                <%= button_tag type: "submit", 
+                      class: "flex items-center gap-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-colors px-5 py-2.5 rounded-lg shadow-sm" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <span>Concluir trilha</span>
+                <% end %>
+              <% end %>
+            <% else %>
+              <div class="flex items-center gap-2 text-sm text-green-600 font-medium">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Trilha concluída!</span>
+              </div>
+            <% end %>
+          <% end %>
+
+        </div>
+      </div>
+    <% end %>
+
+    <%# ———————— Comentários ———————— %>
+    <section class="mt-6 bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+      <h2 class="text-lg font-bold text-gray-900 mb-6">
+        Comentários
+        <% if @comentarios.any? %>
+          <span class="ml-2 text-sm font-normal text-gray-400">(<%= @comentarios.size %>)</span>
+        <% end %>
+      </h2>
+
+      <%# Lista de comentários %>
+      <div id="comentarios_lista" class="space-y-6 mb-8">
+        <% if @comentarios.any? %>
+          <% @comentarios.each do |comentario| %>
+            <%= render "comentario", comentario: comentario %>
+          <% end %>
+        <% else %>
+          <p class="text-gray-400 text-sm italic">Nenhum comentário ainda. Seja o primeiro!</p>
+        <% end %>
+      </div>
+
+      <%# Formulário de novo comentário %>
+      <% if current_lojista_id %>
+        <%= render "comentario_form", artigo: @artigo %>
+      <% else %>
+        <p class="text-sm text-gray-500 bg-gray-50 rounded-lg px-4 py-3">
+          Faça login para deixar um comentário.
+        </p>
+      <% end %>
+    </section>
+
+  </main>
+</div>

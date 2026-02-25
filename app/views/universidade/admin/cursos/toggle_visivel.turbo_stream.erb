@@ -1,0 +1,4 @@
+<%= turbo_stream.replace "sidebar_curso_#{@curso.id}" do %>
+  <%= render "universidade/admin/cursos/sidebar_item",
+        curso: @curso, current_curso: @current_curso %>
+<% end %>

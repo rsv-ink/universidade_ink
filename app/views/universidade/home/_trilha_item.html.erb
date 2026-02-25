@@ -1,0 +1,51 @@
+<%
+  progresso       = trilha.progresso_lojista(current_lojista_id)
+  progresso_pct   = (progresso * 100).round
+  concluida       = progresso_pct == 100
+  primeiro_artigo = trilha.artigos.visivel.order(Arel.sql("COALESCE(ordem, id)")).first
+  trilha_url      = primeiro_artigo ? artigo_path(primeiro_artigo) : trilha_path(trilha)
+%>
+
+<%= link_to trilha_url, class: "flex items-center gap-4 bg-white rounded-xl border border-gray-200 hover:border-pink-200 hover:shadow-sm transition-all px-5 py-4 group" do %>
+
+  <%# Ícone de status %>
+  <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center
+              <%= concluida ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400 group-hover:bg-pink-50 group-hover:text-pink-500' %>">
+    <% if concluida %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+    <% else %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    <% end %>
+  </div>
+
+  <%# Nome + tempo %>
+  <div class="flex-1 min-w-0">
+    <p class="font-medium text-gray-900 group-hover:text-pink-600 transition-colors truncate"><%= trilha.nome %></p>
+    <% if trilha.tempo_estimado_minutos.present? %>
+      <p class="text-xs text-gray-400 mt-0.5"><%= trilha.tempo_estimado_minutos %> min</p>
+    <% end %>
+  </div>
+
+  <%# Progresso %>
+  <% if current_lojista_id %>
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <div class="w-24 bg-gray-100 rounded-full h-1.5">
+        <div class="h-1.5 rounded-full <%= concluida ? 'bg-green-500' : 'bg-pink-500' %>"
+             style="width: <%= progresso_pct %>%"></div>
+      </div>
+      <span class="text-xs font-medium text-gray-500 w-8 text-right"><%= progresso_pct %>%</span>
+    </div>
+  <% end %>
+
+  <%# Seta de navegação %>
+  <svg class="flex-shrink-0 w-4 h-4 text-gray-300 group-hover:text-pink-400 transition-colors" 
+       fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+  </svg>
+
+<% end %>

@@ -1,0 +1,105 @@
+<%# Breadcrumb %>
+<nav class="flex items-center gap-2 text-sm text-gray-500 mb-8">
+  <%= link_to "Início", root_path, class: "hover:text-pink-600 transition-colors" %>
+  <span class="text-gray-300">/</span>
+  <% if @trilha.modulo&.curso.present? %>
+    <%= link_to @trilha.modulo.curso.nome, curso_path(@trilha.modulo.curso), class: "hover:text-pink-600 transition-colors" %>
+    <span class="text-gray-300">/</span>
+  <% end %>
+  <span class="text-gray-700 font-medium"><%= @trilha.nome %></span>
+</nav>
+
+<%# Layout duas colunas %>
+<div class="flex gap-8 items-start">
+
+  <%# Sidebar fixa %>
+  <%= render "universidade/artigos/sidebar_trilha",
+        trilha:        @trilha,
+        artigos:       @artigos,
+        concluidos_ids: @concluidos_ids %>
+
+  <%# Conteúdo principal %>
+  <main class="flex-1 min-w-0">
+
+    <%# Cabeçalho da trilha %>
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-gray-900 mb-2"><%= @trilha.nome %></h1>
+
+      <div class="flex items-center gap-4 text-sm text-gray-500">
+        <% if @trilha.tempo_estimado_minutos.present? %>
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <%= @trilha.tempo_estimado_minutos %> min no total
+          </span>
+        <% end %>
+        <span><%= @artigos.size %> artigo<%= @artigos.size == 1 ? '' : 's' %></span>
+      </div>
+
+      <%# Barra de progresso geral (apenas se lojista presente) %>
+      <% if current_lojista_id && @artigos.any? %>
+        <%
+          total_art   = @artigos.size
+          concluidos  = @concluidos_ids.size
+          pct         = (concluidos.to_f / total_art * 100).round
+        %>
+        <div class="mt-4 flex items-center gap-3">
+          <div class="flex-1 bg-gray-100 rounded-full h-2">
+            <div class="h-2 rounded-full transition-all <%= pct == 100 ? 'bg-green-500' : 'bg-pink-500' %>"
+                 style="width: <%= pct %>%"></div>
+          </div>
+          <span class="text-sm font-medium text-gray-600 flex-shrink-0 w-10 text-right"><%= pct %>%</span>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Lista de artigos %>
+    <% if @artigos.any? %>
+      <div class="space-y-2">
+        <% @artigos.each_with_index do |artigo, idx| %>
+          <% concluido = @concluidos_ids.include?(artigo.id) %>
+
+          <%= link_to artigo_path(artigo),
+                class: "flex items-center gap-4 bg-white rounded-xl border
+                        #{concluido ? 'border-green-200 hover:border-green-300' : 'border-gray-200 hover:border-pink-200'}
+                        hover:shadow-sm transition-all px-5 py-4 group" do %>
+
+            <%# Número / check %>
+            <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm
+                        <%= concluido ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500 group-hover:bg-pink-50 group-hover:text-pink-600' %>">
+              <% if concluido %>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+              <% else %>
+                <%= idx + 1 %>
+              <% end %>
+            </div>
+
+            <%# Título + tempo %>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-gray-900 group-hover:text-pink-700 transition-colors truncate">
+                <%= artigo.titulo %>
+              </p>
+              <% if artigo.tempo_estimado_minutos.present? %>
+                <p class="text-xs text-gray-400 mt-0.5"><%= artigo.tempo_estimado_minutos %> min de leitura</p>
+              <% end %>
+            </div>
+
+            <%# Seta %>
+            <svg class="flex-shrink-0 w-4 h-4 text-gray-300 group-hover:text-pink-400 transition-colors"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-gray-400 text-sm">Esta trilha ainda não possui artigos.</p>
+    <% end %>
+
+  </main>
+</div>

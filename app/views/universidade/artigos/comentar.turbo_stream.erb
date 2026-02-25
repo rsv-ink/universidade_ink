@@ -1,0 +1,9 @@
+<%# Adiciona o novo comentário ao final da lista sem reload %>
+<%= turbo_stream.append "comentarios_lista" do %>
+  <%= render "comentario", comentario: @comentario %>
+<% end %>
+
+<%# Substitui o formulário por uma versão limpa (sem o texto digitado) %>
+<%= turbo_stream.replace "comentario_form" do %>
+  <%= render "comentario_form", artigo: @artigo %>
+<% end %>

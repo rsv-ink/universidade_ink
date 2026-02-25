@@ -1,0 +1,12 @@
+<% if cursos.empty? %>
+  <div class="px-4 py-8 text-center">
+    <p class="text-xs text-gray-400">Nenhum curso ainda.</p>
+  </div>
+<% else %>
+  <ul class="py-2" data-controller="sidebar">
+    <% cursos.each do |curso| %>
+      <%= render "universidade/admin/cursos/sidebar_item",
+            curso: curso, current_curso: local_assigns[:current_curso] %>
+    <% end %>
+  </ul>
+<% end %>

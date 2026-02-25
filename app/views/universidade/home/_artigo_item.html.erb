@@ -1,0 +1,24 @@
+<%= link_to artigo_path(artigo), class: "flex items-center gap-4 bg-white rounded-xl border border-gray-200 hover:border-pink-200 hover:shadow-sm transition-all px-5 py-3 group" do %>
+
+  <%# Ícone de documento %>
+  <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-pink-50 flex items-center justify-center text-gray-400 group-hover:text-pink-500 transition-colors">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+  </div>
+
+  <%# Título + tempo %>
+  <div class="flex-1 min-w-0">
+    <p class="font-medium text-gray-900 group-hover:text-pink-600 transition-colors truncate"><%= artigo.titulo %></p>
+    <% if artigo.tempo_estimado_minutos.present? %>
+      <p class="text-xs text-gray-400 mt-0.5"><%= artigo.tempo_estimado_minutos %> min de leitura</p>
+    <% end %>
+  </div>
+
+  <%# Seta de acesso %>
+  <svg class="flex-shrink-0 w-4 h-4 text-gray-300 group-hover:text-pink-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+  </svg>
+
+<% end %>

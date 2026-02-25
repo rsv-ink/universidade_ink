@@ -1,0 +1,6 @@
+<%= turbo_stream.replace "modulo_#{@modulo.id}" do %>
+  <%= render "universidade/admin/modulos/accordion_item",
+        modulo: @modulo,
+        trilhas: @modulo.trilhas.order(Arel.sql("COALESCE(ordem, id)")),
+        curso: @modulo.curso %>
+<% end %>

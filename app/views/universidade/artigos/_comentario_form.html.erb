@@ -1,0 +1,16 @@
+<%= form_with url: comentar_artigo_path(artigo),
+      method: :post,
+      id: "comentario_form",
+      class: "space-y-3" do %>
+
+  <%= text_area_component(
+        name:        "comentario[corpo]",
+        id:          "comentario_corpo",
+        placeholder: "Escreva um comentário…",
+        rows:        3) %>
+
+  <div class="flex justify-end">
+    <%= button_component(color: :pink, size: :sm) { "Enviar comentário" } %>
+  </div>
+
+<% end %>

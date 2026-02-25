@@ -1,0 +1,109 @@
+<%# locals: trilha, from_curso_id (optional) %>
+<%
+  artigos_count = trilha.artigos.count
+  tempo = trilha.tempo_estimado_minutos
+  meta_parts = []
+  meta_parts << "#{artigos_count} artigo#{artigos_count == 1 ? '' : 's'}"
+  meta_parts << "#{tempo} min" if tempo.present? && tempo > 0
+%>
+<li id="trilha_<%= trilha.id %>"
+    class="group"
+    data-sortable-id="<%= trilha.id %>"
+    data-controller="accordion"
+    data-accordion-group-value="trilhas">
+
+  <div class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors rounded-lg cursor-pointer
+              <%= trilha.visivel? ? '' : 'opacity-60' %>"
+       data-action="click->accordion#toggle">
+
+    <%# Drag handle (does not toggle accordion) %>
+    <span data-sortable-handle
+          onclick="event.stopPropagation()"
+          class="text-gray-300 hover:text-gray-400 cursor-grab active:cursor-grabbing flex-shrink-0"
+          title="Arrastar para reordenar">
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M8 6a2 2 0 110-4 2 2 0 010 4zM8 14a2 2 0 110-4 2 2 0 010 4zM8 22a2 2 0 110-4 2 2 0 010 4zM16 6a2 2 0 110-4 2 2 0 010 4zM16 14a2 2 0 110-4 2 2 0 010 4zM16 22a2 2 0 110-4 2 2 0 010 4z"/>
+      </svg>
+    </span>
+
+    <%# Chevron %>
+    <svg data-accordion-target="icon"
+         class="w-3.5 h-3.5 text-gray-400 flex-shrink-0 transition-transform duration-200"
+         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+    </svg>
+
+    <%# Visibility toggle (dot) %>
+    <%= form_with url: toggle_visivel_admin_trilha_path(trilha), method: :patch,
+          class: "inline", html: { onclick: "event.stopPropagation()" } do %>
+      <button type="submit" title="<%= trilha.visivel? ? 'Ocultar' : 'Publicar' %>"
+              class="w-2 h-2 rounded-full flex-shrink-0 mt-0.5
+                     <%= trilha.visivel? ? 'bg-green-400' : 'bg-gray-300' %>">
+      </button>
+    <% end %>
+
+    <%# Name and meta (inline) %>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 text-sm text-gray-700 truncate">
+        <span class="truncate"><%= trilha.nome %></span>
+        <% if meta_parts.any? %>
+          <span class="text-xs text-gray-400 whitespace-nowrap">(<%= meta_parts.join(' · ') %>)</span>
+        <% end %>
+      </div>
+    </div>
+
+        <%# Actions (always visible, do not toggle) %>
+        <div class="flex items-center gap-0.5 opacity-100 transition-opacity flex-shrink-0"
+          onclick="event.stopPropagation()">
+      <%# Edit %>
+      <%= link_to edit_admin_trilha_path(trilha),
+            data: { turbo_frame: "modal" },
+            title: "Editar trilha",
+            class: "p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" do %>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+      <% end %>
+
+      <%# Delete %>
+      <%= link_to admin_trilha_path(trilha),
+            data: { turbo_method: :delete, turbo_confirm: "Excluir a trilha \"#{trilha.nome}\"?" },
+            title: "Excluir trilha",
+            class: "p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" do %>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+      <% end %>
+
+    </div>
+  </div>
+
+  <% artigos = trilha.artigos.order(Arel.sql("COALESCE(ordem, id)")) %>
+  <div data-accordion-target="content" class="hidden border-t border-gray-100">
+    <% if artigos.any? %>
+      <ul class="w-full space-y-1 pl-6 sm:pl-8 pr-4 py-3"
+          data-controller="sortable"
+          data-sortable-url-value="<%= reorder_admin_artigos_path(trilha_id: trilha.id) %>">
+        <% artigos.each do |artigo| %>
+          <%= render "universidade/admin/artigos/avulso_item", artigo: artigo %>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="px-4 py-3 text-xs text-gray-400">Nenhum conteúdo nesta trilha.</div>
+    <% end %>
+
+    <div class="pl-6 sm:pl-8 pr-4 pb-3">
+      <%= link_to new_admin_artigo_path(trilha_id: trilha.id, from_curso_id: local_assigns[:from_curso_id]),
+        data: { turbo_frame: "_top" },
+        class: "inline-flex items-center gap-1 text-xs font-medium text-pink-600 hover:underline" do %>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Adicionar artigo
+      <% end %>
+    </div>
+  </div>
+
+</li>

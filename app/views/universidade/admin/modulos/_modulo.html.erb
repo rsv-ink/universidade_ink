@@ -1,0 +1,70 @@
+<tr id="modulo_<%= modulo.id %>"
+    class="transition-opacity <%= modulo.visivel? ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 opacity-60 hover:opacity-80' %>">
+
+  <%# Ordem %>
+  <td class="px-4 py-3">
+    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-xs font-semibold text-gray-600">
+      <%= modulo.ordem || "—" %>
+    </span>
+  </td>
+
+  <%# Nome %>
+  <td class="px-4 py-3">
+    <span class="font-medium text-gray-900 <%= 'line-through text-gray-400' unless modulo.visivel? %>">
+      <%= modulo.nome %>
+    </span>
+    <% if modulo.descricao.present? %>
+      <p class="text-xs text-gray-400 mt-0.5 truncate max-w-xs"><%= modulo.descricao %></p>
+    <% end %>
+  </td>
+
+  <%# Curso vinculado %>
+  <td class="px-4 py-3">
+    <% if modulo.curso.present? %>
+      <%= badge_component(color: :purple, size: :xs, shape: :pill) { modulo.curso.nome } %>
+    <% else %>
+      <span class="text-gray-300 text-xs">Sem curso</span>
+    <% end %>
+  </td>
+
+  <%# Toggle visível %>
+  <td class="px-4 py-3 text-center">
+    <%= form_with url: toggle_visivel_admin_modulo_path(modulo), method: :patch, class: "inline" do %>
+      <button type="submit" title="<%= modulo.visivel? ? 'Clique para ocultar' : 'Clique para tornar visível' %>"
+              class="cursor-pointer bg-transparent border-0 p-0">
+        <% if modulo.visivel? %>
+          <%= badge_component(color: :green, size: :xs, shape: :pill) { "Visível" } %>
+        <% else %>
+          <%= badge_component(color: :dark, size: :xs, shape: :pill) { "Oculto" } %>
+        <% end %>
+      </button>
+    <% end %>
+  </td>
+
+  <%# Ações %>
+  <td class="px-4 py-3">
+    <div class="flex items-center justify-end gap-1">
+      <%# Editar %>
+      <%= link_to edit_admin_modulo_path(modulo),
+        data: { turbo_frame: "modal" },
+        title: "Editar",
+        class: "p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+      <% end %>
+
+      <%# Excluir %>
+      <%= link_to admin_modulo_path(modulo),
+            data: { turbo_method: :delete, turbo_confirm: "Excluir o módulo \"#{modulo.nome}\"? Esta ação não pode ser desfeita." },
+            title: "Excluir",
+            class: "p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+      <% end %>
+    </div>
+  </td>
+</tr>

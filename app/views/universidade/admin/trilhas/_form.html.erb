@@ -1,0 +1,70 @@
+<%= form_with model: trilha,
+      url: trilha.new_record? ? admin_trilhas_path : admin_trilha_path(trilha),
+      class: "space-y-5" do |f| %>
+
+  <input type="hidden" name="from_curso_id" value="<%= local_assigns[:from_curso_id] %>">
+
+  <% if trilha.errors.any? %>
+    <%= alert_component(state: :danger, bordered: true) do |alert| %>
+      <% alert.with_title { "#{trilha.errors.count} erro(s) impediram o salvamento:" } %>
+      <% alert.with_body do %>
+        <ul class="list-disc list-inside space-y-1 mt-1">
+          <% trilha.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+        </ul>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Nome %>
+  <div>
+    <%= label_component(for: "trilha_nome") { "Nome *" } %>
+    <%= input_field_component(
+          type: "text", name: "trilha[nome]", id: "trilha_nome",
+          value: trilha.nome, placeholder: "Ex: Introdução ao ActiveRecord",
+          state: trilha.errors[:nome].any? ? :error : :default) %>
+    <% if trilha.errors[:nome].any? %>
+      <%= helper_text_component { trilha.errors[:nome].first } %>
+    <% end %>
+  </div>
+
+  <%# Módulo (opcional) %>
+  <div>
+    <%= label_component(for: "trilha_modulo_id") { "Módulo (opcional)" } %>
+    <%
+      modulo_choices = { "Nenhum (trilha avulsa)" => "" }.merge(
+        @modulos.map { |m| [m.nome, m.id.to_s] }.to_h
+      )
+    %>
+    <%= select_component(
+          name: "trilha[modulo_id]", id: "trilha_modulo_id",
+          choices: modulo_choices,
+          options: { selected: trilha.modulo_id.to_s }) %>
+  </div>
+
+  <%# Tempo estimado %>
+  <div>
+    <%= label_component(for: "trilha_tempo_estimado_minutos") { "Tempo estimado (minutos)" } %>
+    <%= input_field_component(
+          type: "number", name: "trilha[tempo_estimado_minutos]",
+          id: "trilha_tempo_estimado_minutos",
+          value: trilha.tempo_estimado_minutos, placeholder: "30") %>
+  </div>
+
+  <%# Visível %>
+  <div>
+    <input type="hidden" name="trilha[visivel]" value="0">
+    <%= toggle_component(
+          name: "trilha[visivel]", id: "trilha_visivel",
+          checked: trilha.visivel?, checked_value: "1",
+          color: :blue) { "Visível para os lojistas" } %>
+  </div>
+
+  <div class="flex items-center gap-3 pt-1">
+    <%= button_component(color: :pink, size: :md) { trilha.new_record? ? "Criar Trilha" : "Salvar Alterações" } %>
+    <button type="button" data-action="click->modal#close"
+            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
+      Cancelar
+    </button>
+  </div>
+
+<% end %>

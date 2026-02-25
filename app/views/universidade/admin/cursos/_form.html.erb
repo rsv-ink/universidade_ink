@@ -1,0 +1,74 @@
+<%= form_with model: curso,
+      url: curso.new_record? ? admin_cursos_path : admin_curso_path(curso),
+      class: "space-y-5" do |f| %>
+
+  <% if curso.errors.any? %>
+    <%= alert_component(state: :danger, bordered: true) do |alert| %>
+      <% alert.with_title { "#{curso.errors.count} erro(s) impediram o salvamento:" } %>
+      <% alert.with_body do %>
+        <ul class="list-disc list-inside space-y-1 mt-1">
+          <% curso.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Nome %>
+  <div>
+    <%= label_component(for: "curso_nome") { "Nome *" } %>
+    <%= input_field_component(
+          type: "text",
+          name: "curso[nome]",
+          id: "curso_nome",
+          value: curso.nome,
+          placeholder: "Ex: Ruby on Rails para iniciantes",
+          state: curso.errors[:nome].any? ? :error : :default) %>
+    <% if curso.errors[:nome].any? %>
+      <%= helper_text_component { curso.errors[:nome].first } %>
+    <% end %>
+  </div>
+
+  <%# Descrição %>
+  <div>
+    <%= label_component(for: "curso_descricao") { "Descrição" } %>
+    <%= text_area_component(
+          name: "curso[descricao]",
+          id: "curso_descricao",
+          placeholder: "Uma breve descrição do curso…",
+          rows: 3) { curso.descricao } %>
+  </div>
+
+  <%# Tags %>
+  <div>
+    <%= label_component(for: "curso_tags_text") { "Tags" } %>
+    <%= input_field_component(
+          type: "text",
+          name: "curso[tags_text]",
+          id: "curso_tags_text",
+          value: curso.tags_text,
+          placeholder: "ruby, rails, iniciante") %>
+    <%= helper_text_component { "Separe as tags por vírgula." } %>
+  </div>
+
+  <%# Visível %>
+  <div>
+    <input type="hidden" name="curso[visivel]" value="0">
+    <%= toggle_component(
+          name: "curso[visivel]",
+          id: "curso_visivel",
+          checked: curso.visivel?,
+          checked_value: "1",
+          color: :blue) { "Visível para os lojistas" } %>
+  </div>
+
+  <div class="flex items-center gap-3 pt-1">
+    <%= button_component(color: :pink, size: :md) { curso.new_record? ? "Criar Curso" : "Salvar Alterações" } %>
+    <button type="button" data-action="click->modal#close"
+            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
+      Cancelar
+    </button>
+  </div>
+
+<% end %>

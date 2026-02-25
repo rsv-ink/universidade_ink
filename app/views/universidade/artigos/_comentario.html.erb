@@ -1,0 +1,17 @@
+<div class="flex gap-3">
+  <%# Avatar inicial %>
+  <div class="flex-shrink-0 w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center
+              text-pink-600 font-semibold text-sm">
+    <%= comentario.primeiro_nome.first.upcase rescue "?" %>
+  </div>
+
+  <div class="flex-1 min-w-0">
+    <div class="flex items-baseline gap-2 mb-1">
+      <span class="font-medium text-gray-900 text-sm"><%= comentario.primeiro_nome %></span>
+      <span class="text-xs text-gray-400">
+        <%= comentario.created_at.strftime("%d/%m/%Y às %H:%M") %>
+      </span>
+    </div>
+    <p class="text-gray-700 text-sm leading-relaxed"><%= comentario.corpo %></p>
+  </div>
+</div>

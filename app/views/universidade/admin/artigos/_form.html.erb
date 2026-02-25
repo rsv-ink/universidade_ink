@@ -1,0 +1,161 @@
+<% back_path = local_assigns[:from_curso_id].present? ? admin_curso_path(local_assigns[:from_curso_id]) : admin_artigos_path %>
+
+<%= form_with model: artigo,
+      url: artigo.new_record? ? admin_artigos_path : admin_artigo_path(artigo),
+      class: "min-h-screen bg-gray-50" do |f| %>
+
+  <input type="hidden" name="from_curso_id" value="<%= local_assigns[:from_curso_id] %>">
+
+  <%# ── Barra superior fixa ──────────────────────────────────────────── %>
+  <div class="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-screen-xl mx-auto px-6 py-3 flex flex-wrap items-center gap-3">
+
+      <%# Voltar %>
+      <%= link_to back_path,
+            class: "flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors shrink-0 mr-1" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Voltar
+      <% end %>
+
+      <%# Título (expansível) %>
+      <div class="flex-1 min-w-[200px]">
+        <%= input_field_component(
+              type: "text", name: "artigo[titulo]", id: "artigo_titulo",
+              value: artigo.titulo, placeholder: "Título do artigo...",
+              state: artigo.errors[:titulo].any? ? :error : :default) %>
+      </div>
+
+      <%# Trilha %>
+      <div class="shrink-0 w-44">
+        <%
+          trilha_choices = { "Sem trilha" => "" }.merge(
+            @trilhas.map { |t| [t.nome, t.id.to_s] }.to_h
+          )
+        %>
+        <%= select_component(
+              name: "artigo[trilha_id]", id: "artigo_trilha_id",
+              choices: trilha_choices,
+              options: { selected: artigo.trilha_id.to_s }) %>
+      </div>
+
+      <%# Tempo estimado %>
+      <div class="shrink-0 w-24">
+        <%= input_field_component(
+              type: "number", name: "artigo[tempo_estimado_minutos]",
+              id: "artigo_tempo_estimado_minutos",
+              value: artigo.tempo_estimado_minutos, placeholder: "min") %>
+      </div>
+
+      <%# Visível toggle %>
+      <div class="shrink-0">
+        <input type="hidden" name="artigo[visivel]" value="0">
+        <%= toggle_component(
+              name: "artigo[visivel]", id: "artigo_visivel",
+              checked: artigo.visivel?, checked_value: "1",
+              color: :blue) { "Visível" } %>
+      </div>
+
+      <%# Salvar %>
+      <%= button_component(color: :pink, size: :md) {
+        artigo.new_record? ? "Criar artigo" : "Salvar alterações"
+      } %>
+
+    </div>
+  </div>
+
+  <%# ── Erros de validação ───────────────────────────────────────────── %>
+  <% if artigo.errors.any? %>
+    <div class="max-w-screen-xl mx-auto px-6 pt-5">
+      <%= alert_component(state: :danger, bordered: true) do |alert| %>
+        <% alert.with_title { "#{artigo.errors.count} erro(s) impediram o salvamento:" } %>
+        <% alert.with_body do %>
+          <ul class="list-disc list-inside space-y-1 mt-1">
+            <% artigo.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# ── Editor de blocos ─────────────────────────────────────────────── %>
+  <div class="max-w-screen-xl mx-auto px-6 py-6"
+       data-controller="blocks-editor"
+       data-blocks-editor-upload-url-value="<%= admin_rich_image_upload_path %>">
+
+    <input type="hidden" name="artigo[corpo]" id="artigo_corpo"
+           value="<%= h(artigo.corpo) %>"
+           data-blocks-editor-target="hidden">
+
+    <div class="blocks-layout">
+
+      <%# ── Palette (sidebar de tipos de bloco) ──────────────────── %>
+      <div class="blocks-palette-col">
+        <div class="blocks-palette-card">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" style="flex-shrink: 0;">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              <path d="M13 17l-4-4m0 0l4-4m-4 4h8"/>
+            </svg>
+            <p class="blocks-palette-heading" style="margin: 0; padding: 0; border: none;">Arraste →</p>
+          </div>
+          <div data-blocks-editor-target="palette" class="blocks-palette-grid">
+            <% [
+              ["titulo",  "T",    "Título"],
+              ["texto",   "¶",    "Texto"],
+              ["citacao", "\u201C",  "Citação"],
+              ["codigo",  "</>",  "Código"],
+              ["tabela",  "⊞",   "Tabela"],
+              ["imagem",  "▣",    "Imagem"],
+              ["video",   "▶",    "Vídeo"]
+            ].each do |type, icon, label| %>
+              <div class="palette-item" data-block-type="<%= type %>">
+                <span class="palette-item-icon"><%= icon %></span>
+                <span class="palette-item-label"><%= label %></span>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <%# ── Canvas (coluna principal) ─────────────────────────────── %>
+      <div class="blocks-canvas-col">
+        <div class="blocks-editor-wrapper">
+          
+          <%# Preview do título (apenas visual, não editável) %>
+          <div class="blocks-editor-title-area">
+            <input type="text" 
+                   class="blocks-editor-main-title" 
+                   placeholder="<%= artigo.titulo.presence || 'Título do artigo...' %>"
+                   value="<%= artigo.titulo %>"
+                   disabled
+                   tabindex="-1">
+            <%# Hint removida conforme pedido %>
+          </div>
+
+          <%# Área de composição dos blocos %>
+          <div class="blocks-canvas-wrapper">
+            <div data-blocks-editor-target="canvas" class="blocks-canvas">
+              <div data-blocks-editor-target="emptyState" class="blocks-empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" 
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <p class="blocks-empty-state-text">Comece arrastando um bloco</p>
+                <p class="blocks-empty-state-hint">
+                  Escolha um tipo de bloco à esquerda e arraste para esta área para começar a compor seu conteúdo
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<% end %>

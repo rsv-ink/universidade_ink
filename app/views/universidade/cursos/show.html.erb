@@ -1,0 +1,157 @@
+<%# ————— Breadcrumb ————— %>
+<nav class="flex items-center gap-2 text-sm text-gray-500 mb-8">
+  <%= link_to "Cursos", root_path, class: "hover:text-pink-600 transition-colors" %>
+  <span class="text-gray-300">/</span>
+  <span class="text-gray-700 font-medium"><%= @curso.nome %></span>
+</nav>
+
+<%# ————— Cabeçalho do Curso ————— %>
+<div class="mb-10">
+  <%# Tags %>
+  <% if @curso.tags.any? %>
+    <div class="flex flex-wrap gap-1.5 mb-3">
+      <% @curso.tags.each do |tag| %>
+        <%= badge_component(color: :blue, size: :xs, shape: :pill) { tag } %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <h1 class="text-3xl font-bold text-gray-900 mb-2"><%= @curso.nome %></h1>
+
+  <% if @curso.descricao.present? %>
+    <p class="text-gray-600 text-base leading-relaxed max-w-2xl"><%= @curso.descricao %></p>
+  <% end %>
+
+  <%# Progresso geral do curso %>
+  <% if current_lojista_id %>
+    <%
+      curso_pct = (@curso.progresso_lojista(current_lojista_id) * 100).round
+      concluido = curso_pct == 100
+    %>
+    <div class="mt-6 inline-flex items-center gap-4 bg-white border border-gray-200 rounded-xl px-5 py-3">
+      <div class="w-40 bg-gray-100 rounded-full h-2">
+        <div class="h-2 rounded-full transition-all <%= concluido ? 'bg-green-500' : 'bg-pink-500' %>"
+             style="width: <%= curso_pct %>%"></div>
+      </div>
+      <span class="text-sm font-semibold <%= concluido ? 'text-green-600' : 'text-gray-700' %>">
+        <%= curso_pct %>% concluído
+      </span>
+      <% if concluido %>
+        <%= badge_component(color: :green, size: :xs, shape: :pill) { "Completo" } %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<%# ————— Módulos ————— %>
+<% if @modulos.any? %>
+  <div class="space-y-4">
+    <% @modulos.each do |modulo| %>
+      <%
+        mod_progresso     = modulo.progresso(current_lojista_id)
+        mod_progresso_pct = (mod_progresso * 100).round
+        trilhas_visiveis  = modulo.trilhas.select(&:visivel?)
+                                  .sort_by { |t| t.ordem || t.id }
+      %>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+
+        <%# Cabeçalho do módulo %>
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <h2 class="font-semibold text-gray-900 text-base"><%= modulo.nome %></h2>
+            <% if modulo.descricao.present? %>
+              <p class="text-xs text-gray-400 mt-0.5 truncate"><%= modulo.descricao %></p>
+            <% end %>
+          </div>
+
+          <%# Progresso do módulo (trilhas concluídas / total) %>
+          <% if current_lojista_id %>
+            <div class="flex items-center gap-3 flex-shrink-0">
+              <% trilhas_total = trilhas_visiveis.size %>
+              <span class="text-xs text-gray-400">
+                <% trilhas_concluidas = trilhas_visiveis.count { |t| t.concluida?(current_lojista_id) } %>
+                <%= trilhas_concluidas %> / <%= trilhas_total %> trilha<%= trilhas_total == 1 ? '' : 's' %>
+              </span>
+              <div class="w-24 bg-gray-100 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full <%= mod_progresso_pct == 100 ? 'bg-green-500' : 'bg-pink-500' %>"
+                     style="width: <%= mod_progresso_pct %>%"></div>
+              </div>
+              <span class="text-xs font-medium text-gray-500 w-8 text-right">
+                <%= mod_progresso_pct %>%
+              </span>
+            </div>
+          <% end %>
+        </div>
+
+        <%# Lista de trilhas do módulo %>
+        <% if trilhas_visiveis.any? %>
+          <ul class="divide-y divide-gray-50">
+            <% trilhas_visiveis.each do |trilha| %>
+              <%
+                t_progresso     = trilha.progresso_lojista(current_lojista_id)
+                t_progresso_pct = (t_progresso * 100).round
+                t_concluida     = t_progresso_pct == 100
+                primeiro_artigo = trilha.artigos.visivel.order(Arel.sql("COALESCE(ordem, id)")).first
+                trilha_url      = primeiro_artigo ? artigo_path(primeiro_artigo) : trilha_path(trilha)
+              %>
+
+              <li>
+                <%= link_to trilha_url, class: "flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors group" do %>
+
+                  <%# Status icon %>
+                  <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm
+                              <%= t_concluida ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400 group-hover:bg-pink-50 group-hover:text-pink-500' %>">
+                    <% if t_concluida %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    <% else %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                      </svg>
+                    <% end %>
+                  </div>
+
+                  <%# Nome e tempo estimado %>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 group-hover:text-pink-600 transition-colors truncate"><%= trilha.nome %></p>
+                    <% if trilha.tempo_estimado_minutos.present? %>
+                      <p class="text-xs text-gray-400 mt-0.5"><%= trilha.tempo_estimado_minutos %> min</p>
+                    <% end %>
+                  </div>
+
+                  <%# Barra de progresso da trilha (artigos concluídos / total) %>
+                  <% if current_lojista_id %>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <div class="w-20 bg-gray-100 rounded-full h-1.5">
+                        <div class="h-1.5 rounded-full <%= t_concluida ? 'bg-green-500' : 'bg-pink-400' %>"
+                             style="width: <%= t_progresso_pct %>%"></div>
+                      </div>
+                      <span class="text-xs text-gray-400 w-8 text-right"><%= t_progresso_pct %>%</span>
+                    </div>
+                  <% end %>
+
+                  <%# Seta de navegação %>
+                  <svg class="flex-shrink-0 w-4 h-4 text-gray-300 group-hover:text-pink-400 transition-colors" 
+                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="px-6 py-4 text-sm text-gray-400 italic">Este módulo ainda não possui trilhas.</p>
+        <% end %>
+
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="text-center py-16 bg-white rounded-xl border border-gray-200">
+    <p class="text-gray-400 text-sm">Este curso ainda não possui módulos.</p>
+  </div>
+<% end %>

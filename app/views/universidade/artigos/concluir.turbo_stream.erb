@@ -1,0 +1,45 @@
+<%# Atualiza barra de progresso da trilha no topo %>
+<% if @trilha %>
+  <%
+    # Recarrega os IDs concluídos após persistir o novo progresso
+    updated_ids = Progresso.where(
+      artigo_id:  @trilha_artigos.map(&:id),
+      lojista_id: current_lojista_id
+    ).where.not(concluido_em: nil).pluck(:artigo_id).to_set
+  %>
+
+  <%= turbo_stream.replace "artigo_progresso" do %>
+    <div id="artigo_progresso"
+         class="bg-white border border-gray-200 rounded-xl px-5 py-3">
+      <%= render "progresso_bar",
+            trilha:         @trilha,
+            artigos:        @trilha_artigos,
+            concluidos_ids: updated_ids %>
+    </div>
+  <% end %>
+
+  <%# Atualiza item na sidebar %>
+  <%= turbo_stream.replace "sidebar_artigo_#{@artigo.id}" do %>
+    <div id="sidebar_artigo_<%= @artigo.id %>">
+      <%= link_to artigo_path(@artigo),
+            class: "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm bg-pink-50 text-pink-700 font-medium" do %>
+        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+          </svg>
+        </span>
+        <span class="flex-1 truncate leading-snug"><%= @artigo.titulo %></span>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+
+<%# Atualiza botão "Marcar como concluído" %>
+<%= turbo_stream.replace "artigo_concluir_btn" do %>
+  <div id="artigo_concluir_btn" class="py-6 border-t border-gray-100">
+    <%= render "concluir_btn",
+          artigo:    @artigo,
+          progresso: @progresso,
+          trilha:    @trilha %>
+  </div>
+<% end %>

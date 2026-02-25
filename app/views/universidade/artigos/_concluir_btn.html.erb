@@ -1,0 +1,28 @@
+<%#
+  Locals: artigo, progresso (Progresso record ou nil), trilha
+  Envolto em <div id="artigo_concluir_btn"> para substituição via Turbo Stream.
+%>
+<% ja_concluido = progresso&.concluido? %>
+
+<% if trilha && current_lojista_id %>
+  <% if ja_concluido %>
+    <div class="flex items-center gap-2 text-green-600 font-medium text-sm">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Artigo concluído
+    </div>
+  <% else %>
+    <%= form_with url: concluir_artigo_path(artigo), method: :post do %>
+      <%= button_component(color: :green, size: :md) do %>
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Marcar como concluído
+        </span>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
