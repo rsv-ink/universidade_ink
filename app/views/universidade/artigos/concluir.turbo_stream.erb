@@ -1,23 +1,5 @@
 <%# Atualiza barra de progresso da trilha no topo %>
 <% if @trilha %>
-  <%
-    # Recarrega os IDs concluídos após persistir o novo progresso
-    updated_ids = Progresso.where(
-      artigo_id:  @trilha_artigos.map(&:id),
-      lojista_id: current_lojista_id
-    ).where.not(concluido_em: nil).pluck(:artigo_id).to_set
-  %>
-
-  <%= turbo_stream.replace "artigo_progresso" do %>
-    <div id="artigo_progresso"
-         class="bg-white border border-gray-200 rounded-xl px-5 py-3">
-      <%= render "progresso_bar",
-            trilha:         @trilha,
-            artigos:        @trilha_artigos,
-            concluidos_ids: updated_ids %>
-    </div>
-  <% end %>
-
   <%# Atualiza item na sidebar %>
   <%= turbo_stream.replace "sidebar_artigo_#{@artigo.id}" do %>
     <div id="sidebar_artigo_<%= @artigo.id %>">

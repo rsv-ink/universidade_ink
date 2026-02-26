@@ -1,6 +1,7 @@
 <%= form_with model: trilha,
-      url: trilha.new_record? ? admin_trilhas_path : admin_trilha_path(trilha),
-      class: "space-y-5" do |f| %>
+  url: trilha.new_record? ? admin_trilhas_path : admin_trilha_path(trilha),
+  data: { turbo_stream: true },
+  class: "space-y-5" do |f| %>
 
   <input type="hidden" name="from_curso_id" value="<%= local_assigns[:from_curso_id] %>">
 
@@ -56,15 +57,33 @@
     <%= toggle_component(
           name: "trilha[visivel]", id: "trilha_visivel",
           checked: trilha.visivel?, checked_value: "1",
-          color: :blue) { "Visível para os lojistas" } %>
+          color: :pink) { "Visível para os lojistas" } %>
   </div>
 
   <div class="flex items-center gap-3 pt-1">
-    <%= button_component(color: :pink, size: :md) { trilha.new_record? ? "Criar Trilha" : "Salvar Alterações" } %>
-    <button type="button" data-action="click->modal#close"
-            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
-      Cancelar
-    </button>
+    <input type="hidden" name="trilha[status_action]" id="trilha_status_action"
+           value="<%= trilha.new_record? || trilha.rascunho? ? 'rascunho' : 'publicar' %>">
+    
+    <% if trilha.publicado? && !trilha.new_record? %>
+      <%# Trilha já publicada: apenas botão Salvar alterações %>
+      <button type="submit"
+              onclick="document.getElementById('trilha_status_action').value='publicar'"
+              class="px-4 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors">
+        Salvar alterações
+      </button>
+    <% else %>
+      <%# Trilha em rascunho ou nova: botões Salvar rascunho e Publicar %>
+      <button type="submit"
+              onclick="document.getElementById('trilha_status_action').value='rascunho'"
+              class="px-4 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors">
+        Salvar rascunho
+      </button>
+      <button type="submit"
+              onclick="document.getElementById('trilha_status_action').value='publicar'"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+        Publicar
+      </button>
+    <% end %>
   </div>
 
 <% end %>

@@ -2,14 +2,25 @@ module Universidade
   class Curso < ApplicationRecord
     self.table_name = "universidade_cursos"
 
+    has_one_attached :imagem
     has_many :modulos, class_name: "Universidade::Modulo", foreign_key: :curso_id, dependent: :nullify
 
     validates :nome, presence: true
 
+    attribute :rascunho, :boolean, default: false
+
     # Serialização do campo tags para compatibilidade com SQLite3
     serialize :tags, coder: JSON
 
-    scope :visivel, -> { where(visivel: true) }
+    scope :visivel, -> { where(visivel: true, rascunho: false) }
+
+    def publicado?
+      !rascunho? && visivel?
+    end
+
+    def despublicado?
+      !rascunho? && !visivel?
+    end
 
     # Atributo virtual para o formulário: tags como texto separado por vírgula.
     def tags_text

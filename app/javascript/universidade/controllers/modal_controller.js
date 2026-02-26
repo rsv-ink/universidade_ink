@@ -1,31 +1,43 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  static targets = ["content"]
+
   connect() {
-    this._handleKeydown = this._handleKeydown.bind(this)
-    document.addEventListener("keydown", this._handleKeydown)
-    // Prevent body scroll while modal is open
-    document.body.style.overflow = "hidden"
-  }
+    this._onKeydown = (e) => {
+      if (e.key === "Escape" && !this.element.hidden) this.close()
+    }
+    document.addEventListener("keydown", this._onKeydown)
 
-  disconnect() {
-    document.removeEventListener("keydown", this._handleKeydown)
-    document.body.style.overflow = ""
-  }
-
-  _handleKeydown(event) {
-    if (event.key === "Escape") this.close()
-  }
-
-  close() {
-    const frame = document.getElementById("modal")
-    if (frame) {
-      frame.innerHTML = ""
-      frame.removeAttribute("src")
+    // Auto-hide when content is cleared (e.g. by turbo_stream.update("modal", ""))
+    this._observer = new MutationObserver(() => {
+      if (this.hasContentTarget && this.contentTarget.children.length === 0) {
+        this.element.hidden = true
+        document.body.style.overflow = ""
+      }
+    })
+    if (this.hasContentTarget) {
+      this._observer.observe(this.contentTarget, { childList: true })
     }
   }
 
-  closeOnBackdrop(event) {
-    if (event.target === this.element) this.close()
+  disconnect() {
+    document.removeEventListener("keydown", this._onKeydown)
+    this._observer?.disconnect()
+  }
+
+  open() {
+    this.element.hidden = false
+    document.body.style.overflow = "hidden"
+  }
+
+  close() {
+    this.element.hidden = true
+    document.body.style.overflow = ""
+    if (this.hasContentTarget) this.contentTarget.innerHTML = ""
+  }
+
+  closeBackdrop(event) {
+    if (event.target === event.currentTarget) this.close()
   }
 }

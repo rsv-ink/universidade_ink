@@ -5,70 +5,53 @@ module Universidade
 
       def new
         @trilha = Trilha.new(visivel: true, modulo_id: params[:modulo_id])
-        @from_curso_id = params[:from_curso_id]
         @modulos = Modulo.order(:nome)
-        render layout: false if turbo_frame_request?
+        render layout: false if turbo_frame_request? || request.xhr?
       end
 
       def create
         @trilha = Trilha.new(trilha_params)
-        from_curso_id = params[:from_curso_id] || @trilha.modulo&.curso_id
+        apply_status_action(@trilha)
         if @trilha.save
-          respond_to do |format|
-            format.turbo_stream { render turbo_stream: panel_stream_for(from_curso_id) }
-            format.html         { redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path, notice: "Trilha criada com sucesso." }
-          end
+          redirect_to admin_root_path, notice: "Trilha criada com sucesso."
         else
-          @from_curso_id = from_curso_id
           @modulos = Modulo.order(:nome)
           render :new, status: :unprocessable_entity
         end
       end
 
       def edit
-        @from_curso_id = @trilha.modulo&.curso_id
         @modulos = Modulo.order(:nome)
-        render layout: false if turbo_frame_request?
+        render layout: false if turbo_frame_request? || request.xhr?
       end
 
       def update
-        from_curso_id = @trilha.modulo&.curso_id
-        if @trilha.update(trilha_params)
-          from_curso_id = @trilha.modulo&.curso_id || from_curso_id
-          respond_to do |format|
-            format.turbo_stream { render turbo_stream: panel_stream_for(from_curso_id) }
-            format.html         { redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path, notice: "Trilha atualizada com sucesso." }
-          end
+        @trilha.assign_attributes(trilha_params)
+        apply_status_action(@trilha)
+        if @trilha.save
+          redirect_to admin_root_path, notice: "Trilha atualizada com sucesso."
         else
-          @from_curso_id = from_curso_id
           @modulos = Modulo.order(:nome)
           render :edit, status: :unprocessable_entity
         end
       end
 
       def destroy
-        from_curso_id = @trilha.modulo&.curso_id
         @trilha.destroy
-        respond_to do |format|
-          format.turbo_stream { render turbo_stream: panel_stream_for(from_curso_id) }
-          format.html         { redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path, notice: "Trilha excluída com sucesso." }
-        end
+        redirect_to admin_root_path, notice: "Trilha excluída com sucesso."
       end
 
       def toggle_visivel
         @trilha.update!(visivel: !@trilha.visivel)
         respond_to do |format|
           format.turbo_stream do
-            # Choose partial based on context: inside module or standalone (avulsa)
-            partial_name = @trilha.modulo_id.present? ? "hub_item" : "avulsa_item"
             render turbo_stream: turbo_stream.replace(
               "trilha_#{@trilha.id}",
-              partial: "universidade/admin/trilhas/#{partial_name}",
+              partial: "universidade/admin/trilhas/trilha_row",
               locals: { trilha: @trilha }
             )
           end
-          from_curso_id = @trilha.modulo&.curso_id
-          format.html { redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path }
+          format.html { redirect_to admin_root_path }
         end
       end
 
@@ -80,8 +63,7 @@ module Universidade
           trilhas[idx], trilhas[idx - 1] = trilhas[idx - 1], trilhas[idx]
           Trilha.transaction { trilhas.each_with_index { |t, i| t.update_column(:ordem, i + 1) } }
         end
-        from_curso_id = @trilha.modulo&.curso_id
-        redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path
+        redirect_to admin_root_path
       end
 
       def mover_abaixo
@@ -92,8 +74,7 @@ module Universidade
           trilhas[idx], trilhas[idx + 1] = trilhas[idx + 1], trilhas[idx]
           Trilha.transaction { trilhas.each_with_index { |t, i| t.update_column(:ordem, i + 1) } }
         end
-        from_curso_id = @trilha.modulo&.curso_id
-        redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path
+        redirect_to admin_root_path
       end
 
       def reorder
@@ -112,6 +93,23 @@ module Universidade
 
       def trilha_params
         params.require(:trilha).permit(:nome, :tempo_estimado_minutos, :ordem, :visivel, :modulo_id)
+      end
+
+      def apply_status_action(trilha)
+        actions = Array(params.dig(:trilha, :status_action)).map(&:to_s)
+        action = if actions.include?("publicar")
+                   "publicar"
+                 elsif actions.include?("rascunho")
+                   "rascunho"
+                 else
+                   ""
+                 end
+        case action
+        when "rascunho"
+          trilha.rascunho = true
+        when "publicar"
+          trilha.rascunho = false
+        end
       end
     end
   end

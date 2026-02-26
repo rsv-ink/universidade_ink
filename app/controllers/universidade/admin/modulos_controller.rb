@@ -5,54 +5,40 @@ module Universidade
 
       def new
         @modulo = Modulo.new(visivel: true, curso_id: params[:curso_id])
-        @from_curso_id = params[:from_curso_id] || params[:curso_id]
         @cursos = Curso.order(:nome)
-        render layout: false if turbo_frame_request?
+        render layout: false if turbo_frame_request? || request.xhr?
       end
 
       def create
         @modulo = Modulo.new(modulo_params)
-        from_curso_id = params[:from_curso_id] || @modulo.curso_id
+        apply_status_action(@modulo)
         if @modulo.save
-          respond_to do |format|
-            format.turbo_stream { render turbo_stream: panel_stream_for(from_curso_id) }
-            format.html         { redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path, notice: "Módulo criado com sucesso." }
-          end
+          redirect_to admin_root_path, notice: "Módulo criado com sucesso."
         else
-          @from_curso_id = from_curso_id
           @cursos = Curso.order(:nome)
           render :new, status: :unprocessable_entity
         end
       end
 
       def edit
-        @from_curso_id = @modulo.curso_id
         @cursos = Curso.order(:nome)
-        render layout: false if turbo_frame_request?
+        render layout: false if turbo_frame_request? || request.xhr?
       end
 
       def update
-        from_curso_id = @modulo.curso_id
-        if @modulo.update(modulo_params)
-          from_curso_id = @modulo.curso_id || from_curso_id
-          respond_to do |format|
-            format.turbo_stream { render turbo_stream: panel_stream_for(from_curso_id) }
-            format.html         { redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path, notice: "Módulo atualizado com sucesso." }
-          end
+        @modulo.assign_attributes(modulo_params)
+        apply_status_action(@modulo)
+        if @modulo.save
+          redirect_to admin_root_path, notice: "Módulo atualizado com sucesso."
         else
-          @from_curso_id = from_curso_id
           @cursos = Curso.order(:nome)
           render :edit, status: :unprocessable_entity
         end
       end
 
       def destroy
-        from_curso_id = @modulo.curso_id
         @modulo.destroy
-        respond_to do |format|
-          format.turbo_stream { render turbo_stream: panel_stream_for(from_curso_id) }
-          format.html         { redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path, notice: "Módulo excluído com sucesso." }
-        end
+        redirect_to admin_root_path, notice: "Módulo excluído com sucesso."
       end
 
       def toggle_visivel
@@ -61,15 +47,11 @@ module Universidade
           format.turbo_stream do
             render turbo_stream: turbo_stream.replace(
               "modulo_#{@modulo.id}",
-              partial: "universidade/admin/modulos/accordion_item",
-              locals: {
-                modulo: @modulo,
-                trilhas: @modulo.trilhas.order(Arel.sql("COALESCE(ordem, id)")),
-                curso: @modulo.curso
-              }
+              partial: "universidade/admin/modulos/modulo_row",
+              locals: { modulo: @modulo }
             )
           end
-          format.html { redirect_to @modulo.curso_id ? admin_curso_path(@modulo.curso_id) : admin_root_path }
+          format.html { redirect_to admin_root_path }
         end
       end
 
@@ -81,7 +63,7 @@ module Universidade
           modulos[idx], modulos[idx - 1] = modulos[idx - 1], modulos[idx]
           Modulo.transaction { modulos.each_with_index { |m, i| m.update_column(:ordem, i + 1) } }
         end
-        redirect_to @modulo.curso_id ? admin_curso_path(@modulo.curso_id) : admin_root_path
+        redirect_to admin_root_path
       end
 
       def mover_abaixo
@@ -92,7 +74,7 @@ module Universidade
           modulos[idx], modulos[idx + 1] = modulos[idx + 1], modulos[idx]
           Modulo.transaction { modulos.each_with_index { |m, i| m.update_column(:ordem, i + 1) } }
         end
-        redirect_to @modulo.curso_id ? admin_curso_path(@modulo.curso_id) : admin_root_path
+        redirect_to admin_root_path
       end
 
       def reorder
@@ -111,6 +93,23 @@ module Universidade
 
       def modulo_params
         params.require(:modulo).permit(:nome, :descricao, :ordem, :visivel, :curso_id)
+      end
+
+      def apply_status_action(modulo)
+        actions = Array(params.dig(:modulo, :status_action)).map(&:to_s)
+        action = if actions.include?("publicar")
+                   "publicar"
+                 elsif actions.include?("rascunho")
+                   "rascunho"
+                 else
+                   ""
+                 end
+        case action
+        when "rascunho"
+          modulo.rascunho = true
+        when "publicar"
+          modulo.rascunho = false
+        end
       end
     end
   end

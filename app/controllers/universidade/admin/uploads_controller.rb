@@ -14,7 +14,7 @@ module Universidade
           content_type: file.content_type
         )
 
-        render json: { url: url_for(blob) }
+        render json: { url: main_app.rails_blob_url(blob) }
       rescue StandardError => e
         render_error(e.message)
       end

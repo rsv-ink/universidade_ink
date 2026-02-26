@@ -210,11 +210,11 @@ export default class extends Controller {
     const raw = window.prompt("Cole o link do YouTube ou Vimeo")
     if (!raw || raw.trim() === "") return
     const url = raw.trim()
-    const yt = url.match(/(?:youtube\.com\/watch\?(?:.*&)?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
-    const vimeo = url.match(/vimeo\.com\/(\d+)/)
+    const yt = url.match(/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+    const vimeo = url.match(/(?:vimeo\.com\/(?:video\/)?)(\d+)/)
 
     let embedUrl = null
-    if (yt) embedUrl = `https://www.youtube.com/embed/${yt[1]}`
+    if (yt) embedUrl = `https://www.youtube-nocookie.com/embed/${yt[1]}`
     if (vimeo) embedUrl = `https://player.vimeo.com/video/${vimeo[1]}`
 
     if (!embedUrl) {

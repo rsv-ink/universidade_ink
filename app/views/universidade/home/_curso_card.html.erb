@@ -3,43 +3,52 @@
   progresso_pct = (progresso * 100).round
 %>
 
-<%= link_to curso_path(curso), class: "group block bg-white rounded-xl border border-gray-200 hover:border-pink-300 hover:shadow-md transition-all p-5" do %>
+<%= link_to curso_path(curso), class: "group block bg-white rounded-xl border border-gray-200 hover:border-pink-300 hover:shadow-md transition-all overflow-hidden" do %>
 
-  <%# Tags %>
-  <% if curso.tags.any? %>
-    <div class="flex flex-wrap gap-1 mb-3">
-      <% curso.tags.each do |tag| %>
-        <%= badge_component(color: :blue, size: :xs, shape: :pill) { tag } %>
-      <% end %>
+  <%# Imagem do curso %>
+  <% if curso.imagem.attached? %>
+    <div class="aspect-square w-full overflow-hidden bg-gray-100">
+      <%= image_tag main_app.url_for(curso.imagem), class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" %>
     </div>
   <% end %>
 
-  <%# Nome %>
-  <h3 class="font-semibold text-gray-900 group-hover:text-pink-600 transition-colors leading-snug mb-1">
-    <%= curso.nome %>
-  </h3>
-
-  <%# Descrição %>
-  <% if curso.descricao.present? %>
-    <p class="text-sm text-gray-500 line-clamp-2 mb-4"><%= curso.descricao %></p>
-  <% else %>
-    <div class="mb-4"></div>
-  <% end %>
-
-  <%# Barra de progresso %>
-  <% if current_lojista_id %>
-    <div class="mt-auto">
-      <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
-        <span>Progresso</span>
-        <span class="font-medium <%= progresso_pct == 100 ? 'text-green-600' : 'text-gray-600' %>">
-          <%= progresso_pct %>%
-        </span>
+  <div class="p-5">
+    <%# Tags %>
+    <% if curso.tags.any? %>
+      <div class="flex flex-wrap gap-1 mb-3">
+        <% curso.tags.each do |tag| %>
+          <%= badge_component(color: :blue, size: :xs, shape: :pill) { tag } %>
+        <% end %>
       </div>
-      <div class="w-full bg-gray-100 rounded-full h-1.5">
-        <div class="h-1.5 rounded-full transition-all <%= progresso_pct == 100 ? 'bg-green-500' : 'bg-pink-500' %>"
-             style="width: <%= progresso_pct %>%"></div>
+    <% end %>
+
+    <%# Nome %>
+    <h3 class="font-semibold text-gray-900 group-hover:text-pink-600 transition-colors leading-snug mb-1">
+      <%= curso.nome %>
+    </h3>
+
+    <%# Descrição %>
+    <% if curso.descricao.present? %>
+      <p class="text-sm text-gray-500 line-clamp-2 mb-4"><%= curso.descricao %></p>
+    <% else %>
+      <div class="mb-4"></div>
+    <% end %>
+
+    <%# Barra de progresso %>
+    <% if current_lojista_id %>
+      <div class="mt-auto">
+        <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+          <span>Progresso</span>
+          <span class="font-medium <%= progresso_pct == 100 ? 'text-green-600' : 'text-gray-600' %>">
+            <%= progresso_pct %>%
+          </span>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full h-1.5">
+          <div class="h-1.5 rounded-full transition-all <%= progresso_pct == 100 ? 'bg-green-500' : 'bg-pink-500' %>"
+               style="width: <%= progresso_pct %>%"></div>
+        </div>
       </div>
-    </div>
-  <% end %>
+    <% end %>
+  </div>
 
 <% end %>

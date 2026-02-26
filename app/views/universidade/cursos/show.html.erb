@@ -28,12 +28,12 @@
       curso_pct = (@curso.progresso_lojista(current_lojista_id) * 100).round
       concluido = curso_pct == 100
     %>
-    <div class="mt-6 inline-flex items-center gap-4 bg-white border border-gray-200 rounded-xl px-5 py-3">
-      <div class="w-40 bg-gray-100 rounded-full h-2">
+    <div class="mt-6 flex items-center gap-4 bg-white border border-gray-200 rounded-xl px-5 py-3">
+      <div class="flex-1 bg-gray-100 rounded-full h-2">
         <div class="h-2 rounded-full transition-all <%= concluido ? 'bg-green-500' : 'bg-pink-500' %>"
              style="width: <%= curso_pct %>%"></div>
       </div>
-      <span class="text-sm font-semibold <%= concluido ? 'text-green-600' : 'text-gray-700' %>">
+      <span class="text-sm font-semibold <%= concluido ? 'text-green-600' : 'text-gray-700' %> whitespace-nowrap">
         <%= curso_pct %>% concluído
       </span>
       <% if concluido %>

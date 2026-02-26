@@ -8,7 +8,7 @@ Universidade::Engine.routes.draw do
   resources :artigos, only: [:show] do
     member do
       post :concluir
-      post :comentar
+      post :feedback
     end
   end
 
@@ -19,6 +19,7 @@ Universidade::Engine.routes.draw do
     post :rich_image_upload, to: "uploads#image"
     
     resources :cursos do
+      collection { patch :reorder }
       member do
         patch :toggle_visivel
         patch :mover_acima

@@ -4,8 +4,8 @@ module Universidade
     before_action :set_trilha_context
 
     def show
-      @comentarios = @artigo.comentarios.order(created_at: :asc)
-      @progresso   = progresso_atual
+        @progresso = progresso_atual
+        @feedback  = current_lojista_id ? Feedback.find_by(artigo_id: @artigo.id, lojista_id: current_lojista_id) : nil
     end
 
     # POST /artigos/:id/concluir
@@ -32,26 +32,27 @@ module Universidade
       end
     end
 
-    # POST /artigos/:id/comentar
-    # Cria um novo comentário no artigo.
-    def comentar
+    # POST /artigos/:id/feedback
+    # Registra ou atualiza o feedback do lojista para este artigo.
+    def feedback
       unless current_lojista_id
-        redirect_to artigo_path(@artigo), alert: "É necessário estar logado para comentar." and return
+        redirect_to artigo_path(@artigo), alert: "É necessário estar logado para votar." and return
       end
 
-      @comentario = Comentario.new(
-        artigo:     @artigo,
-        lojista_id: current_lojista_id,
-        corpo:      params.dig(:comentario, :corpo).to_s.strip
+      sentimento = params.dig(:feedback, :sentimento).to_s
+      @feedback = Feedback.find_or_initialize_by(
+        artigo_id:  @artigo.id,
+        lojista_id: current_lojista_id
       )
+      @feedback.sentimento = sentimento
 
-      if @comentario.save
+      if @feedback.save
         respond_to do |format|
           format.turbo_stream
           format.html { redirect_to artigo_path(@artigo) }
         end
       else
-        redirect_to artigo_path(@artigo), alert: "O comentário não pode ser vazio."
+        redirect_to artigo_path(@artigo), alert: "Feedback inválido."
       end
     end
 

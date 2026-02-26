@@ -1,6 +1,7 @@
 <%= form_with model: modulo,
-      url: modulo.new_record? ? admin_modulos_path : admin_modulo_path(modulo),
-      class: "space-y-5" do |f| %>
+  url: modulo.new_record? ? admin_modulos_path : admin_modulo_path(modulo),
+  data: { turbo_stream: true },
+  class: "space-y-5" do |f| %>
 
   <input type="hidden" name="from_curso_id" value="<%= local_assigns[:from_curso_id] %>">
 
@@ -55,15 +56,33 @@
     <%= toggle_component(
           name: "modulo[visivel]", id: "modulo_visivel",
           checked: modulo.visivel?, checked_value: "1",
-          color: :blue) { "Visível para os lojistas" } %>
+          color: :pink) { "Visível para os lojistas" } %>
   </div>
 
   <div class="flex items-center gap-3 pt-1">
-    <%= button_component(color: :pink, size: :md) { modulo.new_record? ? "Criar Módulo" : "Salvar Alterações" } %>
-    <button type="button" data-action="click->modal#close"
-            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
-      Cancelar
-    </button>
+    <input type="hidden" name="modulo[status_action]" id="modulo_status_action"
+           value="<%= modulo.new_record? || modulo.rascunho? ? 'rascunho' : 'publicar' %>">
+    
+    <% if modulo.publicado? && !modulo.new_record? %>
+      <%# Módulo já publicado: apenas botão Salvar alterações %>
+      <button type="submit"
+              onclick="document.getElementById('modulo_status_action').value='publicar'"
+              class="px-4 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors">
+        Salvar alterações
+      </button>
+    <% else %>
+      <%# Módulo em rascunho ou novo: botões Salvar rascunho e Publicar %>
+      <button type="submit"
+              onclick="document.getElementById('modulo_status_action').value='rascunho'"
+              class="px-4 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors">
+        Salvar rascunho
+      </button>
+      <button type="submit"
+              onclick="document.getElementById('modulo_status_action').value='publicar'"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+        Publicar
+      </button>
+    <% end %>
   </div>
 
 <% end %>

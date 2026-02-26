@@ -4,7 +4,8 @@ export default class extends Controller {
   static targets = ["content", "icon"]
   static values  = {
     open:  { type: Boolean, default: false },
-    group: { type: String, default: null }
+    group: { type: String, default: null },
+    openChildren: { type: String, default: null }
   }
 
   toggle() {
@@ -15,10 +16,13 @@ export default class extends Controller {
 
   openValueChanged() {
     if (this.hasContentTarget) {
-      this.contentTarget.classList.toggle("hidden", !this.openValue)
+      this.contentTargets.forEach(t => t.classList.toggle("hidden", !this.openValue))
     }
     if (this.hasIconTarget) {
       this.iconTarget.style.transform = this.openValue ? "rotate(180deg)" : "rotate(0deg)"
+    }
+    if (this.openValue && this.openChildrenValue) {
+      this._openChildAccordions(this.openChildrenValue)
     }
   }
 
@@ -34,6 +38,16 @@ export default class extends Controller {
         : !controller.groupValue
 
       if (sameGroup) controller.openValue = false
+    })
+  }
+
+  _openChildAccordions(groupName) {
+    const nested = this.element.querySelectorAll('[data-controller~="accordion"]')
+    nested.forEach((element) => {
+      if (element === this.element) return
+      const controller = this.application.getControllerForElementAndIdentifier(element, "accordion")
+      if (!controller) return
+      if (controller.groupValue === groupName) controller.openValue = true
     })
   }
 }

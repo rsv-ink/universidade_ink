@@ -1,6 +1,8 @@
 <%= form_with model: curso,
-      url: curso.new_record? ? admin_cursos_path : admin_curso_path(curso),
-      class: "space-y-5" do |f| %>
+  url: curso.new_record? ? admin_cursos_path : admin_curso_path(curso),
+  data: { turbo_stream: true },
+  multipart: true,
+  class: "space-y-5" do |f| %>
 
   <% if curso.errors.any? %>
     <%= alert_component(state: :danger, bordered: true) do |alert| %>
@@ -40,6 +42,28 @@
           rows: 3) { curso.descricao } %>
   </div>
 
+  <%# Imagem %>
+  <div>
+    <%= label_component(for: "curso_imagem") { "Imagem do curso" } %>
+    <% if curso.imagem.attached? %>
+      <div class="mb-3 relative inline-block">
+        <%= image_tag main_app.url_for(curso.imagem), class: "w-32 h-32 object-cover rounded-lg border border-gray-200" %>
+      </div>
+    <% end %>
+    <input type="file"
+           name="curso[imagem]"
+           id="curso_imagem"
+           accept="image/*"
+           class="block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-lg file:border file:border-gray-300
+                  file:text-sm file:font-medium
+                  file:bg-gray-50 file:text-gray-700
+                  hover:file:bg-gray-100
+                  cursor-pointer">
+    <%= helper_text_component { "Recomendado: imagem quadrada (ex: 800x800px) para melhor visualização." } %>
+  </div>
+
   <%# Tags %>
   <div>
     <%= label_component(for: "curso_tags_text") { "Tags" } %>
@@ -60,15 +84,33 @@
           id: "curso_visivel",
           checked: curso.visivel?,
           checked_value: "1",
-          color: :blue) { "Visível para os lojistas" } %>
+          color: :pink) { "Visível para os lojistas" } %>
   </div>
 
   <div class="flex items-center gap-3 pt-1">
-    <%= button_component(color: :pink, size: :md) { curso.new_record? ? "Criar Curso" : "Salvar Alterações" } %>
-    <button type="button" data-action="click->modal#close"
-            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
-      Cancelar
-    </button>
+    <input type="hidden" name="curso[status_action]" id="curso_status_action"
+           value="<%= curso.new_record? || curso.rascunho? ? 'rascunho' : 'publicar' %>">
+    
+    <% if curso.publicado? && !curso.new_record? %>
+      <%# Curso já publicado: apenas botão Salvar alterações %>
+      <button type="submit"
+              onclick="document.getElementById('curso_status_action').value='publicar'"
+              class="px-4 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors">
+        Salvar alterações
+      </button>
+    <% else %>
+      <%# Curso em rascunho ou novo: botões Salvar rascunho e Publicar %>
+      <button type="submit"
+              onclick="document.getElementById('curso_status_action').value='rascunho'"
+              class="px-4 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors">
+        Salvar rascunho
+      </button>
+      <button type="submit"
+              onclick="document.getElementById('curso_status_action').value='publicar'"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+        Publicar
+      </button>
+    <% end %>
   </div>
 
 <% end %>

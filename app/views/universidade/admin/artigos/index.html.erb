@@ -23,6 +23,7 @@
     <table class="w-full text-sm text-left text-gray-600">
       <thead class="text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">
         <tr>
+          <th class="px-4 py-3 w-16"></th>
           <th class="px-4 py-3 w-16">Ordem</th>
           <th class="px-4 py-3">Título</th>
           <th class="px-4 py-3">Trilha</th>
@@ -31,7 +32,7 @@
           <th class="px-4 py-3 w-48 text-right">Ações</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
+      <tbody class="divide-y divide-gray-100" data-controller="sortable" data-sortable-url-value="<%= reorder_admin_artigos_path %>">
         <% @artigos.each do |artigo| %>
           <%= render "artigo", artigo: artigo %>
         <% end %>

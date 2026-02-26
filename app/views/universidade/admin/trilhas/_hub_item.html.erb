@@ -33,15 +33,6 @@
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
     </svg>
 
-    <%# Visibility toggle (dot) %>
-    <%= form_with url: toggle_visivel_admin_trilha_path(trilha), method: :patch,
-          class: "inline", html: { onclick: "event.stopPropagation()" } do %>
-      <button type="submit" title="<%= trilha.visivel? ? 'Ocultar' : 'Publicar' %>"
-              class="w-2 h-2 rounded-full flex-shrink-0 mt-0.5
-                     <%= trilha.visivel? ? 'bg-green-400' : 'bg-gray-300' %>">
-      </button>
-    <% end %>
-
     <%# Name and meta (inline) %>
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 text-sm text-gray-700 truncate">
@@ -49,6 +40,27 @@
         <% if meta_parts.any? %>
           <span class="text-xs text-gray-400 whitespace-nowrap">(<%= meta_parts.join(' · ') %>)</span>
         <% end %>
+        <div onclick="event.stopPropagation()">
+          <% if trilha.rascunho? %>
+            <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200">
+              Rascunho
+            </span>
+          <% else %>
+            <%= form_with url: toggle_visivel_admin_trilha_path(trilha), method: :patch, class: "inline-flex" do %>
+              <% if trilha.publicado? %>
+                <button type="submit" title="Clique para despublicar"
+                        class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-green-100 text-green-700 hover:bg-green-200">
+                  Publicado
+                </button>
+              <% else %>
+                <button type="submit" title="Clique para publicar"
+                        class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
+                  Despublicado
+                </button>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
       </div>
     </div>
 
@@ -57,7 +69,7 @@
           onclick="event.stopPropagation()">
       <%# Edit %>
       <%= link_to edit_admin_trilha_path(trilha),
-            data: { turbo_frame: "modal" },
+        data: { controller: "modal-link", action: "click->modal-link#open", turbo: "false" },
             title: "Editar trilha",
             class: "p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" do %>
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

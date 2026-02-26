@@ -24,31 +24,35 @@
       <span class="text-gray-700 font-medium truncate max-w-xs"><%= @artigo.titulo %></span>
     </nav>
 
-    <%# Barra de progresso da trilha %>
-    <% if @trilha && current_lojista_id %>
-      <div id="artigo_progresso"
-           class="bg-white border border-gray-200 rounded-xl px-5 py-3 mb-6">
-        <%= render "progresso_bar",
-              trilha:         @trilha,
-              artigos:        @trilha_artigos,
-              concluidos_ids: @concluidos_ids %>
-      </div>
-    <% end %>
-
     <%# Container com fundo branco para o artigo %>
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
       <%# Título do artigo %>
       <h1 class="text-3xl font-bold text-gray-900 mb-2 leading-tight"><%= @artigo.titulo %></h1>
 
-      <% if @artigo.tempo_estimado_minutos.present? %>
-        <p class="text-sm text-gray-400 mb-8 flex items-center gap-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <%= @artigo.tempo_estimado_minutos %> min de leitura
-        </p>
-      <% end %>
+      <div class="text-sm text-gray-400 mb-8 flex items-center gap-2 flex-wrap">
+        <% if @artigo.tempo_estimado_minutos.present? %>
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <%= @artigo.tempo_estimado_minutos %> min de leitura
+          </span>
+        <% end %>
+        <% if @artigo.rascunho? %>
+          <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200">
+            Rascunho
+          </span>
+        <% elsif @artigo.publicado? %>
+          <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-green-100 text-green-700 hover:bg-green-200">
+            Publicado
+          </span>
+        <% else %>
+          <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
+            Despublicado
+          </span>
+        <% end %>
+      </div>
 
       <%# Conteúdo renderizado ————————————————————————————————— %>
       <article class="mb-0">
@@ -141,34 +145,9 @@
     <% end %>
 
     <%# ———————— Comentários ———————— %>
-    <section class="mt-6 bg-white rounded-xl border border-gray-200 shadow-sm p-8">
-      <h2 class="text-lg font-bold text-gray-900 mb-6">
-        Comentários
-        <% if @comentarios.any? %>
-          <span class="ml-2 text-sm font-normal text-gray-400">(<%= @comentarios.size %>)</span>
-        <% end %>
-      </h2>
-
-      <%# Lista de comentários %>
-      <div id="comentarios_lista" class="space-y-6 mb-8">
-        <% if @comentarios.any? %>
-          <% @comentarios.each do |comentario| %>
-            <%= render "comentario", comentario: comentario %>
-          <% end %>
-        <% else %>
-          <p class="text-gray-400 text-sm italic">Nenhum comentário ainda. Seja o primeiro!</p>
-        <% end %>
-      </div>
-
-      <%# Formulário de novo comentário %>
-      <% if current_lojista_id %>
-        <%= render "comentario_form", artigo: @artigo %>
-      <% else %>
-        <p class="text-sm text-gray-500 bg-gray-50 rounded-lg px-4 py-3">
-          Faça login para deixar um comentário.
-        </p>
-      <% end %>
-    </section>
+    <div id="artigo_feedback">
+      <%= render "feedback", artigo: @artigo, feedback: @feedback %>
+    </div>
 
   </main>
 </div>

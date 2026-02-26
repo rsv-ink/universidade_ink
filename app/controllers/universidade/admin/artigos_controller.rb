@@ -5,66 +5,52 @@ module Universidade
 
       def new
         @artigo = Artigo.new(visivel: true, trilha_id: params[:trilha_id])
-        @from_curso_id = params[:from_curso_id]
         @trilhas = Trilha.order(:nome)
       end
 
       def create
         @artigo = Artigo.new(artigo_params)
-        from_curso_id = params[:from_curso_id] || @artigo.trilha&.modulo&.curso_id
+        apply_status_action(@artigo)
         if @artigo.save
-          respond_to do |format|
-            format.turbo_stream { render turbo_stream: panel_stream_for(from_curso_id) }
-            format.html         { redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path, notice: "Artigo criado com sucesso." }
-          end
+          redirect_to admin_root_path, notice: "Artigo criado com sucesso."
         else
-          @from_curso_id = from_curso_id
           @trilhas = Trilha.order(:nome)
           render :new, status: :unprocessable_entity
         end
       end
 
       def edit
-        @from_curso_id = @artigo.trilha&.modulo&.curso_id
         @trilhas = Trilha.order(:nome)
       end
 
       def update
-        from_curso_id = @artigo.trilha&.modulo&.curso_id
-        if @artigo.update(artigo_params)
-          from_curso_id = @artigo.trilha&.modulo&.curso_id || from_curso_id
-          respond_to do |format|
-            format.turbo_stream { render turbo_stream: panel_stream_for(from_curso_id) }
-            format.html         { redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path, notice: "Artigo atualizado com sucesso." }
-          end
+        @artigo.assign_attributes(artigo_params)
+        apply_status_action(@artigo)
+        if @artigo.save
+          redirect_to admin_root_path, notice: "Artigo atualizado com sucesso."
         else
-          @from_curso_id = from_curso_id
           @trilhas = Trilha.order(:nome)
           render :edit, status: :unprocessable_entity
         end
       end
 
       def destroy
-        from_curso_id = @artigo.trilha&.modulo&.curso_id
         @artigo.destroy
-        respond_to do |format|
-          format.turbo_stream { render turbo_stream: panel_stream_for(from_curso_id) }
-          format.html         { redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path, notice: "Artigo excluído com sucesso." }
-        end
+        redirect_to admin_root_path, notice: "Artigo excluído com sucesso."
       end
 
       def toggle_visivel
-        @artigo.update!(visivel: !@artigo.visivel)
+        new_visivel = !@artigo.visivel?
+        @artigo.update!(visivel: new_visivel)
         respond_to do |format|
           format.turbo_stream do
             render turbo_stream: turbo_stream.replace(
               "artigo_#{@artigo.id}",
-              partial: "universidade/admin/artigos/avulso_item",
+              partial: "universidade/admin/artigos/artigo_row",
               locals: { artigo: @artigo }
             )
           end
-          from_curso_id = @artigo.trilha&.modulo&.curso_id
-          format.html { redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path }
+          format.html { redirect_to admin_root_path }
         end
       end
 
@@ -76,8 +62,7 @@ module Universidade
           artigos[idx], artigos[idx - 1] = artigos[idx - 1], artigos[idx]
           Artigo.transaction { artigos.each_with_index { |a, i| a.update_column(:ordem, i + 1) } }
         end
-        from_curso_id = @artigo.trilha&.modulo&.curso_id
-        redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path
+        redirect_to admin_root_path
       end
 
       def mover_abaixo
@@ -88,8 +73,7 @@ module Universidade
           artigos[idx], artigos[idx + 1] = artigos[idx + 1], artigos[idx]
           Artigo.transaction { artigos.each_with_index { |a, i| a.update_column(:ordem, i + 1) } }
         end
-        from_curso_id = @artigo.trilha&.modulo&.curso_id
-        redirect_to from_curso_id.present? ? admin_curso_path(from_curso_id) : admin_root_path
+        redirect_to admin_root_path
       end
 
       def reorder
@@ -117,6 +101,24 @@ module Universidade
 
       def artigo_params
         params.require(:artigo).permit(:titulo, :ordem, :tempo_estimado_minutos, :visivel, :trilha_id, :corpo)
+      end
+
+      def apply_status_action(artigo)
+        actions = Array(params.dig(:artigo, :status_action)).map(&:to_s)
+        action = if actions.include?("publicar")
+                   "publicar"
+                 elsif actions.include?("rascunho")
+                   "rascunho"
+                 else
+                   ""
+                 end
+        case action
+        when "rascunho"
+          artigo.rascunho = true
+          artigo.visivel = false
+        when "publicar"
+          artigo.rascunho = false
+        end
       end
     end
   end

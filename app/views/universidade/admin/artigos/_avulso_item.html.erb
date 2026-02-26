@@ -23,6 +23,25 @@
     <% if artigo.tempo_estimado_minutos.present? && artigo.tempo_estimado_minutos > 0 %>
       <span class="text-xs text-gray-400 flex-shrink-0">(<%= artigo.tempo_estimado_minutos %> min)</span>
     <% end %>
+    <% if artigo.rascunho? %>
+      <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200">
+        Rascunho
+      </span>
+    <% else %>
+      <%= form_with url: toggle_visivel_admin_artigo_path(artigo), method: :patch, class: "inline-flex" do %>
+        <% if artigo.publicado? %>
+          <button type="submit" title="Clique para despublicar"
+                  class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-green-100 text-green-700 hover:bg-green-200">
+            Publicado
+          </button>
+        <% else %>
+          <button type="submit" title="Clique para publicar"
+                  class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
+            Despublicado
+          </button>
+        <% end %>
+      <% end %>
+    <% end %>
   </div>
 
   <div class="flex items-center gap-1 ml-2 opacity-100 transition-opacity flex-shrink-0">

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_24_191216) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_26_150002) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -48,7 +48,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_24_191216) do
     t.boolean "visivel", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "rascunho", default: false, null: false
     t.index ["ordem"], name: "index_universidade_artigos_on_ordem"
+    t.index ["rascunho"], name: "index_universidade_artigos_on_rascunho"
     t.index ["trilha_id"], name: "index_universidade_artigos_on_trilha_id"
     t.index ["visivel"], name: "index_universidade_artigos_on_visivel"
   end
@@ -72,8 +74,20 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_24_191216) do
     t.boolean "visivel", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "rascunho", default: false, null: false
     t.index ["ordem"], name: "index_universidade_cursos_on_ordem"
+    t.index ["rascunho"], name: "index_universidade_cursos_on_rascunho"
     t.index ["visivel"], name: "index_universidade_cursos_on_visivel"
+  end
+
+  create_table "universidade_feedbacks", force: :cascade do |t|
+    t.integer "artigo_id", null: false
+    t.integer "lojista_id", null: false
+    t.integer "sentimento", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["artigo_id", "lojista_id"], name: "index_universidade_feedbacks_on_artigo_id_and_lojista_id", unique: true
+    t.index ["artigo_id"], name: "index_universidade_feedbacks_on_artigo_id"
   end
 
   create_table "universidade_modulos", force: :cascade do |t|
@@ -84,8 +98,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_24_191216) do
     t.boolean "visivel", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "rascunho", default: false, null: false
     t.index ["curso_id"], name: "index_universidade_modulos_on_curso_id"
     t.index ["ordem"], name: "index_universidade_modulos_on_ordem"
+    t.index ["rascunho"], name: "index_universidade_modulos_on_rascunho"
     t.index ["visivel"], name: "index_universidade_modulos_on_visivel"
   end
 
@@ -110,8 +126,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_24_191216) do
     t.boolean "visivel", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "rascunho", default: false, null: false
     t.index ["modulo_id"], name: "index_universidade_trilhas_on_modulo_id"
     t.index ["ordem"], name: "index_universidade_trilhas_on_ordem"
+    t.index ["rascunho"], name: "index_universidade_trilhas_on_rascunho"
     t.index ["visivel"], name: "index_universidade_trilhas_on_visivel"
   end
 

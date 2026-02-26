@@ -1,0 +1,5 @@
+<%= turbo_stream.replace "artigo_feedback" do %>
+  <div id="artigo_feedback">
+    <%= render "feedback", artigo: @artigo, feedback: @feedback %>
+  </div>
+<% end %>

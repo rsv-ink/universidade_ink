@@ -9,7 +9,17 @@ module Universidade
 
     validates :nome, presence: true
 
-    scope :visivel, -> { where(visivel: true) }
+    attribute :rascunho, :boolean, default: false
+
+    scope :visivel, -> { where(visivel: true, rascunho: false) }
+
+    def publicado?
+      !rascunho? && visivel?
+    end
+
+    def despublicado?
+      !rascunho? && !visivel?
+    end
 
     # Slug humanizado para URLs amigáveis (ex: "1-introducao-ao-ruby").
     def to_param

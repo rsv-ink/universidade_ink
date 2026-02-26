@@ -1,4 +1,4 @@
-<% back_path = local_assigns[:from_curso_id].present? ? admin_curso_path(local_assigns[:from_curso_id]) : admin_artigos_path %>
+<% back_path = local_assigns[:from_curso_id].present? ? admin_curso_path(local_assigns[:from_curso_id]) : admin_cursos_path %>
 
 <%= form_with model: artigo,
       url: artigo.new_record? ? admin_artigos_path : admin_artigo_path(artigo),
@@ -27,18 +27,11 @@
               state: artigo.errors[:titulo].any? ? :error : :default) %>
       </div>
 
-      <%# Trilha %>
-      <div class="shrink-0 w-44">
-        <%
-          trilha_choices = { "Sem trilha" => "" }.merge(
-            @trilhas.map { |t| [t.nome, t.id.to_s] }.to_h
-          )
-        %>
-        <%= select_component(
-              name: "artigo[trilha_id]", id: "artigo_trilha_id",
-              choices: trilha_choices,
-              options: { selected: artigo.trilha_id.to_s }) %>
-      </div>
+      <% if artigo.rascunho? %>
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200">
+          Rascunho
+        </span>
+      <% end %>
 
       <%# Tempo estimado %>
       <div class="shrink-0 w-24">
@@ -54,13 +47,25 @@
         <%= toggle_component(
               name: "artigo[visivel]", id: "artigo_visivel",
               checked: artigo.visivel?, checked_value: "1",
-              color: :blue) { "Visível" } %>
+            color: :pink) { "Visível" } %>
       </div>
 
       <%# Salvar %>
-      <%= button_component(color: :pink, size: :md) {
-        artigo.new_record? ? "Criar artigo" : "Salvar alterações"
-      } %>
+      <% if artigo.new_record? || artigo.rascunho? %>
+        <input type="hidden" name="artigo[status_action]" id="artigo_status_action" value="rascunho">
+        <button type="submit"
+          onclick="document.getElementById('artigo_status_action').value='rascunho'"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+          Salvar rascunho
+        </button>
+        <button type="submit"
+          onclick="document.getElementById('artigo_status_action').value='publicar'"
+                class="px-4 py-2 text-sm font-medium text-white bg-pink-600 rounded-lg hover:bg-pink-700 transition-colors">
+          Publicar
+        </button>
+      <% else %>
+        <%= button_component(color: :pink, size: :md) { "Salvar alterações" } %>
+      <% end %>
 
     </div>
   </div>
@@ -104,13 +109,14 @@
           </div>
           <div data-blocks-editor-target="palette" class="blocks-palette-grid">
             <% [
-              ["titulo",  "T",    "Título"],
-              ["texto",   "¶",    "Texto"],
-              ["citacao", "\u201C",  "Citação"],
-              ["codigo",  "</>",  "Código"],
-              ["tabela",  "⊞",   "Tabela"],
-              ["imagem",  "▣",    "Imagem"],
-              ["video",   "▶",    "Vídeo"]
+              ["titulo",   "T",     "Título"],
+              ["texto",    "¶",     "Texto"],
+              ["citacao",  "\u201C","Citação"],
+              ["codigo",   "</>",   "Código"],
+              ["imagem",   "▣",     "Imagem"],
+              ["video",    "▶",     "Vídeo"],
+              ["divisor",  "—",     "Divisor"],
+              ["destaque", "◈",     "Destaque"],
             ].each do |type, icon, label| %>
               <div class="palette-item" data-block-type="<%= type %>">
                 <span class="palette-item-icon"><%= icon %></span>
@@ -125,17 +131,6 @@
       <div class="blocks-canvas-col">
         <div class="blocks-editor-wrapper">
           
-          <%# Preview do título (apenas visual, não editável) %>
-          <div class="blocks-editor-title-area">
-            <input type="text" 
-                   class="blocks-editor-main-title" 
-                   placeholder="<%= artigo.titulo.presence || 'Título do artigo...' %>"
-                   value="<%= artigo.titulo %>"
-                   disabled
-                   tabindex="-1">
-            <%# Hint removida conforme pedido %>
-          </div>
-
           <%# Área de composição dos blocos %>
           <div class="blocks-canvas-wrapper">
             <div data-blocks-editor-target="canvas" class="blocks-canvas">

@@ -8,7 +8,17 @@ module Universidade
 
     validates :nome, presence: true
 
-    scope :visivel, -> { where(visivel: true) }
+    attribute :rascunho, :boolean, default: false
+
+    scope :visivel, -> { where(visivel: true, rascunho: false) }
+
+    def publicado?
+      !rascunho? && visivel?
+    end
+
+    def despublicado?
+      !rascunho? && !visivel?
+    end
 
     # Retorna a fração de trilhas concluídas pelo lojista (0.0 a 1.0).
     # Uma trilha é considerada concluída quando todos os seus artigos visíveis foram concluídos.

@@ -1,0 +1,28 @@
+<section class="mt-6 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+  <h2 class="text-lg font-bold text-gray-900 mb-1">Feedback</h2>
+  <p class="text-sm text-gray-500 mb-3">Como voce avaliaria este artigo?</p>
+
+  <% if current_lojista_id %>
+    <% selected = feedback&.sentimento %>
+    <%= form_with url: feedback_artigo_path(artigo), method: :post, class: "flex flex-wrap gap-3" do %>
+      <% [
+        ["triste", "😞", "Nao ajudou"],
+        ["neutro", "😐", "Mais ou menos"],
+        ["feliz",  "😄", "Muito bom"]
+      ].each do |value, emoji, label| %>
+        <% active = selected == value %>
+        <button type="submit"
+          name="feedback[sentimento]"
+          value="<%= value %>"
+          aria-label="<%= label %>"
+          class="feedback-emoji-btn flex items-center justify-center w-12 h-12 rounded-full transition hover:bg-pink-50">
+          <span class="leading-none <%= active ? "text-4xl" : "text-2xl grayscale" %>"><%= emoji %></span>
+        </button>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p class="text-sm text-gray-500 bg-gray-50 rounded-lg px-4 py-3">
+      Faca login para avaliar este artigo.
+    </p>
+  <% end %>
+</section>

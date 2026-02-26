@@ -1,5 +1,15 @@
 <tr id="modulo_<%= modulo.id %>"
-    class="transition-opacity <%= modulo.visivel? ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 opacity-60 hover:opacity-80' %>">
+    data-sortable-id="<%= modulo.id %>"
+    class="transition-opacity bg-white hover:bg-gray-50 <%= 'opacity-60 hover:opacity-80' unless modulo.visivel? %>">
+
+  <%# Drag handle %>
+  <td class="px-4 py-3">
+    <div data-sortable-handle class="cursor-move text-gray-400 hover:text-gray-600">
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"/>
+      </svg>
+    </div>
+  </td>
 
   <%# Ordem %>
   <td class="px-4 py-3">
@@ -10,9 +20,30 @@
 
   <%# Nome %>
   <td class="px-4 py-3">
-    <span class="font-medium text-gray-900 <%= 'line-through text-gray-400' unless modulo.visivel? %>">
-      <%= modulo.nome %>
-    </span>
+    <div class="flex items-center gap-2">
+      <span class="font-medium text-gray-900 <%= 'line-through text-gray-400' unless modulo.visivel? %>">
+        <%= modulo.nome %>
+      </span>
+      <% if modulo.rascunho? %>
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200">
+          Rascunho
+        </span>
+      <% else %>
+        <%= form_with url: toggle_visivel_admin_modulo_path(modulo), method: :patch, class: "inline-flex" do %>
+          <% if modulo.publicado? %>
+            <button type="submit" title="Clique para despublicar"
+                    class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-green-100 text-green-700 hover:bg-green-200">
+              Publicado
+            </button>
+          <% else %>
+            <button type="submit" title="Clique para publicar"
+                    class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
+              Despublicado
+            </button>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
     <% if modulo.descricao.present? %>
       <p class="text-xs text-gray-400 mt-0.5 truncate max-w-xs"><%= modulo.descricao %></p>
     <% end %>
@@ -29,16 +60,7 @@
 
   <%# Toggle visível %>
   <td class="px-4 py-3 text-center">
-    <%= form_with url: toggle_visivel_admin_modulo_path(modulo), method: :patch, class: "inline" do %>
-      <button type="submit" title="<%= modulo.visivel? ? 'Clique para ocultar' : 'Clique para tornar visível' %>"
-              class="cursor-pointer bg-transparent border-0 p-0">
-        <% if modulo.visivel? %>
-          <%= badge_component(color: :green, size: :xs, shape: :pill) { "Visível" } %>
-        <% else %>
-          <%= badge_component(color: :dark, size: :xs, shape: :pill) { "Oculto" } %>
-        <% end %>
-      </button>
-    <% end %>
+    <span class="text-gray-300">—</span>
   </td>
 
   <%# Ações %>
@@ -46,7 +68,7 @@
     <div class="flex items-center justify-end gap-1">
       <%# Editar %>
       <%= link_to edit_admin_modulo_path(modulo),
-        data: { turbo_frame: "modal" },
+        data: { controller: "modal-link", action: "click->modal-link#open", turbo: "false" },
         title: "Editar",
         class: "p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -6,10 +6,21 @@ module Universidade
 
     has_many :progressos, class_name: "Universidade::Progresso", foreign_key: :artigo_id, dependent: :destroy
     has_many :comentarios, class_name: "Universidade::Comentario", foreign_key: :artigo_id, dependent: :destroy
+    has_many :feedbacks, class_name: "Universidade::Feedback", foreign_key: :artigo_id, dependent: :destroy
+
+    attribute :rascunho, :boolean, default: false
 
     validates :titulo, presence: true
 
     scope :visivel, -> { where(visivel: true) }
+
+    def publicado?
+      !rascunho? && visivel?
+    end
+
+    def despublicado?
+      !rascunho? && !visivel?
+    end
 
     # Slug humanizado para URLs amigáveis (ex: "1-introducao-ao-activerecord").
     def to_param

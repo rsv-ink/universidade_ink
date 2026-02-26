@@ -1,5 +1,15 @@
 <tr id="artigo_<%= artigo.id %>"
-    class="transition-opacity <%= artigo.visivel? ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 opacity-60 hover:opacity-80' %>">
+    data-sortable-id="<%= artigo.id %>"
+    class="transition-opacity bg-white hover:bg-gray-50 <%= 'opacity-60 hover:opacity-80' unless artigo.visivel? %>">
+
+  <%# Drag handle %>
+  <td class="px-4 py-3">
+    <div data-sortable-handle class="cursor-move text-gray-400 hover:text-gray-600">
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"/>
+      </svg>
+    </div>
+  </td>
 
   <%# Ordem %>
   <td class="px-4 py-3">
@@ -16,6 +26,25 @@
       </span>
       <% if artigo.tempo_estimado_minutos.present? && artigo.tempo_estimado_minutos > 0 %>
         <span class="text-xs text-gray-400">(<%= artigo.tempo_estimado_minutos %> min)</span>
+      <% end %>
+      <% if artigo.rascunho? %>
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200">
+          Rascunho
+        </span>
+      <% else %>
+        <%= form_with url: toggle_visivel_admin_artigo_path(artigo), method: :patch, class: "inline-flex" do %>
+          <% if artigo.publicado? %>
+            <button type="submit" title="Clique para despublicar"
+                    class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-green-100 text-green-700 hover:bg-green-200">
+              Publicado
+            </button>
+          <% else %>
+            <button type="submit" title="Clique para publicar"
+                    class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
+              Despublicado
+            </button>
+          <% end %>
+        <% end %>
       <% end %>
     </div>
   </td>
