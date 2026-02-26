@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Universidade
 
 Rails Engine para gestão universitária, empacotado como gem.
@@ -67,3 +68,6 @@ Contribuições são bem-vindas!
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+=======
+# universidade_ink
+>>>>>>> 34d7c31e3a3653032cc2957047d77ed715d06cea
