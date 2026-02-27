@@ -1,6 +1,6 @@
 <%= form_with model: trilha,
   url: trilha.new_record? ? admin_trilhas_path : admin_trilha_path(trilha),
-  data: { turbo_stream: true },
+  data: { turbo_stream: true, action: "turbo:submit-end->modal#close turbo:submit-end->modal#reloadOnSuccess" },
   class: "space-y-5" do |f| %>
 
   <input type="hidden" name="from_curso_id" value="<%= local_assigns[:from_curso_id] %>">

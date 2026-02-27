@@ -13,6 +13,7 @@ module Universidade
     serialize :tags, coder: JSON
 
     scope :visivel, -> { where(visivel: true, rascunho: false) }
+    scope :buscar, ->(q) { where("lower(nome) LIKE lower(:q) OR lower(COALESCE(descricao,'')) LIKE lower(:q)", q: "%#{q}%") }
 
     def publicado?
       !rascunho? && visivel?

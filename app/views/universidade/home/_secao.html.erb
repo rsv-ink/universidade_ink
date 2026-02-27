@@ -1,0 +1,165 @@
+<section class="mb-10">
+
+  <%# Título da seção %>
+  <% if secao.titulo.present? || secao.subtitulo.present? %>
+    <div class="mb-6">
+      <% if secao.titulo.present? %>
+        <h2 class="text-2xl font-bold text-gray-900"><%= secao.titulo %></h2>
+        <div class="mt-2 w-10 h-0.5 bg-pink-500 rounded-full"></div>
+      <% end %>
+      <% if secao.subtitulo.present? %>
+        <p class="text-sm text-gray-500 mt-2"><%= secao.subtitulo %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if secao.imagem_tipo? %>
+
+    <%# ── Seção de imagem ──────────────────────────────────── %>
+    <% if secao.imagens.attached? %>
+      <% imagens = secao.imagens_ordenadas %>
+      <% if secao.layout_exibicao == "carrossel" %>
+        <%
+          colunas = secao.colunas_galeria.to_i
+          colunas = 3 unless [1, 2, 3, 4].include?(colunas)
+          steps = [imagens.size, 1].max
+        %>
+        <div class="imagem-carrossel" data-controller="carrossel" data-carrossel-visible-value="<%= colunas %>" style="--carrossel-visible: <%= colunas %>">
+          <div class="carrossel-viewport">
+            <div class="carrossel-track" data-carrossel-target="track">
+              <% imagens.each do |img| %>
+                <div class="carrossel-slide">
+                  <% link = secao.imagens_links&.dig(img.blob_id.to_s) %>
+                  <% if link.present? %>
+                    <%= link_to link, target: "_blank", rel: "noopener" do %>
+                      <%= image_tag main_app.url_for(img), alt: secao.titulo.to_s %>
+                    <% end %>
+                  <% else %>
+                    <%= image_tag main_app.url_for(img), alt: secao.titulo.to_s %>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <% if steps > 1 %>
+            <button class="carrossel-btn carrossel-btn-prev" data-action="click->carrossel#prev" type="button"></button>
+            <button class="carrossel-btn carrossel-btn-next" data-action="click->carrossel#next" type="button"></button>
+            <div class="carrossel-dots">
+              <% steps.times do |i| %>
+                <button class="carrossel-dot <%= "active" if i.zero? %>"
+                        data-carrossel-target="dot"
+                        data-index="<%= i %>"
+                        data-action="click->carrossel#dot"
+                        type="button"></button>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <%
+          colunas = secao.colunas_galeria.to_i
+          colunas = 3 unless [1, 2, 3, 4].include?(colunas)
+          grid_classes = case colunas
+                         when 1 then "grid-cols-1"
+                         when 2 then "grid-cols-1 sm:grid-cols-2"
+                         when 4 then "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+                         else "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                         end
+        %>
+        <div class="imagem-galeria <%= grid_classes %>">
+          <% imagens.each do |img| %>
+            <% link = secao.imagens_links&.dig(img.blob_id.to_s) %>
+            <% if link.present? %>
+              <%= link_to link, target: "_blank", rel: "noopener", class: "block transition-transform hover:scale-[1.02]" do %>
+                <%= image_tag main_app.url_for(img), alt: secao.titulo.to_s, class: "rounded-lg border border-gray-200 object-cover w-full h-full" %>
+              <% end %>
+            <% else %>
+              <%= image_tag main_app.url_for(img), alt: secao.titulo.to_s, class: "rounded-lg border border-gray-200 object-cover w-full h-full" %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="w-full h-40 rounded-xl bg-gray-100 flex items-center justify-center border border-gray-200">
+        <p class="text-gray-400 text-sm">Imagem não configurada.</p>
+      </div>
+    <% end %>
+
+  <% else %>
+
+    <%# ── Seção de conteúdo ────────────────────────────────── %>
+    <%
+      itens = secao.secao_itens
+                   .sort_by { |si| si.ordem || 0 }
+                   .map(&:item)
+                   .compact
+                   .select { |i| i.visivel? && !i.rascunho? }
+    %>
+
+    <% if itens.any? %>
+      <% if secao.layout_exibicao == "carrossel" %>
+        <%
+          colunas = secao.colunas_galeria.to_i
+          colunas = 3 unless [1, 2, 3, 4].include?(colunas)
+          steps = [itens.size, 1].max
+        %>
+        <div class="imagem-carrossel" data-controller="carrossel" data-carrossel-visible-value="<%= colunas %>" style="--carrossel-visible: <%= colunas %>">
+          <div class="carrossel-viewport">
+            <div class="carrossel-track" data-carrossel-target="track">
+              <% itens.each do |item| %>
+                <div class="carrossel-slide">
+                  <div>
+                    <% if item.is_a?(Universidade::Curso) %>
+                      <%= render "curso_card", curso: item %>
+                    <% elsif item.is_a?(Universidade::Artigo) %>
+                      <%= render "artigo_item", artigo: item %>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <% if steps > 1 %>
+            <button class="carrossel-btn carrossel-btn-prev" data-action="click->carrossel#prev" type="button"></button>
+            <button class="carrossel-btn carrossel-btn-next" data-action="click->carrossel#next" type="button"></button>
+            <div class="carrossel-dots">
+              <% steps.times do |i| %>
+                <button class="carrossel-dot <%= "active" if i.zero? %>"
+                        data-carrossel-target="dot"
+                        data-index="<%= i %>"
+                        data-action="click->carrossel#dot"
+                        type="button"></button>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <%
+          colunas = secao.colunas_galeria.to_i
+          colunas = 3 unless [1, 2, 3, 4].include?(colunas)
+          grid_classes = case colunas
+                         when 1 then "grid-cols-1"
+                         when 2 then "grid-cols-1 sm:grid-cols-2"
+                         when 4 then "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+                         else "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                         end
+        %>
+        <div class="grid <%= grid_classes %> gap-4">
+          <% itens.each do |item| %>
+            <% if item.is_a?(Universidade::Curso) %>
+              <%= render "curso_card", curso: item %>
+            <% elsif item.is_a?(Universidade::Artigo) %>
+              <%= render "artigo_item", artigo: item %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="py-10 text-center bg-white rounded-xl border border-gray-200">
+        <p class="text-gray-400 text-sm">Nenhum item visível nesta seção.</p>
+      </div>
+    <% end %>
+
+  <% end %>
+
+</section>

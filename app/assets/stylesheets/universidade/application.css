@@ -961,8 +961,13 @@
 .imagem-carrossel,
 .block-imagem--carrossel {
   position: relative;
-  border-radius: 8px;
-  overflow: hidden;
+}
+
+.imagem-carrossel {
+  background: #f9fafb;
+}
+
+.block-imagem--carrossel {
   background: #000;
 }
 
@@ -975,17 +980,35 @@
   display: flex;
   transition: transform 0.35s ease;
   will-change: transform;
+  margin-left: -8px;
+  margin-right: -8px;
 }
 
 .carrossel-slide {
-  min-width: 100%;
+  min-width: calc(100% / var(--carrossel-visible, 1));
+  flex: 0 0 calc(100% / var(--carrossel-visible, 1));
+  padding: 8px 8px 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.carrossel-slide img {
+.carrossel-slide > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.carrossel-slide > div > * {
+  flex: 1;
+}
+
+.imagem-carrossel .carrossel-slide img,
+.block-imagem--carrossel .carrossel-slide img {
   width: 100%;
   height: 300px;
   object-fit: cover;
   display: block;
+  border-radius: 8px;
 }
 
 .carrossel-btn {
@@ -1010,6 +1033,10 @@
 }
 
 .carrossel-btn::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -58%);
   font-size: 1.375rem;
   line-height: 1;
   color: white;
@@ -1019,16 +1046,20 @@
 .carrossel-btn-next::before { content: "›"; }
 
 .carrossel-btn:hover { background: rgba(219,39,119,0.95); }
-.carrossel-btn-prev  { left: 10px; }
-.carrossel-btn-next  { right: 10px; }
+.carrossel-btn-prev  { left: -20px; }
+.carrossel-btn-next  { right: -20px; }
+
+@media (max-width: 768px) {
+  .carrossel-btn-prev  { left: 0; }
+  .carrossel-btn-next  { right: 0; }
+}
 
 .carrossel-dots {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: static;
   display: flex;
+  justify-content: center;
   gap: 6px;
+  margin-top: 8px;
   z-index: 2;
 }
 
@@ -1036,7 +1067,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.5);
+  background: rgba(17,24,39,0.35);
   border: none;
   cursor: pointer;
   padding: 0;
@@ -1044,7 +1075,7 @@
 }
 
 .carrossel-dot.active {
-  background: white;
+  background: #111827;
   transform: scale(1.25);
 }
 
@@ -1054,7 +1085,7 @@
 .galeria-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 6px;
+  gap: 16px;
 }
 
 .imagem-galeria img,
@@ -1062,7 +1093,7 @@
   width: 100%;
   aspect-ratio: 4/3;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #e5e7eb;
   display: block;
 }

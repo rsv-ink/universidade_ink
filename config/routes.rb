@@ -12,12 +12,25 @@ Universidade::Engine.routes.draw do
     end
   end
 
+  get "busca", to: "busca#index", as: :busca
+
   # Área administrativa
   namespace :admin do
     root to: "cursos#index"
 
+    get "busca", to: "busca#index", as: :busca
+
     post :rich_image_upload, to: "uploads#image"
-    
+
+    resources :secoes, path: :lp do
+      collection { patch :reorder }
+      member do
+        patch :toggle_visivel
+        patch :mover_acima
+        patch :mover_abaixo
+      end
+    end
+
     resources :cursos do
       collection { patch :reorder }
       member do

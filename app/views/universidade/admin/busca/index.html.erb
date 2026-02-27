@@ -1,0 +1,335 @@
+<div class="px-6 py-6 max-w-7xl mx-auto">
+
+  <%# ── Header ── %>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Busca</h1>
+      <% if @q.present? %>
+        <p class="text-sm text-gray-500 mt-0.5">Resultados para <span class="font-medium text-gray-700">"<%= @q %>"</span></p>
+      <% end %>
+    </div>
+    <%= link_to admin_root_path, class: "text-sm text-gray-500 hover:text-pink-600 transition-colors flex items-center gap-1" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Voltar ao conteúdo
+    <% end %>
+  </div>
+
+  <%# ── Campo para refinar busca ── %>
+  <%= form_with url: admin_busca_path, method: :get, local: true,
+        class: "flex items-center gap-2 mb-6 w-full" do |f| %>
+    <%= f.search_field :q, value: @q, placeholder: "Buscar cursos, módulos, trilhas e artigos...",
+          autofocus: true,
+          class: "flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent" %>
+    <button type="submit"
+            class="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium rounded-lg transition-colors border border-gray-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+      </svg>
+      Buscar
+    </button>
+  <% end %>
+
+  <% if @q.blank? %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-8 py-16 text-center text-gray-400">
+      <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+      </svg>
+      <p class="text-sm">Digite um termo na barra de busca acima para encontrar conteúdo.</p>
+    </div>
+  <% else %>
+
+    <%# ── Verifica se há resultados em todos os grupos ── %>
+    <% sem_resultados = @cursos.empty? && @modulos.empty? && @trilhas.empty? && @artigos.empty? %>
+
+    <% if sem_resultados %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-8 py-16 text-center text-gray-400">
+        <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-sm font-medium text-gray-500 mb-1">Nenhum resultado encontrado</p>
+        <p class="text-xs">Tente palavras diferentes ou verifique a ortografia.</p>
+      </div>
+    <% else %>
+
+      <%# helper para badges de status reutilizável %>
+      <% status_badge = ->(item) do %>
+        <% if item.rascunho? %>
+          <span class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Rascunho</span>
+        <% elsif item.publicado? %>
+          <span class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Publicado</span>
+        <% else %>
+          <span class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Despublicado</span>
+        <% end %>
+      <% end %>
+
+      <%# ── Cursos ── %>
+      <% if @cursos.any? %>
+        <section class="mb-8">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xs font-semibold text-pink-600 uppercase tracking-wider bg-pink-50 px-2.5 py-1 rounded-full">Cursos</span>
+            <span class="text-xs text-gray-400"><%= @cursos.size %> resultado(s)</span>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <table class="w-full text-sm text-left text-gray-600">
+              <thead class="text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-4 py-3">Nome</th>
+                  <th class="px-4 py-3 w-36 text-center">Status</th>
+                  <th class="px-4 py-3 w-28 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <% @cursos.each do |curso| %>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-pink-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                        <span class="font-medium text-gray-900"><%= curso.nome %></span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-center"><%= status_badge.call(curso) %></td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center justify-end gap-1">
+                        <%= link_to edit_admin_curso_path(curso),
+                              data: { controller: "modal-link", action: "click->modal-link#open", turbo: "false" },
+                              title: "Editar",
+                              class: "p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" do %>
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                          </svg>
+                        <% end %>
+                        <%= link_to admin_curso_path(curso),
+                              data: { turbo_method: :delete, turbo_confirm: "Excluir o curso \"#{curso.nome}\"? Esta ação não pode ser desfeita." },
+                              title: "Excluir",
+                              class: "p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" do %>
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      <% end %>
+
+      <%# ── Módulos ── %>
+      <% if @modulos.any? %>
+        <section class="mb-8">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xs font-semibold text-violet-600 uppercase tracking-wider bg-violet-50 px-2.5 py-1 rounded-full">Módulos</span>
+            <span class="text-xs text-gray-400"><%= @modulos.size %> resultado(s)</span>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <table class="w-full text-sm text-left text-gray-600">
+              <thead class="text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-4 py-3">Nome</th>
+                  <th class="px-4 py-3 w-44 text-gray-400 font-normal">Curso pai</th>
+                  <th class="px-4 py-3 w-36 text-center">Status</th>
+                  <th class="px-4 py-3 w-28 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <% @modulos.each do |modulo| %>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-violet-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        <span class="font-medium text-gray-900"><%= modulo.nome %></span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-xs text-gray-400">
+                      <% if modulo.curso %>
+                        <%= link_to modulo.curso.nome, edit_admin_curso_path(modulo.curso),
+                              data: { controller: "modal-link", action: "click->modal-link#open", turbo: "false" },
+                              class: "hover:text-pink-600 transition-colors" %>
+                      <% else %>
+                        <span class="italic">avulso</span>
+                      <% end %>
+                    </td>
+                    <td class="px-4 py-3 text-center"><%= status_badge.call(modulo) %></td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center justify-end gap-1">
+                        <%= link_to edit_admin_modulo_path(modulo),
+                              data: { controller: "modal-link", action: "click->modal-link#open", turbo: "false" },
+                              title: "Editar",
+                              class: "p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" do %>
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                          </svg>
+                        <% end %>
+                        <%= link_to admin_modulo_path(modulo),
+                              data: { turbo_method: :delete, turbo_confirm: "Excluir o módulo \"#{modulo.nome}\"? Esta ação não pode ser desfeita." },
+                              title: "Excluir",
+                              class: "p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" do %>
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      <% end %>
+
+      <%# ── Trilhas ── %>
+      <% if @trilhas.any? %>
+        <section class="mb-8">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider bg-blue-50 px-2.5 py-1 rounded-full">Trilhas</span>
+            <span class="text-xs text-gray-400"><%= @trilhas.size %> resultado(s)</span>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <table class="w-full text-sm text-left text-gray-600">
+              <thead class="text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-4 py-3">Nome</th>
+                  <th class="px-4 py-3 w-52 text-gray-400 font-normal">Módulo / Curso</th>
+                  <th class="px-4 py-3 w-36 text-center">Status</th>
+                  <th class="px-4 py-3 w-28 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <% @trilhas.each do |trilha| %>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span class="font-medium text-gray-900"><%= trilha.nome %></span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-xs text-gray-400">
+                      <% if trilha.modulo %>
+                        <span><%= trilha.modulo.nome %></span>
+                        <% if trilha.modulo.curso %>
+                          <span class="mx-1">›</span>
+                          <span><%= trilha.modulo.curso.nome %></span>
+                        <% end %>
+                      <% else %>
+                        <span class="italic">avulsa</span>
+                      <% end %>
+                    </td>
+                    <td class="px-4 py-3 text-center"><%= status_badge.call(trilha) %></td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center justify-end gap-1">
+                        <%= link_to edit_admin_trilha_path(trilha),
+                              data: { controller: "modal-link", action: "click->modal-link#open", turbo: "false" },
+                              title: "Editar",
+                              class: "p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" do %>
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                          </svg>
+                        <% end %>
+                        <%= link_to admin_trilha_path(trilha),
+                              data: { turbo_method: :delete, turbo_confirm: "Excluir a trilha \"#{trilha.nome}\"? Esta ação não pode ser desfeita." },
+                              title: "Excluir",
+                              class: "p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" do %>
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      <% end %>
+
+      <%# ── Artigos ── %>
+      <% if @artigos.any? %>
+        <section class="mb-8">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xs font-semibold text-teal-600 uppercase tracking-wider bg-teal-50 px-2.5 py-1 rounded-full">Artigos</span>
+            <span class="text-xs text-gray-400"><%= @artigos.size %> resultado(s)</span>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <table class="w-full text-sm text-left text-gray-600">
+              <thead class="text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-4 py-3">Título</th>
+                  <th class="px-4 py-3 w-52 text-gray-400 font-normal">Trilha / Módulo / Curso</th>
+                  <th class="px-4 py-3 w-36 text-center">Status</th>
+                  <th class="px-4 py-3 w-28 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <% @artigos.each do |artigo| %>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span class="font-medium text-gray-900"><%= artigo.titulo %></span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-xs text-gray-400">
+                      <% if artigo.trilha %>
+                        <span><%= artigo.trilha.nome %></span>
+                        <% if artigo.trilha.modulo %>
+                          <span class="mx-1">›</span>
+                          <span><%= artigo.trilha.modulo.nome %></span>
+                          <% if artigo.trilha.modulo.curso %>
+                            <span class="mx-1">›</span>
+                            <span><%= artigo.trilha.modulo.curso.nome %></span>
+                          <% end %>
+                        <% end %>
+                      <% else %>
+                        <span class="italic">avulso</span>
+                      <% end %>
+                    </td>
+                    <td class="px-4 py-3 text-center"><%= status_badge.call(artigo) %></td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center justify-end gap-1">
+                        <%= link_to edit_admin_artigo_path(artigo),
+                              data: { turbo_frame: "_top" },
+                              title: "Editar",
+                              class: "p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" do %>
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                          </svg>
+                        <% end %>
+                        <%= link_to admin_artigo_path(artigo),
+                              data: { turbo_method: :delete, turbo_confirm: "Excluir o artigo \"#{artigo.titulo}\"? Esta ação não pode ser desfeita." },
+                              title: "Excluir",
+                              class: "p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" do %>
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      <% end %>
+
+    <% end %>
+  <% end %>
+</div>

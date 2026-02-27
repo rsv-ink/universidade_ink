@@ -1,6 +1,6 @@
 <%# ── Header ──────────────────────────────────────────────────── %>
 <div class="px-6 py-6 max-w-7xl mx-auto">
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex items-center justify-between mb-4">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Conteúdo</h1>
     </div>
@@ -23,6 +23,20 @@
       <% end %>
     </div>
   </div>
+
+  <%# ── Busca de conteúdo ── %>
+  <%= form_with url: admin_busca_path, method: :get, local: true,
+        class: "flex items-center gap-2 mb-6" do |f| %>
+    <%= f.search_field :q, placeholder: "Buscar cursos, módulos, trilhas e artigos...",
+          class: "text-sm border border-gray-200 rounded-lg px-3 py-2 w-80 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent" %>
+    <button type="submit"
+            class="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium rounded-lg transition-colors border border-gray-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+      </svg>
+      Buscar
+    </button>
+  <% end %>
 
   <%# ── Tabela hierárquica ───────────────────────────────────── %>
   <div class="flex items-center justify-between mb-4">
@@ -195,6 +209,17 @@
                 <%# Ações %>
                 <td class="px-4 py-3">
                   <div class="flex items-center justify-end gap-1">
+
+                    <%# Ver no site %>
+                    <%= link_to artigo_path(artigo),
+                          target: "_blank",
+                          title: "Ver no site",
+                          class: "p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors" do %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    <% end %>
+
                     <%# Editar %>
                     <%= link_to edit_admin_artigo_path(artigo),
                           data: { turbo_frame: "_top" },

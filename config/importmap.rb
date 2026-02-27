@@ -13,7 +13,8 @@ pin "controllers/modal_link_controller", to: "universidade/controllers/modal_lin
 pin "controllers/sortable_controller",  to: "universidade/controllers/sortable_controller.js"
 pin "controllers/hierarchical_sortable_controller", to: "universidade/controllers/hierarchical_sortable_controller.js"
 pin "controllers/sidebar_controller",  to: "universidade/controllers/sidebar_controller.js"
-pin "controllers/carrossel_controller", to: "universidade/controllers/carrossel_controller.js"
+pin "controllers/carrossel_controller",   to: "universidade/controllers/carrossel_controller.js"
+pin "controllers/secao_form_controller", to: "universidade/controllers/secao_form_controller.js"
 
 # Sortable.js — drag & drop
 pin "sortablejs", to: "https://esm.sh/sortablejs@1.15.6?bundle"

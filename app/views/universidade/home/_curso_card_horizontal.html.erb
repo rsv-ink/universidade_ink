@@ -3,19 +3,22 @@
   progresso_pct = (progresso * 100).round
 %>
 
-<%= link_to curso_path(curso), class: "group flex flex-col justify-center h-full bg-white rounded-xl border border-gray-200 hover:border-pink-300 hover:shadow-md transition-all overflow-hidden" do %>
+<%= link_to curso_path(curso), class: "group flex items-stretch bg-white rounded-xl border border-gray-200 hover:border-pink-300 hover:shadow-md transition-all overflow-hidden" do %>
 
-  <%# Imagem do curso %>
+  <%# Imagem à esquerda %>
   <% if curso.imagem.attached? %>
-    <div class="w-full overflow-hidden bg-gray-100">
-      <%= image_tag main_app.url_for(curso.imagem), class: "w-full h-auto group-hover:scale-105 transition-transform duration-300" %>
+    <div class="w-40 sm:w-48 flex-shrink-0 overflow-hidden bg-gray-100">
+      <%= image_tag main_app.url_for(curso.imagem),
+            class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" %>
     </div>
   <% end %>
 
-  <div class="p-5">
+  <%# Conteúdo à direita %>
+  <div class="flex-1 p-5 flex flex-col min-w-0">
+
     <%# Tags %>
     <% if curso.tags.any? %>
-      <div class="flex flex-wrap gap-1 mb-3">
+      <div class="flex flex-wrap gap-1 mb-2">
         <% curso.tags.each do |tag| %>
           <%= badge_component(color: :blue, size: :xs, shape: :pill) { tag } %>
         <% end %>
@@ -29,9 +32,9 @@
 
     <%# Descrição %>
     <% if curso.descricao.present? %>
-      <p class="text-sm text-gray-500 line-clamp-2 mb-4"><%= curso.descricao %></p>
+      <p class="text-sm text-gray-500 line-clamp-2 mb-3 flex-1"><%= curso.descricao %></p>
     <% else %>
-      <div class="mb-4"></div>
+      <div class="flex-1"></div>
     <% end %>
 
     <%# Barra de progresso %>
@@ -49,6 +52,7 @@
         </div>
       </div>
     <% end %>
+
   </div>
 
 <% end %>

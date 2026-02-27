@@ -8,6 +8,7 @@ import SortableController      from "controllers/sortable_controller"
 import HierarchicalSortableController from "controllers/hierarchical_sortable_controller"
 import SidebarController       from "controllers/sidebar_controller"
 import CarrosselController     from "controllers/carrossel_controller"
+import SecaoFormController    from "controllers/secao_form_controller"
 
 const application = Application.start()
 
@@ -24,5 +25,6 @@ application.register("sortable",       SortableController)
 application.register("hierarchical-sortable", HierarchicalSortableController)
 application.register("sidebar",        SidebarController)
 application.register("carrossel",      CarrosselController)
+application.register("secao-form",    SecaoFormController)
 
 export { application }

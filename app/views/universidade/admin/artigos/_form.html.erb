@@ -5,6 +5,7 @@
       class: "min-h-screen bg-gray-50" do |f| %>
 
   <input type="hidden" name="from_curso_id" value="<%= local_assigns[:from_curso_id] %>">
+  <%= f.hidden_field :trilha_id %>
 
   <%# ── Barra superior fixa ──────────────────────────────────────────── %>
   <div class="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">

@@ -13,10 +13,21 @@ module Universidade
         @trilha = Trilha.new(trilha_params)
         apply_status_action(@trilha)
         if @trilha.save
-          redirect_to admin_root_path, notice: "Trilha criada com sucesso."
+          respond_to do |format|
+            format.turbo_stream do
+              render turbo_stream: turbo_stream.replace("modal-content", "")
+            end
+            format.html { redirect_to admin_root_path, notice: "Trilha criada com sucesso." }
+          end
         else
           @modulos = Modulo.order(:nome)
-          render :new, status: :unprocessable_entity
+          respond_to do |format|
+            format.turbo_stream do
+              html = render_to_string(:new, formats: [:html], layout: false)
+              render turbo_stream: turbo_stream.replace("modal-content", html), status: :unprocessable_entity
+            end
+            format.html { render :new, status: :unprocessable_entity }
+          end
         end
       end
 
@@ -29,10 +40,21 @@ module Universidade
         @trilha.assign_attributes(trilha_params)
         apply_status_action(@trilha)
         if @trilha.save
-          redirect_to admin_root_path, notice: "Trilha atualizada com sucesso."
+          respond_to do |format|
+            format.turbo_stream do
+              render turbo_stream: turbo_stream.replace("modal-content", "")
+            end
+            format.html { redirect_to admin_root_path, notice: "Trilha atualizada com sucesso." }
+          end
         else
           @modulos = Modulo.order(:nome)
-          render :edit, status: :unprocessable_entity
+          respond_to do |format|
+            format.turbo_stream do
+              html = render_to_string(:edit, formats: [:html], layout: false)
+              render turbo_stream: turbo_stream.replace("modal-content", html), status: :unprocessable_entity
+            end
+            format.html { render :edit, status: :unprocessable_entity }
+          end
         end
       end
 

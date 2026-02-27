@@ -1,0 +1,258 @@
+<%# locals: (secao:, cursos:, artigos:, url:) %>
+
+<%= form_with model: secao, url: url, method: (secao.new_record? ? :post : :patch),
+  data: { controller: "secao-form", action: "turbo:submit-end->modal#close turbo:submit-end->modal#reloadOnSuccess" },
+      class: "space-y-5" do |f| %>
+
+  <%# Erros %>
+  <% if secao.errors.any? %>
+    <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm">
+      <ul class="list-disc list-inside space-y-1">
+        <% secao.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# ── Card principal ─────────────────────────────────────── %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
+
+    <%# Título %>
+    <div>
+      <%= f.label :titulo, "Título da seção (opcional)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_field :titulo,
+            placeholder: "Ex: Cursos em destaque",
+            class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" %>
+      <p class="text-xs text-gray-400 mt-1">Deixe em branco para ocultar o título.</p>
+    </div>
+
+    <%# Subtítulo %>
+    <div>
+      <%= f.label :subtitulo, "Subtítulo (opcional)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_field :subtitulo,
+            placeholder: "Ex: Conteúdos recomendados para você",
+            class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" %>
+    </div>
+
+    <%# Tipo de seção %>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de seção</label>
+      <div class="grid grid-cols-2 gap-3">
+        <% [["conteudo", "Conteúdo", "Grade de cursos ou artigos"], ["imagem", "Imagem", "Banner, foto ou ilustração"]].each do |val, label, desc| %>
+          <label class="flex items-start gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:border-pink-400 transition-colors has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50">
+            <%= f.radio_button :tipo, val,
+                  class: "mt-0.5 text-pink-600 focus:ring-pink-500",
+                  data: { action: "change->secao-form#onTipoChange" } %>
+            <div>
+              <p class="text-sm font-medium text-gray-900"><%= label %></p>
+              <p class="text-xs text-gray-500 mt-0.5"><%= desc %></p>
+            </div>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Exibição %>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Exibição</label>
+      <div class="grid grid-cols-2 gap-3">
+        <% [["carrossel", "Carrossel", "Navegação por setas"], ["galeria", "Galeria", "Todos os itens visíveis"]].each do |val, label, desc| %>
+          <label class="flex items-start gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:border-pink-400 transition-colors has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50">
+            <%= f.radio_button :layout_exibicao, val,
+              class: "mt-0.5 text-pink-600 focus:ring-0 focus:outline-none" %>
+            <div>
+              <p class="text-sm font-medium text-gray-900"><%= label %></p>
+              <p class="text-xs text-gray-500 mt-0.5"><%= desc %></p>
+            </div>
+          </label>
+        <% end %>
+      </div>
+
+      <div class="mt-4">
+        <%= f.label :colunas_galeria, "Cards por linha (galeria e carrossel)", class: "block text-sm font-medium text-gray-700 mb-2" %>
+        <div class="grid grid-cols-4 gap-2">
+          <% [1, 2, 3, 4].each do |val| %>
+            <label class="flex items-center justify-center gap-2 p-2 border border-gray-300 rounded-lg cursor-pointer hover:border-pink-400 transition-colors has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50">
+              <%= f.radio_button :colunas_galeria, val, class: "text-pink-600 focus:ring-0 focus:outline-none" %>
+              <span class="text-sm text-gray-900"><%= val %></span>
+            </label>
+          <% end %>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">Aplica-se a secoes de conteudo em galeria e carrossel.</p>
+      </div>
+    </div>
+
+    <%# Força cards quadrados %>
+    <%= f.hidden_field :formato_card, value: "quadrado" %>
+
+    <%# ── Painel: Imagem ──────────────────────────────────── %>
+    <div data-secao-form-target="imagemPanel">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Imagens da seção</label>
+      <% if secao.persisted? && secao.imagens.attached? %>
+        <div class="mb-3">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" data-secao-form-target="imagensList">
+            <% secao.imagens_ordenadas.each do |img| %>
+              <div class="secao-imagem-item relative group bg-gray-50 border border-gray-100 rounded-lg p-2">
+                <%= hidden_field_tag "secao[imagens_ordem][]", img.blob_id %>
+                
+                <div class="relative mb-2">
+                  <div class="absolute top-2 left-2 text-white/70 bg-black/30 rounded-md p-1 cursor-grab active:cursor-grabbing z-10" data-sortable-handle>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 6h.01M9 12h.01M9 18h.01M15 6h.01M15 12h.01M15 18h.01"/>
+                    </svg>
+                  </div>
+                  <%= image_tag main_app.url_for(img),
+                        class: "w-full h-28 rounded-lg border border-gray-200 object-cover" %>
+                </div>
+
+                <div class="mt-2">
+                   <%= text_field_tag "secao[imagens_links][#{img.blob_id}]", 
+                        secao.imagens_links&.dig(img.blob_id.to_s), 
+                        placeholder: "https://exemplo.com",
+                        class: "w-full border border-gray-200 rounded px-2 py-1.5 text-xs focus:ring-pink-500 focus:border-pink-500" %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Arraste para reordenar as imagens.</p>
+        </div>
+      <% end %>
+      <%= f.file_field :imagens, accept: "image/*", multiple: true,
+            class: "w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" %>
+    </div>
+
+    <%# ── Painel: Conteúdo ────────────────────────────────── %>
+    <div data-secao-form-target="conteudoPanel">
+
+      <%# Seleção de itens — Cursos %>
+      <% if cursos.any? %>
+        <div class="mb-5">
+          <p class="text-sm font-medium text-gray-700 mb-2">
+            Cursos
+            <span class="text-xs font-normal text-gray-400 ml-1">(<%= cursos.size %> disponíveis)</span>
+            <span class="text-xs font-normal text-gray-400 ml-2">Arraste para ordenar os selecionados</span>
+          </p>
+          <div class="space-y-1 max-h-52 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50" data-secao-form-target="cursosList">
+            <% cursos.each do |curso| %>
+              <%
+                selected = secao.secao_itens.any? { |si|
+                  si.item_type == "Universidade::Curso" && si.item_id == curso.id
+                }
+              %>
+              <label class="secao-item flex items-center gap-3 p-1.5 rounded-lg cursor-pointer hover:bg-white transition-colors group <%= 'is-selected' if selected %>">
+                <span class="text-gray-300 cursor-grab active:cursor-grabbing" data-sortable-handle>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 6h.01M9 12h.01M9 18h.01M15 6h.01M15 12h.01M15 18h.01"/>
+                  </svg>
+                </span>
+                <input type="checkbox"
+                       name="secao[curso_ids][]"
+                       value="<%= curso.id %>"
+                       <%= "checked" if selected %>
+                       data-action="change->secao-form#toggleSelection"
+                       class="rounded border-gray-300 text-pink-600 focus:ring-pink-500 flex-shrink-0">
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-gray-800 truncate group-hover:text-pink-700 font-medium">
+                    <%= curso.nome %>
+                  </p>
+                  <% if curso.descricao.present? %>
+                    <p class="text-xs text-gray-400 truncate"><%= curso.descricao %></p>
+                  <% end %>
+                </div>
+                <% unless curso.visivel? %>
+                  <span class="text-xs text-gray-400 flex-shrink-0">oculto</span>
+                <% end %>
+              </label>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Seleção de itens — Artigos %>
+      <% if artigos.any? %>
+        <div>
+          <p class="text-sm font-medium text-gray-700 mb-2">
+            Artigos
+            <span class="text-xs font-normal text-gray-400 ml-1">(<%= artigos.size %> disponíveis)</span>
+            <span class="text-xs font-normal text-gray-400 ml-2">Arraste para ordenar os selecionados</span>
+          </p>
+          <div class="space-y-1 max-h-52 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50" data-secao-form-target="artigosList">
+            <% artigos.each do |artigo| %>
+              <%
+                selected = secao.secao_itens.any? { |si|
+                  si.item_type == "Universidade::Artigo" && si.item_id == artigo.id
+                }
+              %>
+              <label class="secao-item flex items-center gap-3 p-1.5 rounded-lg cursor-pointer hover:bg-white transition-colors group <%= 'is-selected' if selected %>">
+                <span class="text-gray-300 cursor-grab active:cursor-grabbing" data-sortable-handle>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 6h.01M9 12h.01M9 18h.01M15 6h.01M15 12h.01M15 18h.01"/>
+                  </svg>
+                </span>
+                <input type="checkbox"
+                       name="secao[artigo_ids][]"
+                       value="<%= artigo.id %>"
+                       <%= "checked" if selected %>
+                       data-action="change->secao-form#toggleSelection"
+                       class="rounded border-gray-300 text-pink-600 focus:ring-pink-500 flex-shrink-0">
+                <p class="text-sm text-gray-800 truncate group-hover:text-pink-700 font-medium">
+                  <%= artigo.titulo %>
+                </p>
+                <% unless artigo.visivel? %>
+                  <span class="text-xs text-gray-400 flex-shrink-0">oculto</span>
+                <% end %>
+              </label>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if cursos.empty? && artigos.empty? %>
+        <p class="text-sm text-gray-400 italic py-4 text-center">
+          Nenhum curso ou artigo cadastrado ainda.
+        </p>
+      <% end %>
+
+    </div><%# /conteudoPanel %>
+
+  </div><%# /card %>
+
+  <%# ── Visibilidade ──────────────────────────────────────── %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between">
+    <div>
+      <p class="text-sm font-medium text-gray-900">Visível na landing page</p>
+      <p class="text-xs text-gray-500 mt-0.5">Quando ativado, esta seção será exibida publicamente.</p>
+    </div>
+    <label class="flex items-center cursor-pointer">
+      <%= f.check_box :visivel, class: "sr-only peer" %>
+      <div class="relative w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-pink-500 rounded-full
+                  peer peer-checked:bg-pink-500
+                  after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                  after:bg-white after:border-gray-300 after:border after:rounded-full
+                  after:h-5 after:w-5 after:transition-all
+                  peer-checked:after:translate-x-full peer-checked:after:border-white">
+      </div>
+    </label>
+  </div>
+
+  <%# ── Botões ─────────────────────────────────────────────── %>
+  <div class="flex justify-end gap-3 pb-6">
+    <% if secao.new_record? %>
+      <button type="button"
+              data-action="click->modal#close"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+        Cancelar
+      </button>
+    <% else %>
+      <%= link_to "Cancelar", admin_secoes_path,
+            class: "px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" %>
+    <% end %>
+    <%= f.submit "Salvar seção",
+          class: "px-6 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors cursor-pointer" %>
+  </div>
+
+<% end %>

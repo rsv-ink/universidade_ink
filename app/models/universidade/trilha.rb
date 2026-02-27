@@ -12,6 +12,7 @@ module Universidade
     attribute :rascunho, :boolean, default: false
 
     scope :visivel, -> { where(visivel: true, rascunho: false) }
+    scope :buscar, ->(q) { where("lower(nome) LIKE lower(?)", "%#{q}%") }
 
     def publicado?
       !rascunho? && visivel?

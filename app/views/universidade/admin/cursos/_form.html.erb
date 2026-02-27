@@ -1,6 +1,6 @@
 <%= form_with model: curso,
   url: curso.new_record? ? admin_cursos_path : admin_curso_path(curso),
-  data: { turbo_stream: true },
+  data: { turbo_stream: true, action: "turbo:submit-end->modal#close turbo:submit-end->modal#reloadOnSuccess" },
   multipart: true,
   class: "space-y-5" do |f| %>
 

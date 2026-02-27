@@ -1,43 +1,44 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["content"]
+  static targets = ["container", "content"]
 
   connect() {
-    this._onKeydown = (e) => {
-      if (e.key === "Escape" && !this.element.hidden) this.close()
-    }
-    document.addEventListener("keydown", this._onKeydown)
-
-    // Auto-hide when content is cleared (e.g. by turbo_stream.update("modal", ""))
-    this._observer = new MutationObserver(() => {
-      if (this.hasContentTarget && this.contentTarget.children.length === 0) {
-        this.element.hidden = true
-        document.body.style.overflow = ""
+    // Observa mudanças no conteúdo — quando receber HTML, abre o modal
+    this.observer = new MutationObserver(() => {
+      if (this.hasContentTarget && this.contentTarget.innerHTML.trim() !== "") {
+        this.open()
       }
     })
-    if (this.hasContentTarget) {
-      this._observer.observe(this.contentTarget, { childList: true })
-    }
+    this.observer.observe(this.contentTarget, { childList: true, subtree: true })
   }
 
   disconnect() {
-    document.removeEventListener("keydown", this._onKeydown)
-    this._observer?.disconnect()
+    this.observer?.disconnect()
   }
 
   open() {
-    this.element.hidden = false
+    this.element.classList.remove("hidden")
     document.body.style.overflow = "hidden"
   }
 
-  close() {
-    this.element.hidden = true
+  close(event) {
+    if (event?.type === "turbo:submit-end" && !event.detail.success) return
+    this.element.classList.add("hidden")
     document.body.style.overflow = ""
-    if (this.hasContentTarget) this.contentTarget.innerHTML = ""
+    setTimeout(() => {
+      if (this.hasContentTarget) this.contentTarget.innerHTML = ""
+    }, 200)
   }
 
-  closeBackdrop(event) {
-    if (event.target === event.currentTarget) this.close()
+  closeOnOverlay(event) {
+    if (event.target === this.element) {
+      this.close()
+    }
+  }
+
+  reloadOnSuccess(event) {
+    if (!event.detail.success) return
+    window.location.reload()
   }
 }

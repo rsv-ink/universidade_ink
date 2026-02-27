@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_26_150002) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_27_180001) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -118,6 +118,32 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_26_150002) do
     t.index ["trilha_id"], name: "index_universidade_progressos_on_trilha_id"
   end
 
+  create_table "universidade_secao_itens", force: :cascade do |t|
+    t.integer "secao_id", null: false
+    t.string "item_type", null: false
+    t.integer "item_id", null: false
+    t.integer "ordem"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_type", "item_id"], name: "index_universidade_secao_itens_on_item_type_and_item_id"
+    t.index ["secao_id"], name: "index_universidade_secao_itens_on_secao_id"
+  end
+
+  create_table "universidade_secoes", force: :cascade do |t|
+    t.string "titulo", default: "", null: false
+    t.string "tipo", default: "conteudo", null: false
+    t.string "formato_card", default: "quadrado", null: false
+    t.integer "ordem"
+    t.boolean "visivel", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "subtitulo"
+    t.string "layout_exibicao", default: "galeria", null: false
+    t.integer "colunas_galeria", default: 3, null: false
+    t.text "imagens_ordem"
+    t.text "imagens_links", default: "{}"
+  end
+
   create_table "universidade_trilhas", force: :cascade do |t|
     t.integer "modulo_id"
     t.string "nome", null: false
@@ -140,5 +166,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_26_150002) do
   add_foreign_key "universidade_modulos", "universidade_cursos", column: "curso_id", on_delete: :nullify
   add_foreign_key "universidade_progressos", "universidade_artigos", column: "artigo_id", on_delete: :cascade
   add_foreign_key "universidade_progressos", "universidade_trilhas", column: "trilha_id", on_delete: :cascade
+  add_foreign_key "universidade_secao_itens", "universidade_secoes", column: "secao_id"
   add_foreign_key "universidade_trilhas", "universidade_modulos", column: "modulo_id", on_delete: :nullify
 end

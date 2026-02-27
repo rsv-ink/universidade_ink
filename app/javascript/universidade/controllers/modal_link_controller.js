@@ -8,7 +8,7 @@ export default class extends Controller {
     const url = event.currentTarget.href || event.currentTarget.dataset.url
     if (!url) return
 
-    const modalEl = document.getElementById("admin-modal")
+    const modalEl = document.getElementById("modal") || document.getElementById("admin-modal")
     if (!modalEl) return
 
     fetch(url, {

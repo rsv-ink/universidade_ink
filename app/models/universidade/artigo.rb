@@ -13,6 +13,7 @@ module Universidade
     validates :titulo, presence: true
 
     scope :visivel, -> { where(visivel: true) }
+    scope :buscar, ->(q) { where("lower(titulo) LIKE lower(?)", "%#{q}%") }
 
     def publicado?
       !rascunho? && visivel?

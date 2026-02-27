@@ -2,6 +2,13 @@ module Universidade
   class Engine < ::Rails::Engine
     isolate_namespace Universidade
 
+    # Inflexão portuguesa: secao → secoes (Rails usa inglês por padrão)
+    initializer "universidade.inflections" do
+      ActiveSupport::Inflector.inflections(:en) do |inflect|
+        inflect.irregular "secao", "secoes"
+      end
+    end
+
     config.generators do |g|
       g.test_framework :rspec
       g.fixture_replacement :factory_bot
