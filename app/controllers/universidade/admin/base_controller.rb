@@ -7,7 +7,7 @@ module Universidade
       private
 
       def authenticate_admin!
-        return if admin_user?(current_user)
+        return if admin_user?(Universidade.current_user(self))
 
         redirect_to main_app.root_path, alert: "Acesso negado"
       end
