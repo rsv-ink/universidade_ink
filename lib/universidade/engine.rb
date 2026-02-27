@@ -30,8 +30,10 @@ module Universidade
       ]
     end
 
-    # Configure importmap paths
+    # Configure importmap paths when the host app uses importmap-rails.
     initializer "universidade.importmap", before: "importmap" do |app|
+      next unless app.config.respond_to?(:importmap) && app.config.importmap
+
       app.config.importmap.paths << root.join("config/importmap.rb")
       app.config.importmap.cache_sweepers << root.join("app/javascript")
     end
