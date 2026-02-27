@@ -7,6 +7,8 @@ module Universidade
     has_many :trilhas, class_name: "Universidade::Trilha", foreign_key: :modulo_id, dependent: :nullify
 
     validates :nome, presence: true
+    validates :user_id, presence: true
+    validates :store_id, presence: true
 
     attribute :rascunho, :boolean, default: false
 
@@ -21,16 +23,16 @@ module Universidade
       !rascunho? && !visivel?
     end
 
-    # Retorna a fração de trilhas concluídas pelo lojista (0.0 a 1.0).
+    # Retorna a fração de trilhas concluídas pelo usuario (0.0 a 1.0).
     # Uma trilha é considerada concluída quando todos os seus artigos visíveis foram concluídos.
-    def progresso(lojista_id)
-      return 0.0 unless lojista_id
+    def progresso(user_id, store_id)
+      return 0.0 unless user_id && store_id
       
       trilhas_visiveis = trilhas.visivel
       total = trilhas_visiveis.count
       return 0.0 if total.zero?
 
-      concluidas = trilhas_visiveis.count { |trilha| trilha.concluida?(lojista_id) }
+      concluidas = trilhas_visiveis.count { |trilha| trilha.concluida?(user_id, store_id) }
       concluidas.to_f / total
     end
   end

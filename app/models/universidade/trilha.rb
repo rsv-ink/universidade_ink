@@ -8,6 +8,8 @@ module Universidade
     has_many :progressos, class_name: "Universidade::Progresso", foreign_key: :trilha_id, dependent: :destroy
 
     validates :nome, presence: true
+    validates :user_id, presence: true
+    validates :store_id, presence: true
 
     attribute :rascunho, :boolean, default: false
 
@@ -27,30 +29,30 @@ module Universidade
       "#{id}-#{nome.parameterize}"
     end
 
-    # Retorna a fração de artigos visíveis concluídos pelo lojista nesta trilha (0.0 a 1.0).
-    def progresso_lojista(lojista_id)
-      return 0.0 unless lojista_id
+    # Retorna a fração de artigos visíveis concluídos pelo usuario nesta trilha (0.0 a 1.0).
+    def progresso_lojista(user_id, store_id)
+      return 0.0 unless user_id && store_id
 
       total = artigos.visivel.count
       return 0.0 if total.zero?
 
       concluidos = artigos.visivel
                           .joins(:progressos)
-                          .where(universidade_progressos: { lojista_id: lojista_id })
+                          .where(universidade_progressos: { user_id: user_id, store_id: store_id })
                           .where.not(universidade_progressos: { concluido_em: nil })
                           .count
 
       concluidos.to_f / total
     end
 
-    # Retorna true se todos os artigos visíveis da trilha foram concluídos pelo lojista.
-    def concluida?(lojista_id)
+    # Retorna true se todos os artigos visíveis da trilha foram concluídos pelo usuario.
+    def concluida?(user_id, store_id)
       total = artigos.visivel.count
       return false if total.zero?
 
       concluidos = artigos.visivel
                           .joins(:progressos)
-                          .where(universidade_progressos: { lojista_id: lojista_id })
+                          .where(universidade_progressos: { user_id: user_id, store_id: store_id })
                           .where.not(universidade_progressos: { concluido_em: nil })
                           .count
 

@@ -5,19 +5,20 @@ module Universidade
 
     def show
         @progresso = progresso_atual
-        @feedback  = current_lojista_id ? Feedback.find_by(artigo_id: @artigo.id, lojista_id: current_lojista_id) : nil
+        @feedback  = (current_user_id && current_store_id) ? Feedback.find_by(artigo_id: @artigo.id, user_id: current_user_id, store_id: current_store_id) : nil
     end
 
     # POST /artigos/:id/concluir
     # Registra ou atualiza o Progresso do lojista para este artigo.
     def concluir
-      unless current_lojista_id && @trilha
+      unless current_user_id && current_store_id && @trilha
         redirect_to artigo_path(@artigo) and return
       end
 
       @progresso = Progresso.find_or_initialize_by(
-        artigo_id:  @artigo.id,
-        lojista_id: current_lojista_id
+        artigo_id: @artigo.id,
+        user_id: current_user_id,
+        store_id: current_store_id
       )
       @progresso.trilha_id   = @trilha.id
       @progresso.concluido_em = Time.current
@@ -35,14 +36,15 @@ module Universidade
     # POST /artigos/:id/feedback
     # Registra ou atualiza o feedback do lojista para este artigo.
     def feedback
-      unless current_lojista_id
+      unless current_user_id && current_store_id
         redirect_to artigo_path(@artigo), alert: "É necessário estar logado para votar." and return
       end
 
       sentimento = params.dig(:feedback, :sentimento).to_s
       @feedback = Feedback.find_or_initialize_by(
-        artigo_id:  @artigo.id,
-        lojista_id: current_lojista_id
+        artigo_id: @artigo.id,
+        user_id: current_user_id,
+        store_id: current_store_id
       )
       @feedback.sentimento = sentimento
 
@@ -75,16 +77,17 @@ module Universidade
     end
 
     def progresso_atual
-      return nil unless current_lojista_id
-      Progresso.find_by(artigo_id: @artigo.id, lojista_id: current_lojista_id)
+      return nil unless current_user_id && current_store_id
+      Progresso.find_by(artigo_id: @artigo.id, user_id: current_user_id, store_id: current_store_id)
     end
 
     def concluidos_ids_for(artigos)
-      return Set.new unless current_lojista_id
+      return Set.new unless current_user_id && current_store_id
 
       Progresso.where(
-        artigo_id:  artigos.map(&:id),
-        lojista_id: current_lojista_id
+        artigo_id: artigos.map(&:id),
+        user_id: current_user_id,
+        store_id: current_store_id
       ).where.not(concluido_em: nil).pluck(:artigo_id).to_set
     end
   end

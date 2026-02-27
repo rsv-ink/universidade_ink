@@ -39,7 +39,7 @@
       </div>
 
       <%# Barra de progresso geral (apenas se lojista presente) %>
-      <% if current_lojista_id && @artigos.any? %>
+      <% if current_user_id && current_store_id && @artigos.any? %>
         <%
           total_art   = @artigos.size
           concluidos  = @concluidos_ids.size

@@ -1,5 +1,5 @@
 <%
-  progresso     = curso.progresso_lojista(current_lojista_id)
+  progresso     = curso.progresso_lojista(current_user_id, current_store_id)
   progresso_pct = (progresso * 100).round
 %>
 
@@ -35,7 +35,7 @@
     <% end %>
 
     <%# Barra de progresso %>
-    <% if current_lojista_id %>
+    <% if current_user_id && current_store_id %>
       <div class="mt-auto">
         <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
           <span>Progresso</span>

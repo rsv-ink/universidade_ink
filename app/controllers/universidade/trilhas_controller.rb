@@ -11,11 +11,12 @@ module Universidade
     private
 
     def concluidos_ids_for(artigos)
-      return [] unless current_lojista_id
+      return [] unless current_user_id && current_store_id
 
       Progresso.where(
-        artigo_id:   artigos.map(&:id),
-        lojista_id:  current_lojista_id
+        artigo_id: artigos.map(&:id),
+        user_id: current_user_id,
+        store_id: current_store_id
       ).where.not(concluido_em: nil).pluck(:artigo_id).to_set
     end
   end

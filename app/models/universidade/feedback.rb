@@ -6,7 +6,9 @@ module Universidade
 
     enum sentimento: { triste: 0, neutro: 1, feliz: 2 }
 
-    validates :lojista_id, presence: true
+    validates :user_id, presence: true
+    validates :store_id, presence: true
     validates :sentimento, presence: true
+    validates :user_id, uniqueness: { scope: [:artigo_id, :store_id] }
   end
 end

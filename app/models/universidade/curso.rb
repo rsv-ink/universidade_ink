@@ -6,6 +6,8 @@ module Universidade
     has_many :modulos, class_name: "Universidade::Modulo", foreign_key: :curso_id, dependent: :nullify
 
     validates :nome, presence: true
+    validates :user_id, presence: true
+    validates :store_id, presence: true
 
     attribute :rascunho, :boolean, default: false
 
@@ -34,11 +36,11 @@ module Universidade
       "#{id}-#{nome.parameterize}"
     end
 
-    # Retorna a fração de artigos visíveis concluídos pelo lojista em todo o curso (0.0 a 1.0).
+    # Retorna a fração de artigos visíveis concluídos pelo usuario em todo o curso (0.0 a 1.0).
     # Considera apenas artigos de trilhas e módulos visíveis pertencentes ao curso.
     # Progresso do curso = artigos_concluidos / total_artigos_do_curso
-    def progresso_lojista(lojista_id)
-      return 0.0 unless lojista_id
+    def progresso_lojista(user_id, store_id)
+      return 0.0 unless user_id && store_id
 
       total = Artigo
         .joins(trilha: :modulo)
@@ -56,7 +58,7 @@ module Universidade
           universidade_artigos: { visivel: true },
           universidade_trilhas: { visivel: true },
           universidade_modulos: { curso_id: id, visivel: true },
-          universidade_progressos: { lojista_id: lojista_id }
+          universidade_progressos: { user_id: user_id, store_id: store_id }
         )
         .where.not(universidade_progressos: { concluido_em: nil })
         .count

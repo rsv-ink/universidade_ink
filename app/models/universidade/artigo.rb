@@ -5,12 +5,13 @@ module Universidade
     belongs_to :trilha, class_name: "Universidade::Trilha", optional: true
 
     has_many :progressos, class_name: "Universidade::Progresso", foreign_key: :artigo_id, dependent: :destroy
-    has_many :comentarios, class_name: "Universidade::Comentario", foreign_key: :artigo_id, dependent: :destroy
     has_many :feedbacks, class_name: "Universidade::Feedback", foreign_key: :artigo_id, dependent: :destroy
 
     attribute :rascunho, :boolean, default: false
 
     validates :titulo, presence: true
+    validates :user_id, presence: true
+    validates :store_id, presence: true
 
     scope :visivel, -> { where(visivel: true) }
     scope :buscar, ->(q) { where("lower(titulo) LIKE lower(?)", "%#{q}%") }
@@ -30,15 +31,16 @@ module Universidade
 
     # Retorna a fração de artigos concluídos na trilha deste artigo (0.0 a 1.0).
     # Retorna 0.0 se o artigo não pertencer a nenhuma trilha.
-    def progresso_trilha(lojista_id)
+    def progresso_trilha(user_id, store_id)
       return 0.0 unless trilha_id.present?
+      return 0.0 unless user_id && store_id
 
       total = trilha.artigos.visivel.count
       return 0.0 if total.zero?
 
       concluidos = trilha.artigos.visivel
                          .joins(:progressos)
-                         .where(universidade_progressos: { lojista_id: lojista_id })
+                         .where(universidade_progressos: { user_id: user_id, store_id: store_id })
                          .where.not(universidade_progressos: { concluido_em: nil })
                          .count
 

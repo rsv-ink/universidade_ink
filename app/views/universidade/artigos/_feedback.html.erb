@@ -2,7 +2,7 @@
   <h2 class="text-lg font-bold text-gray-900 mb-1">Feedback</h2>
   <p class="text-sm text-gray-500 mb-3">Como voce avaliaria este artigo?</p>
 
-  <% if current_lojista_id %>
+  <% if current_user_id && current_store_id %>
     <% selected = feedback&.sentimento %>
     <%= form_with url: feedback_artigo_path(artigo), method: :post, class: "flex flex-wrap gap-3" do %>
       <% [

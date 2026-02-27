@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
-# Configuração mock para testes da engine Universidade
-# Em produção, a aplicação host deve configurar isso para retornar o lojista real.
+# Configuracao mock para testes da engine Universidade.
+# Em producao, a aplicacao host deve configurar isso para retornar user/store reais.
 
-Universidade.current_lojista_id_proc = lambda do |_controller|
-  # Mock fixo para desenvolvimento e testes
-  # Representa um lojista fictício com ID = 1
+Universidade.current_user_id_proc = lambda do |_controller|
+  1
+end
+
+Universidade.current_store_id_proc = lambda do |_controller|
   1
 end

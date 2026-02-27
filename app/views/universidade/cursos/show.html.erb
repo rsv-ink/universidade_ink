@@ -23,9 +23,9 @@
   <% end %>
 
   <%# Progresso geral do curso %>
-  <% if current_lojista_id %>
+  <% if current_user_id && current_store_id %>
     <%
-      curso_pct = (@curso.progresso_lojista(current_lojista_id) * 100).round
+      curso_pct = (@curso.progresso_lojista(current_user_id, current_store_id) * 100).round
       concluido = curso_pct == 100
     %>
     <div class="mt-6 flex items-center gap-4 bg-white border border-gray-200 rounded-xl px-5 py-3">
@@ -48,7 +48,7 @@
   <div class="space-y-4">
     <% @modulos.each do |modulo| %>
       <%
-        mod_progresso     = modulo.progresso(current_lojista_id)
+        mod_progresso     = modulo.progresso(current_user_id, current_store_id)
         mod_progresso_pct = (mod_progresso * 100).round
         trilhas_visiveis  = modulo.trilhas.select(&:visivel?)
                                   .sort_by { |t| t.ordem || t.id }
@@ -66,11 +66,11 @@
           </div>
 
           <%# Progresso do módulo (trilhas concluídas / total) %>
-          <% if current_lojista_id %>
+          <% if current_user_id && current_store_id %>
             <div class="flex items-center gap-3 flex-shrink-0">
               <% trilhas_total = trilhas_visiveis.size %>
               <span class="text-xs text-gray-400">
-                <% trilhas_concluidas = trilhas_visiveis.count { |t| t.concluida?(current_lojista_id) } %>
+                <% trilhas_concluidas = trilhas_visiveis.count { |t| t.concluida?(current_user_id, current_store_id) } %>
                 <%= trilhas_concluidas %> / <%= trilhas_total %> trilha<%= trilhas_total == 1 ? '' : 's' %>
               </span>
               <div class="w-24 bg-gray-100 rounded-full h-1.5">
@@ -89,7 +89,7 @@
           <ul class="divide-y divide-gray-50">
             <% trilhas_visiveis.each do |trilha| %>
               <%
-                t_progresso     = trilha.progresso_lojista(current_lojista_id)
+                t_progresso     = trilha.progresso_lojista(current_user_id, current_store_id)
                 t_progresso_pct = (t_progresso * 100).round
                 t_concluida     = t_progresso_pct == 100
                 primeiro_artigo = trilha.artigos.visivel.order(Arel.sql("COALESCE(ordem, id)")).first
@@ -123,7 +123,7 @@
                   </div>
 
                   <%# Barra de progresso da trilha (artigos concluídos / total) %>
-                  <% if current_lojista_id %>
+                  <% if current_user_id && current_store_id %>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <div class="w-20 bg-gray-100 rounded-full h-1.5">
                         <div class="h-1.5 rounded-full <%= t_concluida ? 'bg-green-500' : 'bg-pink-400' %>"

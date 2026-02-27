@@ -1,5 +1,5 @@
 <%
-  progresso       = trilha.progresso_lojista(current_lojista_id)
+  progresso       = trilha.progresso_lojista(current_user_id, current_store_id)
   progresso_pct   = (progresso * 100).round
   concluida       = progresso_pct == 100
   primeiro_artigo = trilha.artigos.visivel.order(Arel.sql("COALESCE(ordem, id)")).first
@@ -32,7 +32,7 @@
   </div>
 
   <%# Progresso %>
-  <% if current_lojista_id %>
+  <% if current_user_id && current_store_id %>
     <div class="flex items-center gap-3 flex-shrink-0">
       <div class="w-24 bg-gray-100 rounded-full h-1.5">
         <div class="h-1.5 rounded-full <%= concluida ? 'bg-green-500' : 'bg-pink-500' %>"

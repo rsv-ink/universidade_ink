@@ -2,13 +2,18 @@ require "universidade/version"
 require "universidade/engine"
 
 module Universidade
-  # Proc configurável pela aplicação host para retornar o ID do lojista atual.
+  # Procs configuraveis pela aplicacao host para retornar os IDs atuais.
   #
-  # Exemplo de configuração no host (config/initializers/universidade.rb):
-  #   Universidade.current_lojista_id_proc = ->(controller) { controller.current_lojista&.id }
-  mattr_accessor :current_lojista_id_proc
+  # Exemplo de configuracao no host (config/initializers/universidade.rb):
+  #   Universidade.current_user_id_proc  = ->(controller) { controller.current_user&.id }
+  #   Universidade.current_store_id_proc = ->(controller) { controller.current_store&.id }
+  mattr_accessor :current_user_id_proc, :current_store_id_proc
 
-  def self.current_lojista_id(controller_instance)
-    current_lojista_id_proc&.call(controller_instance)
+  def self.current_user_id(controller_instance)
+    current_user_id_proc&.call(controller_instance)
+  end
+
+  def self.current_store_id(controller_instance)
+    current_store_id_proc&.call(controller_instance)
   end
 end

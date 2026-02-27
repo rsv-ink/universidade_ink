@@ -6,5 +6,7 @@ module Universidade
     belongs_to :item,  polymorphic: true
 
     validates :item, presence: true
+    validates :user_id, presence: true
+    validates :store_id, presence: true
   end
 end

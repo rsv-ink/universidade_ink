@@ -4,7 +4,7 @@
 %>
 <% ja_concluido = progresso&.concluido? %>
 
-<% if trilha && current_lojista_id %>
+<% if trilha && current_user_id && current_store_id %>
   <% if ja_concluido %>
     <div class="flex items-center gap-2 text-green-600 font-medium text-sm">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

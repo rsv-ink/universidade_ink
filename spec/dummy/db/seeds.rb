@@ -2,7 +2,6 @@
 puts "🌱 Populando banco de dados..."
 
 # Limpar dados existentes
-Universidade::Comentario.destroy_all
 Universidade::Progresso.destroy_all
 Universidade::Artigo.destroy_all
 Universidade::Trilha.destroy_all
@@ -11,8 +10,11 @@ Universidade::Curso.destroy_all
 
 puts "✓ Dados limpos"
 
+owner_attrs = { user_id: 1, store_id: 1 }
+
 # Criar curso
 curso = Universidade::Curso.create!(
+  **owner_attrs,
   nome: "Ruby on Rails - Completo",
   descricao: "Aprenda Ruby on Rails do zero ao avançado com este curso completo",
   tags: ["Ruby", "Rails", "Web Development", "Backend"],
@@ -24,6 +26,7 @@ puts "✓ Curso criado: #{curso.nome}"
 
 # Criar módulo 1
 modulo1 = Universidade::Modulo.create!(
+  **owner_attrs,
   curso: curso,
   nome: "Fundamentos do Ruby",
   descricao: "Aprenda os conceitos básicos da linguagem Ruby",
@@ -33,6 +36,7 @@ modulo1 = Universidade::Modulo.create!(
 
 # Criar trilha 1.1
 trilha1_1 = Universidade::Trilha.create!(
+  **owner_attrs,
   modulo: modulo1,
   nome: "Introdução ao Ruby",
   tempo_estimado_minutos: 45,
@@ -40,8 +44,8 @@ trilha1_1 = Universidade::Trilha.create!(
   ordem: 1
 )
 
-# Criar artigos da trilha 1.1
 Universidade::Artigo.create!(
+  **owner_attrs,
   trilha: trilha1_1,
   titulo: "O que é Ruby?",
   corpo: {
@@ -79,6 +83,7 @@ Universidade::Artigo.create!(
 )
 
 Universidade::Artigo.create!(
+  **owner_attrs,
   trilha: trilha1_1,
   titulo: "Instalando o Ruby",
   corpo: {
@@ -109,6 +114,7 @@ Universidade::Artigo.create!(
 )
 
 Universidade::Artigo.create!(
+  **owner_attrs,
   trilha: trilha1_1,
   titulo: "Primeiro programa em Ruby",
   corpo: {
@@ -142,6 +148,7 @@ puts "✓ Trilha '#{trilha1_1.nome}' criada com #{trilha1_1.artigos.count} artig
 
 # Criar trilha 1.2
 trilha1_2 = Universidade::Trilha.create!(
+  **owner_attrs,
   modulo: modulo1,
   nome: "Variáveis e Tipos de Dados",
   tempo_estimado_minutos: 60,
@@ -150,6 +157,7 @@ trilha1_2 = Universidade::Trilha.create!(
 )
 
 Universidade::Artigo.create!(
+  **owner_attrs,
   trilha: trilha1_2,
   titulo: "Declarando Variáveis",
   corpo: {
@@ -176,6 +184,7 @@ Universidade::Artigo.create!(
 )
 
 Universidade::Artigo.create!(
+  **owner_attrs,
   trilha: trilha1_2,
   titulo: "Strings e Números",
   corpo: {
@@ -205,6 +214,7 @@ puts "✓ Trilha '#{trilha1_2.nome}' criada com #{trilha1_2.artigos.count} artig
 
 # Criar módulo 2
 modulo2 = Universidade::Modulo.create!(
+  **owner_attrs,
   curso: curso,
   nome: "Ruby on Rails Básico",
   descricao: "Introdução ao framework Rails",
@@ -214,6 +224,7 @@ modulo2 = Universidade::Modulo.create!(
 
 # Criar trilha 2.1
 trilha2_1 = Universidade::Trilha.create!(
+  **owner_attrs,
   modulo: modulo2,
   nome: "O que é Rails?",
   tempo_estimado_minutos: 30,
@@ -222,6 +233,7 @@ trilha2_1 = Universidade::Trilha.create!(
 )
 
 Universidade::Artigo.create!(
+  **owner_attrs,
   trilha: trilha2_1,
   titulo: "Introdução ao Rails",
   corpo: {
@@ -259,6 +271,7 @@ Universidade::Artigo.create!(
 )
 
 Universidade::Artigo.create!(
+  **owner_attrs,
   trilha: trilha2_1,
   titulo: "Instalando o Rails",
   corpo: {

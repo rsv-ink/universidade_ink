@@ -23,6 +23,8 @@ module Universidade
     validates :formato_card, inclusion: { in: %w[quadrado] }
     validates :layout_exibicao, inclusion: { in: %w[carrossel galeria] }
     validates :colunas_galeria, inclusion: { in: [1, 2, 3, 4] }
+    validates :user_id, presence: true
+    validates :store_id, presence: true
 
     def imagens_ordenadas
       return imagens unless imagens_ordem.present?

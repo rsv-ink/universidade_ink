@@ -85,7 +85,7 @@
           <% end %>
 
           <% if @proximo_artigo %>
-            <% if current_lojista_id && !@progresso&.concluido? %>
+            <% if current_user_id && current_store_id && !@progresso&.concluido? %>
               <%# Se houver próximo artigo e o artigo atual não foi concluído, marcar como concluído ao clicar %>
               <%= form_with url: concluir_artigo_path(@artigo), method: :post, 
                     data: { turbo: false }, 
@@ -117,7 +117,7 @@
             <% end %>
           <% else %>
             <%# Último artigo da trilha %>
-            <% if current_lojista_id && !@progresso&.concluido? %>
+            <% if current_user_id && current_store_id && !@progresso&.concluido? %>
               <%= form_with url: concluir_artigo_path(@artigo), method: :post, 
                     data: { turbo: false }, 
                     class: "inline-block" do %>

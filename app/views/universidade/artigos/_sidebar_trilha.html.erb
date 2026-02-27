@@ -11,7 +11,7 @@
       <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Trilha</p>
       <h3 class="font-semibold text-gray-900 text-sm leading-snug"><%= trilha.nome %></h3>
 
-      <% if defined?(current_lojista_id) && current_lojista_id %>
+      <% if defined?(current_user_id) && current_user_id && current_store_id %>
         <%
           total     = artigos.size
           concluidos = concluidos_ids.size
