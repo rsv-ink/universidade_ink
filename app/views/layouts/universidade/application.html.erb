@@ -7,7 +7,11 @@
   <%= csp_meta_tag %>
   <script src="https://cdn.tailwindcss.com"></script>
   <%= stylesheet_link_tag "universidade/application", "data-turbo-track": "reload" %>
-  <%= javascript_importmap_tags %>
+  <% if respond_to?(:javascript_importmap_tags) %>
+    <%= javascript_importmap_tags %>
+  <% else %>
+    <%= javascript_include_tag "universidade/application", "data-turbo-track": "reload", defer: true %>
+  <% end %>
   <style>
     /* Force light mode for all inputs and textareas */
     input[type="text"],
