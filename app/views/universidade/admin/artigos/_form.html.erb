@@ -5,7 +5,6 @@
       class: "min-h-screen bg-gray-50" do |f| %>
 
   <input type="hidden" name="from_curso_id" value="<%= local_assigns[:from_curso_id] %>">
-  <%= f.hidden_field :trilha_id %>
 
   <%# ── Barra superior fixa ──────────────────────────────────────────── %>
   <div class="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
@@ -26,6 +25,19 @@
               type: "text", name: "artigo[titulo]", id: "artigo_titulo",
               value: artigo.titulo, placeholder: "Título do artigo...",
               state: artigo.errors[:titulo].any? ? :error : :default) %>
+      </div>
+
+      <%# Trilha (opcional) %>
+      <div class="shrink-0 w-56">
+        <%
+          trilha_choices = { "Sem trilha (avulso)" => "" }.merge(
+            @trilhas.map { |t| [t.nome, t.id.to_s] }.to_h
+          )
+        %>
+        <%= select_component(
+              name: "artigo[trilha_id]", id: "artigo_trilha_id",
+              choices: trilha_choices,
+              options: { selected: artigo.trilha_id.to_s }) %>
       </div>
 
       <% if artigo.rascunho? %>
