@@ -1,3 +1,4 @@
-<%= turbo_stream.replace "trilha_#{@trilha.id}" do %>
-  <%= render "universidade/admin/trilhas/hub_item", trilha: @trilha %>
+<%= turbo_stream.replace "sidebar_curso_#{@trilha.id}" do %>
+  <%= render "universidade/admin/cursos/sidebar_item",
+        trilha: @trilha, current_curso: @current_curso %>
 <% end %>

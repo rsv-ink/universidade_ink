@@ -9,6 +9,8 @@ import HierarchicalSortableController from "controllers/hierarchical_sortable_co
 import SidebarController       from "controllers/sidebar_controller"
 import CarrosselController     from "controllers/carrossel_controller"
 import SecaoFormController    from "controllers/secao_form_controller"
+import TrilhaModuloSelectorController from "controllers/trilha_modulo_selector_controller"
+import TrilhasManagerController from "controllers/trilhas_manager_controller"
 
 const application = Application.start()
 
@@ -26,5 +28,7 @@ application.register("hierarchical-sortable", HierarchicalSortableController)
 application.register("sidebar",        SidebarController)
 application.register("carrossel",      CarrosselController)
 application.register("secao-form",    SecaoFormController)
+application.register("trilha-modulo-selector", TrilhaModuloSelectorController)
+application.register("trilhas-manager", TrilhasManagerController)
 
 export { application }

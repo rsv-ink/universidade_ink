@@ -3,7 +3,7 @@
   progresso_pct   = (progresso * 100).round
   concluida       = progresso_pct == 100
   primeiro_artigo = trilha.artigos.visivel.order(Arel.sql("COALESCE(ordem, id)")).first
-  trilha_url      = primeiro_artigo ? artigo_path(primeiro_artigo) : trilha_path(trilha)
+  trilha_url      = primeiro_artigo ? conteudo_path(primeiro_artigo) : trilha_path(trilha)
 %>
 
 <%= link_to trilha_url, class: "flex items-center gap-4 bg-white rounded-xl border border-gray-200 hover:border-pink-200 hover:shadow-sm transition-all px-5 py-4 group" do %>

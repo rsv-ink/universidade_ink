@@ -1,16 +1,17 @@
 <%= form_with model: trilha,
   url: trilha.new_record? ? admin_trilhas_path : admin_trilha_path(trilha),
   data: { turbo_stream: true, action: "turbo:submit-end->modal#close turbo:submit-end->modal#reloadOnSuccess" },
+  multipart: true,
   class: "space-y-5" do |f| %>
-
-  <input type="hidden" name="from_curso_id" value="<%= local_assigns[:from_curso_id] %>">
 
   <% if trilha.errors.any? %>
     <%= alert_component(state: :danger, bordered: true) do |alert| %>
       <% alert.with_title { "#{trilha.errors.count} erro(s) impediram o salvamento:" } %>
       <% alert.with_body do %>
         <ul class="list-disc list-inside space-y-1 mt-1">
-          <% trilha.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+          <% trilha.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
         </ul>
       <% end %>
     <% end %>
@@ -18,68 +19,99 @@
 
   <%# Nome %>
   <div>
-    <%= label_component(for: "trilha_nome") { "Nome *" } %>
+    <%= label_component(for: "curso_nome") { "Nome *" } %>
     <%= input_field_component(
-          type: "text", name: "trilha[nome]", id: "trilha_nome",
-          value: trilha.nome, placeholder: "Ex: Introdução ao ActiveRecord",
+          type: "text",
+          name: "trilha[nome]",
+          id: "curso_nome",
+          value: trilha.nome,
+          placeholder: "Ex: Ruby on Rails para iniciantes",
           state: trilha.errors[:nome].any? ? :error : :default) %>
     <% if trilha.errors[:nome].any? %>
       <%= helper_text_component { trilha.errors[:nome].first } %>
     <% end %>
   </div>
 
-  <%# Módulo (opcional) %>
+  <%# Descrição %>
   <div>
-    <%= label_component(for: "trilha_modulo_id") { "Módulo (opcional)" } %>
-    <%
-      modulo_choices = { "Nenhum (trilha avulsa)" => "" }.merge(
-        @modulos.map { |m| [m.nome, m.id.to_s] }.to_h
-      )
-    %>
-    <%= select_component(
-          name: "trilha[modulo_id]", id: "trilha_modulo_id",
-          choices: modulo_choices,
-          options: { selected: trilha.modulo_id.to_s }) %>
+    <%= label_component(for: "curso_descricao") { "Descrição" } %>
+    <%= text_area_component(
+          name: "trilha[descricao]",
+          id: "curso_descricao",
+          placeholder: "Uma breve descrição do trilha…",
+          rows: 3) { trilha.descricao } %>
   </div>
 
-  <%# Tempo estimado %>
+  <%# Imagem %>
   <div>
-    <%= label_component(for: "trilha_tempo_estimado_minutos") { "Tempo estimado (minutos)" } %>
+    <%= label_component(for: "curso_imagem") { "Imagem do trilha" } %>
+    <% if trilha.imagem.attached? %>
+      <div class="mb-3 relative inline-block">
+        <%= image_tag main_app.url_for(trilha.imagem), class: "w-32 h-32 object-cover rounded-lg border border-gray-200" %>
+        <% if trilha.imagem.blob.metadata["size_kb"] %>
+          <span class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+            <%= trilha.imagem.blob.metadata["size_kb"] %> KB
+          </span>
+        <% end %>
+      </div>
+    <% end %>
+    <input type="file"
+           name="trilha[imagem]"
+           id="curso_imagem"
+           accept="image/*"
+           class="block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-lg file:border file:border-gray-300
+                  file:text-sm file:font-medium
+                  file:bg-gray-50 file:text-gray-700
+                  hover:file:bg-gray-100
+                  cursor-pointer">
+    <%= helper_text_component { "As imagens serão automaticamente convertidas para WebP e otimizadas. Recomendado: imagem quadrada (ex: 800x800px)." } %>
+  </div>
+
+  <%# Tags %>
+  <div>
+    <%= label_component(for: "curso_tags_text") { "Tags" } %>
     <%= input_field_component(
-          type: "number", name: "trilha[tempo_estimado_minutos]",
-          id: "trilha_tempo_estimado_minutos",
-          value: trilha.tempo_estimado_minutos, placeholder: "30") %>
+          type: "text",
+          name: "trilha[tags_text]",
+          id: "curso_tags_text",
+          value: trilha.tags_text,
+          placeholder: "ruby, rails, iniciante") %>
+    <%= helper_text_component { "Separe as tags por vírgula." } %>
   </div>
 
   <%# Visível %>
   <div>
     <input type="hidden" name="trilha[visivel]" value="0">
     <%= toggle_component(
-          name: "trilha[visivel]", id: "trilha_visivel",
-          checked: trilha.visivel?, checked_value: "1",
+          name: "trilha[visivel]",
+          id: "curso_visivel",
+          checked: trilha.visivel?,
+          checked_value: "1",
           color: :pink) { "Visível para os lojistas" } %>
   </div>
 
   <div class="flex items-center gap-3 pt-1">
-    <input type="hidden" name="trilha[status_action]" id="trilha_status_action"
+    <input type="hidden" name="trilha[status_action]" id="curso_status_action"
            value="<%= trilha.new_record? || trilha.rascunho? ? 'rascunho' : 'publicar' %>">
     
     <% if trilha.publicado? && !trilha.new_record? %>
-      <%# Trilha já publicada: apenas botão Salvar alterações %>
+      <%# Trilha já publicado: apenas botão Salvar alterações %>
       <button type="submit"
-              onclick="document.getElementById('trilha_status_action').value='publicar'"
+              onclick="document.getElementById('curso_status_action').value='publicar'"
               class="px-4 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors">
         Salvar alterações
       </button>
     <% else %>
-      <%# Trilha em rascunho ou nova: botões Salvar rascunho e Publicar %>
+      <%# Trilha em rascunho ou novo: botões Salvar rascunho e Publicar %>
       <button type="submit"
-              onclick="document.getElementById('trilha_status_action').value='rascunho'"
+              onclick="document.getElementById('curso_status_action').value='rascunho'"
               class="px-4 py-2 text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-lg transition-colors">
         Salvar rascunho
       </button>
       <button type="submit"
-              onclick="document.getElementById('trilha_status_action').value='publicar'"
+              onclick="document.getElementById('curso_status_action').value='publicar'"
               class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
         Publicar
       </button>

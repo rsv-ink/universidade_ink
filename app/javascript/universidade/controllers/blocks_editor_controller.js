@@ -34,7 +34,12 @@ export default class extends Controller {
     this._setupSortable()
     this._loadInitialContent()
     const form = this.element.closest("form")
-    if (form) form.addEventListener("submit", this._serialize.bind(this))
+    if (form) {
+      // Capturar evento antes do Turbo enviar o formulário
+      form.addEventListener("turbo:submit-start", this._serializeBeforeSubmit.bind(this))
+      // Também capturar submit tradicional para compatibilidade
+      form.addEventListener("submit", this._serializeBeforeSubmit.bind(this))
+    }
 
     this._toolbar = this._buildToolbar()
     document.body.appendChild(this._toolbar)
@@ -54,9 +59,16 @@ export default class extends Controller {
     if (this._paletteSortable) this._paletteSortable.destroy()
     if (this._toolbar) this._toolbar.remove()
     document.removeEventListener("selectionchange", this._onSelectionChange)
-    document.removeEventListener("click",           this._onDocClick)
-    document.removeEventListener("keydown",         this._onDocKeydown)
+    document.removeEventListener("click", this._onDocClick)
+    document.removeEventListener("keydown", this._onDocKeydown)
     if (this.hasCanvasTarget) this.canvasTarget.removeEventListener("paste", this._onPaste)
+    
+    // Remover listeners do formulário
+    const form = this.element.closest("form")
+    if (form) {
+      form.removeEventListener("turbo:submit-start", this._serializeBeforeSubmit.bind(this))
+      form.removeEventListener("submit", this._serializeBeforeSubmit.bind(this))
+    }
   }
 
   // ── Sortable setup ───────────────────────────────────────────────────
@@ -109,6 +121,13 @@ export default class extends Controller {
             <path d="M4 4h2v2H4V4zm0 4h2v2H4V8zm0 4h2v2H4v-2zm6-8h2v2h-2V4zm0 4h2v2h-2V8zm0 4h2v2h-2v-2z" fill="#9ca3af"/>
           </svg>
         </div>
+        <button type="button" class="block-duplicate-btn"
+                data-action="click->blocks-editor#duplicateBlock"
+                title="Duplicar bloco">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+        </button>
         <button type="button" class="block-delete-btn"
                 data-action="click->blocks-editor#deleteBlock"
                 title="Remover bloco">
@@ -285,6 +304,33 @@ export default class extends Controller {
     this._updateEmptyState()
   }
 
+  duplicateBlock(event) {
+    const blockEl = event.target.closest(".block-item")
+    if (!blockEl) return
+    
+    const type = blockEl.dataset.blockType
+    const data = this._extractData(type, blockEl)
+    const newId = this._uid()
+    const newBlock = this._createBlockElement(type, newId, data)
+    
+    blockEl.parentNode.insertBefore(newBlock, blockEl.nextSibling)
+    this._updateEmptyState()
+    
+    // Inicializar funcionalidades específicas do tipo de bloco
+    if (type === "imagem") {
+      this._initImageGridSortable(newBlock)
+      this._refreshImagePreview(newBlock)
+    } else if (type === "video") {
+      this._updateVideoPreview(newBlock)
+    }
+    
+    // Scroll suavemente para o bloco duplicado
+    setTimeout(() => {
+      newBlock.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      this._focusFirstInput(newBlock)
+    }, 100)
+  }
+
   addListItem(event) {
     const blockEl   = event.target.closest(".block-item")
     const container = blockEl.querySelector("[data-field='items']")
@@ -375,22 +421,55 @@ export default class extends Controller {
   async _uploadFiles(files, blockEl) {
     const hint    = blockEl.querySelector(".imagem-dropzone-hint")
     const origTxt = hint?.textContent || "Múltiplos arquivos suportados"
-    if (hint) hint.textContent = `Enviando ${files.length} arquivo(s)...`
+    const grid    = blockEl.querySelector(".imagem-grid")
 
-    const results = await Promise.allSettled(files.map(f => this._uploadSingleFile(f)))
+    let successCount = 0
+    let errorCount = 0
 
-    const grid = blockEl.querySelector(".imagem-grid")
-    results.forEach((result, i) => {
-      if (result.status === "fulfilled" && result.value) {
-        const div = document.createElement("div")
-        div.innerHTML = this._imageGridItemHtml(result.value)
-        grid.appendChild(div.firstElementChild)
-      } else {
-        console.error("[upload] Falha ao enviar:", files[i]?.name, result.reason)
+    // Upload sequencial (um arquivo por vez)
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (hint) hint.textContent = `Enviando ${i + 1} de ${files.length}...`
+
+      // Criar placeholder visual durante o upload
+      const placeholder = document.createElement("div")
+      placeholder.className = "imagem-grid-item imagem-grid-item--uploading"
+      placeholder.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; background: #f3f4f6; height: 100%; border-radius: 8px;">
+          <span style="color: #6b7280; font-size: 0.875rem;">Enviando...</span>
+        </div>
+      `
+      grid.appendChild(placeholder)
+
+      try {
+        const result = await this._uploadSingleFile(file)
+        placeholder.remove()
+        
+        if (result && result.url) {
+          const div = document.createElement("div")
+          div.innerHTML = this._imageGridItemHtml(result.url, result.metadata)
+          grid.appendChild(div.firstElementChild)
+          successCount++
+        } else {
+          console.error("[upload] URL vazia para:", file.name)
+          errorCount++
+        }
+      } catch (error) {
+        console.error("[upload] Falha ao enviar:", file.name, error)
+        placeholder.remove()
+        errorCount++
       }
-    })
+    }
 
-    if (hint) hint.textContent = origTxt
+    if (hint) {
+      if (errorCount > 0) {
+        hint.textContent = `${successCount} enviado(s), ${errorCount} falhou(ram)`
+        setTimeout(() => { hint.textContent = origTxt }, 3000)
+      } else {
+        hint.textContent = origTxt
+      }
+    }
+
     this._initImageGridSortable(blockEl)
     this._refreshImagePreview(blockEl)
   }
@@ -398,21 +477,54 @@ export default class extends Controller {
   async _uploadSingleFile(file) {
     const fd = new FormData()
     fd.append("image", file)
-    const resp = await fetch(this.uploadUrlValue, {
-      method: "POST",
-      headers: { "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content || "" },
-      body: fd,
-    })
-    const json = await resp.json()
-    if (!json.url) throw new Error(json.error || "Erro desconhecido")
-    return json.url
+    
+    // Timeout de 30 segundos por arquivo
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000)
+    
+    try {
+      const resp = await fetch(this.uploadUrlValue, {
+        method: "POST",
+        headers: { "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content || "" },
+        body: fd,
+        signal: controller.signal,
+      })
+      
+      clearTimeout(timeoutId)
+      
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}: ${resp.statusText}`)
+      }
+      
+      const json = await resp.json()
+      if (!json.url) throw new Error(json.error || "Erro desconhecido")
+      
+      // Retornar URL e metadados
+      return {
+        url: json.url,
+        metadata: {
+          size_kb: json.size_kb,
+          width: json.width,
+          height: json.height
+        }
+      }
+    } catch (error) {
+      clearTimeout(timeoutId)
+      if (error.name === 'AbortError') {
+        throw new Error('Upload timeout - arquivo muito grande ou conexão lenta')
+      }
+      throw error
+    }
   }
 
-  _imageGridItemHtml(url) {
+  _imageGridItemHtml(url, metadata = {}) {
     const e = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    const sizeInfo = metadata.size_kb ? `<span class="imagem-size-badge">${metadata.size_kb} KB</span>` : ""
+    
     return `
-      <div class="imagem-grid-item" data-url="${e(url)}">
+      <div class="imagem-grid-item" data-url="${e(url)}" data-size-kb="${metadata.size_kb || ''}">
         <img src="${e(url)}" alt="" loading="lazy" />
+        ${sizeInfo}
         <button type="button" class="imagem-grid-remove"
                 data-action="click->blocks-editor#removeImageGridItem"
                 title="Remover imagem">×</button>
@@ -901,9 +1013,134 @@ export default class extends Controller {
 
     if (!this._isLikelyMarkdown(text)) return
 
+    // Verificar se tem elementos que devem virar blocos separados (títulos, imagens, vídeos)
+    if (this._shouldSplitIntoBlocks(text)) {
+      event.preventDefault()
+      this._pasteAsMultipleBlocks(text, event.target)
+      return
+    }
+
     event.preventDefault()
     const html = this._markdownToHtml(text)
     document.execCommand("insertHTML", false, html)
+  }
+
+  _shouldSplitIntoBlocks(text) {
+    // Verifica se há títulos, imagens ou vídeos no texto
+    const hasHeadings = /^#{1,6}\s+/m.test(text)
+    const hasImages = /!\[[^\]]*\]\([^)]+\)/.test(text)
+    const hasVideos = /(youtube\.com|youtu\.be|vimeo\.com)\//.test(text)
+    return hasHeadings || hasImages || hasVideos
+  }
+
+  _pasteAsMultipleBlocks(text, target) {
+    const currentBlockEl = target.closest(".block-item")
+    if (!currentBlockEl) return
+
+    const blocks = this._parseMarkdownToBlocks(text)
+    if (!blocks.length) return
+
+    let insertAfter = currentBlockEl
+    blocks.forEach((blockData, index) => {
+      const newId = this._uid()
+      const newBlock = this._createBlockElement(blockData.type, newId, blockData.data)
+      
+      if (index === 0 && target.textContent.trim() === "") {
+        // Se o bloco atual está vazio, substituir
+        currentBlockEl.replaceWith(newBlock)
+        insertAfter = newBlock
+      } else {
+        // Inserir após o último bloco inserido
+        insertAfter.parentNode.insertBefore(newBlock, insertAfter.nextSibling)
+        insertAfter = newBlock
+      }
+      
+      // Inicializar funcionalidades específicas do tipo de bloco
+      if (blockData.type === "imagem") {
+        this._initImageGridSortable(newBlock)
+        this._refreshImagePreview(newBlock)
+      } else if (blockData.type === "video") {
+        this._updateVideoPreview(newBlock)
+      }
+    })
+
+    this._updateEmptyState()
+    this._focusFirstInput(insertAfter)
+  }
+
+  _parseMarkdownToBlocks(markdown) {
+    const lines = markdown.replace(/\r\n/g, "\n").split("\n")
+    const blocks = []
+    let currentParagraph = []
+
+    const flushParagraph = () => {
+      if (!currentParagraph.length) return
+      const html = this._markdownToHtml(currentParagraph.join("\n"))
+      if (html.trim()) {
+        blocks.push({ type: "texto", data: { html } })
+      }
+      currentParagraph = []
+    }
+
+    lines.forEach((line) => {
+      // Título
+      const heading = line.match(/^(#{1,6})\s+(.+)$/)
+      if (heading) {
+        flushParagraph()
+        const level = heading[1].length
+        blocks.push({
+          type: "titulo",
+          data: { text: heading[2].trim(), level: Math.min(level, 4) }
+        })
+        return
+      }
+
+      // Imagem
+      const image = line.match(/!\[([^\]]*)\]\(([^)]+)\)/)
+      if (image) {
+        flushParagraph()
+        blocks.push({
+          type: "imagem",
+          data: {
+            layout: "galeria",
+            images: [{ url: image[2].trim(), alt: image[1].trim() }]
+          }
+        })
+        return
+      }
+
+      // Vídeo (YouTube ou Vimeo)
+      const videoMatch = line.match(/(https?:\/\/(?:www\.)?(youtube\.com|youtu\.be|vimeo\.com)\/[^\s]+)/)
+      if (videoMatch) {
+        flushParagraph()
+        const url = videoMatch[1]
+        const embedUrl = this._parseVideoUrl(url)
+        blocks.push({
+          type: "video",
+          data: { url, embedUrl }
+        })
+        return
+      }
+
+      // Divisor
+      if (/^[-*_]{3,}$/.test(line.trim())) {
+        flushParagraph()
+        blocks.push({ type: "divisor", data: {} })
+        return
+      }
+
+      // Linha vazia - flush parágrafo mas não adiciona nada
+      if (line.trim() === "") {
+        flushParagraph()
+        return
+      }
+
+      // Adicionar ao parágrafo atual
+      currentParagraph.push(line)
+    })
+
+    flushParagraph()
+    return blocks
   }
 
   _isLikelyMarkdown(text) {
@@ -1015,6 +1252,18 @@ export default class extends Controller {
   }
 
   // ── Serialization ────────────────────────────────────────────────────
+
+  _serializeBeforeSubmit(event) {
+    // Serializa os blocos sem interferir no evento de submit
+    const blocks = []
+    this.canvasTarget.querySelectorAll(":scope > .block-item").forEach(blockEl => {
+      const type = blockEl.dataset.blockType
+      const id   = blockEl.dataset.blockId
+      blocks.push({ id, type, data: this._extractData(type, blockEl) })
+    })
+    this.hiddenTarget.value = JSON.stringify(blocks)
+    // Deixa o evento continuar normalmente (Turbo ou submit tradicional)
+  }
 
   _serialize(event) {
     if (event) event.preventDefault()
@@ -1174,5 +1423,15 @@ export default class extends Controller {
     if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}`
     if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`
     return null
+  }
+
+  _updateVideoPreview(blockEl) {
+    const urlInput = blockEl.querySelector("[data-field='url']")
+    const embedInput = blockEl.querySelector("[data-field='embedUrl']")
+    if (!urlInput || !embedInput) return
+    
+    const url = urlInput.value.trim()
+    const embed = this._parseVideoUrl(url)
+    embedInput.value = embed || ""
   }
 }

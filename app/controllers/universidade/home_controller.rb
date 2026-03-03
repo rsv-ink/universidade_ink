@@ -7,15 +7,13 @@ module Universidade
 
       # Fallback quando não há seções configuradas
       if @secoes.empty?
-        @cursos = Curso.visivel.order(Arel.sql("COALESCE(ordem, id)"))
+        @trilhas = Trilha.visivel.order(Arel.sql("COALESCE(ordem, id)"))
 
-        @trilhas_soltas = Trilha.visivel
-                                 .where(modulo_id: nil)
-                                 .order(Arel.sql("COALESCE(ordem, id)"))
-
-        @artigos_soltos = Artigo.visivel
-                                 .where(trilha_id: nil)
-                                 .order(Arel.sql("COALESCE(ordem, id)"))
+        # Conteúdos soltos são aqueles que não estão vinculados a nenhuma trilha
+        @conteudos_soltos = Conteudo.visivel
+                                     .left_joins(:trilha_conteudos)
+                                     .where(universidade_trilha_conteudos: { id: nil })
+                                     .order(Arel.sql("COALESCE(universidade_conteudos.ordem, universidade_conteudos.id)"))
       end
     end
   end

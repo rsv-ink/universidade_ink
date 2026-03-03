@@ -109,10 +109,10 @@
               <% itens.each do |item| %>
                 <div class="carrossel-slide">
                   <div>
-                    <% if item.is_a?(Universidade::Curso) %>
-                      <%= render "curso_card", curso: item %>
-                    <% elsif item.is_a?(Universidade::Artigo) %>
-                      <%= render "artigo_item", artigo: item %>
+                    <% if item.is_a?(Universidade::Trilha) %>
+                      <%= render "trilha_card", trilha: item %>
+                    <% elsif item.is_a?(Universidade::Conteudo) %>
+                      <%= render "conteudo_item", conteudo: item %>
                     <% end %>
                   </div>
                 </div>
@@ -146,10 +146,10 @@
         %>
         <div class="grid <%= grid_classes %> gap-4">
           <% itens.each do |item| %>
-            <% if item.is_a?(Universidade::Curso) %>
-              <%= render "curso_card", curso: item %>
-            <% elsif item.is_a?(Universidade::Artigo) %>
-              <%= render "artigo_item", artigo: item %>
+            <% if item.is_a?(Universidade::Trilha) %>
+              <%= render "trilha_card", trilha: item %>
+            <% elsif item.is_a?(Universidade::Conteudo) %>
+              <%= render "conteudo_item", conteudo: item %>
             <% end %>
           <% end %>
         </div>

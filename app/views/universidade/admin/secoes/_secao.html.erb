@@ -1,59 +1,45 @@
 <div id="secao_<%= secao.id %>"
   data-sortable-id="<%= secao.id %>"
-  class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center gap-4 transition-opacity <%= 'opacity-50' unless secao.visivel? %>">
+  class="p-4 flex items-center gap-4 transition-all hover:bg-gray-50 <%= 'opacity-60' unless secao.visivel? %>">
 
-  <div class="flex items-center gap-2 flex-shrink-0">
+  <div class="flex items-center gap-3 flex-shrink-0">
     <%# Drag handle %>
-    <div class="w-6 h-6 flex items-center justify-center cursor-grab active:cursor-grabbing" data-sortable-handle>
-      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 6h.01M9 12h.01M9 18h.01M15 6h.01M15 12h.01M15 18h.01"/>
+    <div class="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600" data-sortable-handle>
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"/>
       </svg>
     </div>
 
     <%# Ícone de tipo %>
-    <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-      <% if secao.imagem_tipo? %>
-        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-        </svg>
-      <% else %>
-        <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-        </svg>
-      <% end %>
-    </div>
+    <% if secao.imagem_tipo? %>
+      <svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      </svg>
+    <% else %>
+      <svg class="w-5 h-5 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+      </svg>
+    <% end %>
   </div>
 
   <%# Info %>
   <div class="flex-1 min-w-0">
-    <p class="font-semibold text-gray-900 truncate">
+    <p class="font-semibold text-gray-900 truncate <%= 'line-through text-gray-400' unless secao.visivel? %>">
       <%= secao.titulo.presence || "(sem título)" %>
     </p>
-    <div class="flex items-center gap-2 mt-1 flex-wrap">
+    <div class="flex items-center gap-2 mt-1 flex-wrap text-xs text-gray-500">
       <% if secao.imagem_tipo? %>
-        <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">Imagem</span>
-        <span class="text-xs text-gray-500">
-          <%= secao.layout_exibicao == "carrossel" ? "carrossel" : "galeria" %>
-        </span>
-        <span class="text-xs text-gray-400">·</span>
-        <span class="text-xs text-gray-500">
-          <%= secao.imagens.count %> <%= secao.imagens.count == 1 ? "imagem" : "imagens" %>
-        </span>
+        <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">Imagem</span>
+        <span><%= secao.layout_exibicao == "carrossel" ? "Carrossel" : "Galeria" %></span>
+        <span class="text-gray-300">·</span>
+        <span><%= secao.imagens.count %> <%= secao.imagens.count == 1 ? "imagem" : "imagens" %></span>
       <% else %>
-        <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">Conteúdo</span>
-        <span class="text-xs text-gray-500">
-          <%= secao.layout_exibicao == "carrossel" ? "carrossel" : "galeria" %>
-        </span>
-        <span class="text-xs text-gray-400">·</span>
-        <span class="text-xs text-gray-500">
-          <%= secao.secao_itens.size %> <%= secao.secao_itens.size == 1 ? "item" : "itens" %>
-        </span>
-      <% end %>
-      <% unless secao.visivel? %>
-        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Oculta</span>
+        <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">Conteúdo</span>
+        <span><%= secao.layout_exibicao == "carrossel" ? "Carrossel" : "Galeria" %></span>
+        <span class="text-gray-300">·</span>
+        <span><%= secao.secao_itens.size %> <%= secao.secao_itens.size == 1 ? "item" : "itens" %></span>
       <% end %>
     </div>
   </div>
@@ -62,23 +48,26 @@
   <div class="flex items-center gap-1 flex-shrink-0">
 
     <%# Visibilidade %>
-    <%= form_with url: toggle_visivel_admin_secao_path(secao), method: :patch, class: "inline-flex" do %>
+    <%= button_to toggle_visivel_admin_secao_path(secao),
+          method: :patch,
+          class: "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors #{secao.visivel? ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}" do %>
       <% if secao.visivel? %>
-        <button type="submit" title="Clique para despublicar"
-                class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-green-100 text-green-700 hover:bg-green-200">
-          Publicado
-        </button>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        </svg>
+        Visível
       <% else %>
-        <button type="submit" title="Clique para publicar"
-                class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
-          Despublicado
-        </button>
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+        </svg>
+        Invisível
       <% end %>
     <% end %>
 
 
     <%# Editar %>
-        <%= link_to edit_admin_secao_path(secao),
+    <%= link_to edit_admin_secao_path(secao),
           data: { turbo_stream: true },
           title: "Editar",
           class: "p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" do %>

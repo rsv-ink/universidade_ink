@@ -1,0 +1,153 @@
+<%# ————— Layout: sidebar + conteúdo principal ————— %>
+<div class="flex gap-8 items-start">
+
+  <%# Sidebar de navegação (só aparece quando o conteúdo pertence a uma trilha) %>
+  <% if @trilha %>
+    <%= render "sidebar_trilha",
+          trilha:         @trilha,
+          conteudos:      @trilha_conteudos,
+          concluidos_ids: @concluidos_ids,
+          conteudo_ativo: @conteudo %>
+  <% end %>
+
+  <%# Conteúdo principal %>
+  <main class="flex-1 min-w-0 max-w-3xl">
+
+    <%# Breadcrumb %>
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
+      <%= link_to "Início", root_path, class: "hover:text-pink-600 transition-colors" %>
+      <% if @trilha %>
+        <span class="text-gray-300">/</span>
+        <%= link_to @trilha.nome, trilha_path(@trilha), class: "hover:text-pink-600 transition-colors" %>
+      <% end %>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-700 font-medium truncate max-w-xs"><%= @conteudo.titulo %></span>
+    </nav>
+
+    <%# Container com fundo branco para o artigo %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+      <%# Título do artigo %>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2 leading-tight"><%= @conteudo.titulo %></h1>
+
+      <div class="text-sm text-gray-400 mb-8 flex items-center gap-2 flex-wrap">
+        <% if @conteudo.tempo_estimado_minutos.present? %>
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <%= @conteudo.tempo_estimado_minutos %> min de leitura
+          </span>
+        <% end %>
+        <% if @conteudo.rascunho? %>
+          <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200">
+            Rascunho
+          </span>
+        <% elsif @conteudo.publicado? %>
+          <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-green-100 text-green-700 hover:bg-green-200">
+            Publicado
+          </span>
+        <% else %>
+          <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
+            Despublicado
+          </span>
+        <% end %>
+      </div>
+
+      <%# Conteúdo renderizado ————————————————————————————————— %>
+      <article class="mb-0">
+        <% if @conteudo.corpo.present? %>
+          <%= render_blocks(@conteudo.corpo) %>
+        <% else %>
+          <p class="text-gray-400 italic">Este conteúdo ainda não possui corpo.</p>
+        <% end %>
+      </article>
+    </div>
+
+    <%# ———————— Navegação: anterior / próximo ———————— %>
+    <% if @trilha %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-6 py-4">
+        <div class="flex items-center justify-between gap-4">
+          
+          <% if @conteudo_anterior %>
+            <%= link_to conteudo_path(@conteudo_anterior),
+                  class: "flex items-center gap-2 text-sm text-gray-600 hover:text-pink-600 transition-colors group" do %>
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+              <span>
+                <span class="block text-xs text-gray-400 group-hover:text-pink-400">Anterior</span>
+                <span class="font-medium truncate block max-w-[12rem]"><%= @conteudo_anterior.titulo %></span>
+              </span>
+            <% end %>
+          <% else %>
+            <div></div>
+          <% end %>
+
+          <% if @proximo_conteudo %>
+            <% if current_user_id && current_store_id && !@progresso&.concluido? %>
+              <%# Se houver próximo conteúdo e o conteúdo atual não foi concluído, marcar como concluído ao clicar %>
+              <%= form_with url: concluir_conteudo_path(@conteudo), method: :post, 
+                    data: { turbo: false }, 
+                    class: "inline-block" do %>
+                <%= hidden_field_tag :redirect_to, conteudo_path(@proximo_conteudo) %>
+                <%= button_tag type: "submit", 
+                      class: "flex items-center gap-2 text-sm text-pink-600 hover:text-pink-700 transition-colors group" do %>
+                  <span>
+                    <span class="block text-xs text-gray-400 group-hover:text-pink-400">Próximo</span>
+                    <span class="font-medium truncate block max-w-[12rem]"><%= @proximo_conteudo.titulo %></span>
+                  </span>
+                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+                <% end %>
+              <% end %>
+            <% else %>
+              <%# Se já foi concluído, apenas navegar %>
+              <%= link_to conteudo_path(@proximo_conteudo),
+                    class: "flex items-center gap-2 text-sm text-pink-600 hover:text-pink-700 transition-colors group text-right" do %>
+                <span>
+                  <span class="block text-xs text-gray-400 group-hover:text-pink-400">Próximo</span>
+                  <span class="font-medium truncate block max-w-[12rem]"><%= @proximo_conteudo.titulo %></span>
+                </span>
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              <% end %>
+            <% end %>
+          <% else %>
+            <%# Último conteúdo da trilha %>
+            <% if current_user_id && current_store_id && !@progresso&.concluido? %>
+              <%= form_with url: concluir_conteudo_path(@conteudo), method: :post, 
+                    data: { turbo: false }, 
+                    class: "inline-block" do %>
+                <%= hidden_field_tag :redirect_to, curso_path(@trilha.modulo.curso) if @trilha.modulo&.curso %>
+                <%= button_tag type: "submit", 
+                      class: "flex items-center gap-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-colors px-5 py-2.5 rounded-lg shadow-sm" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <span>Concluir trilha</span>
+                <% end %>
+              <% end %>
+            <% else %>
+              <div class="flex items-center gap-2 text-sm text-green-600 font-medium">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Trilha concluída!</span>
+              </div>
+            <% end %>
+          <% end %>
+
+        </div>
+      </div>
+    <% end %>
+
+    <%# ———————— Comentários ———————— %>
+    <div id="conteudo_feedback">
+      <%= render "feedback", conteudo: @conteudo, feedback: @feedback %>
+    </div>
+
+  </main>
+</div>

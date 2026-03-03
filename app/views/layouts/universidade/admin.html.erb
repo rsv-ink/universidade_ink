@@ -5,7 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
   <%= stylesheet_link_tag "universidade/application", "data-turbo-track": "reload" %>
   <% if respond_to?(:javascript_importmap_tags) %>
     <%= javascript_importmap_tags %>
@@ -83,9 +97,14 @@
       cursor: pointer;
       color: #666;
     }
+    
+    /* Apply Poppins to all content */
+    * {
+      font-family: 'Poppins', system-ui, sans-serif;
+    }
   </style>
 </head>
-<body class="bg-gray-50 antialiased overflow-hidden" style="height: 100dvh; display: flex; flex-direction: column;">
+<body class="bg-gray-50 antialiased overflow-hidden" style="height: 100dvh; display: flex; flex-direction: column; font-family: 'Poppins', system-ui, sans-serif;">
 
   <%# ── Modal overlay (persistent, shown/hidden via Stimulus) ── %>
   <div id="modal"
@@ -117,14 +136,21 @@
 
       <%# Navegação entre áreas %>
       <% active_lp = controller_path == "universidade/admin/secoes" %>
+      <% active_trilhas = ["universidade/admin/trilhas", "universidade/admin/modulos", "universidade/admin/conteudos"].include?(controller_path) %>
+      <% active_biblioteca = controller_path == "universidade/admin/biblioteca" %>
+      
       <nav class="flex items-center gap-1">
-        <%= link_to admin_root_path,
-              class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{active_lp ? 'text-gray-500 hover:text-gray-800 hover:bg-gray-100' : 'bg-pink-50 text-pink-600'}" do %>
-          Conteúdo
-        <% end %>
         <%= link_to admin_secoes_path,
               class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{active_lp ? 'bg-pink-50 text-pink-600' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>
           Landing Page
+        <% end %>
+        <%= link_to admin_root_path,
+              class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{active_trilhas ? 'bg-pink-50 text-pink-600' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>
+          Gestão de Trilhas
+        <% end %>
+        <%= link_to admin_biblioteca_index_path,
+              class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{active_biblioteca ? 'bg-pink-50 text-pink-600' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>
+          Biblioteca
         <% end %>
       </nav>
     </div>

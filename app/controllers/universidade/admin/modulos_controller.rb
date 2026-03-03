@@ -4,8 +4,8 @@ module Universidade
       before_action :set_modulo, only: %i[edit update destroy toggle_visivel mover_acima mover_abaixo]
 
       def new
-        @modulo = Modulo.new(visivel: true, curso_id: params[:curso_id])
-        @cursos = Curso.order(:nome)
+        @modulo = Modulo.new(visivel: true, trilha_id: params[:trilha_id])
+        @trilhas = Trilha.order(:nome)
         render layout: false if turbo_frame_request? || request.xhr?
       end
 
@@ -20,7 +20,7 @@ module Universidade
             format.html { redirect_to admin_root_path, notice: "Módulo criado com sucesso." }
           end
         else
-          @cursos = Curso.order(:nome)
+          @trilhas = Trilha.order(:nome)
           respond_to do |format|
             format.turbo_stream do
               html = render_to_string(:new, formats: [:html], layout: false)
@@ -32,7 +32,7 @@ module Universidade
       end
 
       def edit
-        @cursos = Curso.order(:nome)
+        @trilhas = Trilha.order(:nome)
         render layout: false if turbo_frame_request? || request.xhr?
       end
 
@@ -47,7 +47,7 @@ module Universidade
             format.html { redirect_to admin_root_path, notice: "Módulo atualizado com sucesso." }
           end
         else
-          @cursos = Curso.order(:nome)
+          @trilhas = Trilha.order(:nome)
           respond_to do |format|
             format.turbo_stream do
               html = render_to_string(:edit, formats: [:html], layout: false)
@@ -78,7 +78,7 @@ module Universidade
       end
 
       def mover_acima
-        scope = @modulo.curso_id ? Modulo.where(curso_id: @modulo.curso_id) : Modulo.where(curso_id: nil)
+        scope = @modulo.trilha_id ? Modulo.where(trilha_id: @modulo.trilha_id) : Modulo.where(trilha_id: nil)
         modulos = scope.order(Arel.sql("COALESCE(ordem, id)")).to_a
         idx = modulos.find_index { |m| m.id == @modulo.id }
         if idx&.positive?
@@ -89,7 +89,7 @@ module Universidade
       end
 
       def mover_abaixo
-        scope = @modulo.curso_id ? Modulo.where(curso_id: @modulo.curso_id) : Modulo.where(curso_id: nil)
+        scope = @modulo.trilha_id ? Modulo.where(trilha_id: @modulo.trilha_id) : Modulo.where(trilha_id: nil)
         modulos = scope.order(Arel.sql("COALESCE(ordem, id)")).to_a
         idx = modulos.find_index { |m| m.id == @modulo.id }
         if idx && idx < modulos.length - 1
@@ -114,7 +114,10 @@ module Universidade
       end
 
       def modulo_params
-        params.require(:modulo).permit(:nome, :descricao, :ordem, :visivel, :curso_id)
+        params.require(:modulo).permit(:nome, :descricao, :ordem, :visivel, :trilha_id).merge(
+          user_id: current_user_id || 1,
+          store_id: current_store_id || 1
+        )
       end
 
       def apply_status_action(modulo)

@@ -10,14 +10,14 @@ module Universidade
 
       def new
         @secao = Secao.new(visivel: true, tipo: "conteudo", formato_card: "quadrado", layout_exibicao: "galeria", colunas_galeria: 3)
-        @cursos  = Curso.order(:nome)
-        @artigos = Artigo.order(:titulo)
+        @trilhas  = Trilha.order(:nome)
+        @conteudos = Conteudo.order(:titulo)
         respond_to do |format|
           format.turbo_stream do
             render turbo_stream: turbo_stream.update(
               "modal-content",
               partial: "universidade/admin/secoes/form",
-              locals: { secao: @secao, cursos: @cursos, artigos: @artigos, url: admin_secoes_path }
+              locals: { secao: @secao, trilhas: @trilhas, conteudos: @conteudos, url: admin_secoes_path }
             )
           end
         end
@@ -29,6 +29,7 @@ module Universidade
         if @secao.save
           sync_itens(@secao)
           sync_imagens_ordem(@secao)
+          sync_new_imagens_links(@secao)
           respond_to do |format|
             format.turbo_stream do
               streams = [
@@ -46,14 +47,14 @@ module Universidade
             end
           end
         else
-          @cursos  = Curso.order(:nome)
-          @artigos = Artigo.order(:titulo)
+          @trilhas  = Trilha.order(:nome)
+          @conteudos = Conteudo.order(:titulo)
           respond_to do |format|
             format.turbo_stream do
               render turbo_stream: turbo_stream.update(
                 "modal-content",
                 partial: "universidade/admin/secoes/form",
-                locals: { secao: @secao, cursos: @cursos, artigos: @artigos, url: admin_secoes_path }
+                locals: { secao: @secao, trilhas: @trilhas, conteudos: @conteudos, url: admin_secoes_path }
               ), status: :unprocessable_entity
             end
           end
@@ -61,14 +62,14 @@ module Universidade
       end
 
       def edit
-        @cursos  = Curso.order(:nome)
-        @artigos = Artigo.order(:titulo)
+        @trilhas  = Trilha.order(:nome)
+        @conteudos = Conteudo.order(:titulo)
         respond_to do |format|
           format.turbo_stream do
             render turbo_stream: turbo_stream.update(
               "modal-content",
               partial: "universidade/admin/secoes/form",
-              locals: { secao: @secao, cursos: @cursos, artigos: @artigos, url: admin_secao_path(@secao) }
+              locals: { secao: @secao, trilhas: @trilhas, conteudos: @conteudos, url: admin_secao_path(@secao) }
             )
           end
         end
@@ -79,6 +80,7 @@ module Universidade
         if @secao.update(secao_params)
           sync_itens(@secao)
           sync_imagens_ordem(@secao)
+          sync_new_imagens_links(@secao)
           respond_to do |format|
             format.turbo_stream do
               render turbo_stream: [
@@ -92,14 +94,14 @@ module Universidade
             end
           end
         else
-          @cursos  = Curso.order(:nome)
-          @artigos = Artigo.order(:titulo)
+          @trilhas  = Trilha.order(:nome)
+          @conteudos = Conteudo.order(:titulo)
           respond_to do |format|
             format.turbo_stream do
               render turbo_stream: turbo_stream.update(
                 "modal-content",
                 partial: "universidade/admin/secoes/form",
-                locals: { secao: @secao, cursos: @cursos, artigos: @artigos, url: admin_secao_path(@secao) }
+                locals: { secao: @secao, trilhas: @trilhas, conteudos: @conteudos, url: admin_secao_path(@secao) }
               ), status: :unprocessable_entity
             end
           end
@@ -161,28 +163,41 @@ module Universidade
       end
 
       def secao_params
-        params.require(:secao).permit(:titulo, :subtitulo, :tipo, :formato_card, :layout_exibicao, :colunas_galeria, :visivel, imagens_ordem: [], imagens_links: {})
+        params.require(:secao).permit(:titulo, :subtitulo, :tipo, :formato_card, :layout_exibicao, :colunas_galeria, :visivel, imagens_ordem: [], imagens_links: {}, new_imagens_links: []).merge(
+          user_id: current_user_id || 1,
+          store_id: current_store_id || 1
+        )
       end
 
       def sync_itens(secao)
-        curso_ids  = Array(params.dig(:secao, :curso_ids)).map(&:to_i).reject(&:zero?)
-        artigo_ids = Array(params.dig(:secao, :artigo_ids)).map(&:to_i).reject(&:zero?)
+        trilha_ids  = Array(params.dig(:secao, :trilha_ids)).map(&:to_i).reject(&:zero?)
+        conteudo_ids = Array(params.dig(:secao, :conteudo_ids)).map(&:to_i).reject(&:zero?)
 
         secao.secao_itens.destroy_all
 
         ordem = 0
-        curso_ids.each do |id|
-          curso = Curso.find_by(id: id)
-          next unless curso
+        trilha_ids.each do |id|
+          trilha = Trilha.find_by(id: id)
+          next unless trilha
           ordem += 1
-          secao.secao_itens.create!(item: curso, ordem: ordem)
+          secao.secao_itens.create!(
+            item: trilha,
+            ordem: ordem,
+            user_id: current_user_id || 1,
+            store_id: current_store_id || 1
+          )
         end
 
-        artigo_ids.each do |id|
-          artigo = Artigo.find_by(id: id)
-          next unless artigo
+        conteudo_ids.each do |id|
+          conteudo = Conteudo.find_by(id: id)
+          next unless conteudo
           ordem += 1
-          secao.secao_itens.create!(item: artigo, ordem: ordem)
+          secao.secao_itens.create!(
+            item: conteudo,
+            ordem: ordem,
+            user_id: current_user_id || 1,
+            store_id: current_store_id || 1
+          )
         end
       end
 
@@ -198,7 +213,29 @@ module Universidade
         arquivos = Array(params.dig(:secao, :imagens)).compact
         return if arquivos.empty?
 
+        # Guardar quantas imagens existiam antes
+        @imagens_antes = secao.imagens.count
         secao.imagens.attach(arquivos)
+      end
+
+      def sync_new_imagens_links(secao)
+        # Pegar os links fornecidos para novas imagens
+        new_links = Array(params.dig(:secao, :new_imagens_links)).compact.reject(&:blank?)
+        return if new_links.empty?
+
+        # Pegar as imagens recém-anexadas (baseado na ordem de adição)
+        todas_imagens = secao.imagens.to_a
+        novas_imagens = todas_imagens.last(new_links.size)
+
+        # Criar/atualizar o hash de links
+        current_links = secao.imagens_links || {}
+        
+        novas_imagens.each_with_index do |img, index|
+          link = new_links[index]
+          current_links[img.blob_id.to_s] = link if link.present?
+        end
+
+        secao.update_column(:imagens_links, current_links)
       end
     end
   end

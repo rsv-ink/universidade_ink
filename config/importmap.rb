@@ -15,6 +15,8 @@ pin "controllers/hierarchical_sortable_controller", to: "universidade/controller
 pin "controllers/sidebar_controller",  to: "universidade/controllers/sidebar_controller.js"
 pin "controllers/carrossel_controller",   to: "universidade/controllers/carrossel_controller.js"
 pin "controllers/secao_form_controller", to: "universidade/controllers/secao_form_controller.js"
+pin "controllers/trilha_modulo_selector_controller", to: "universidade/controllers/trilha_modulo_selector_controller.js"
+pin "controllers/trilhas_manager_controller", to: "universidade/controllers/trilhas_manager_controller.js"
 
 # Sortable.js — drag & drop
 pin "sortablejs", to: "https://esm.sh/sortablejs@1.15.6?bundle"

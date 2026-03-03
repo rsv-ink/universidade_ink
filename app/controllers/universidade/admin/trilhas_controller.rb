@@ -1,11 +1,34 @@
 module Universidade
   module Admin
     class TrilhasController < BaseController
-      before_action :set_trilha, only: %i[edit update destroy toggle_visivel mover_acima mover_abaixo]
+      before_action :set_trilha, only: %i[show edit update destroy toggle_visivel mover_acima mover_abaixo selecionar_conteudos_existentes adicionar_conteudos_existentes]
+
+      def index
+        @busca = params[:q].presence
+        
+        if @busca
+          # Busca em trilhas, módulos e conteúdos
+          @trilhas = Trilha.buscar(@busca)
+                          .order(Arel.sql("COALESCE(ordem, id)"))
+                          .includes(:trilha_conteudos, :modulos)
+          @modulos_avulsos = Modulo.where(trilha_id: nil)
+                                    .buscar(@busca)
+                                    .order(Arel.sql("COALESCE(ordem, id)"))
+        else
+          # Exibir todos
+          @trilhas = Trilha.order(Arel.sql("COALESCE(ordem, id)"))
+                          .includes(:trilha_conteudos, :modulos)
+          @modulos_avulsos = Modulo.where(trilha_id: nil)
+                                    .order(Arel.sql("COALESCE(ordem, id)"))
+        end
+      end
+
+      def show
+        redirect_to admin_root_path
+      end
 
       def new
-        @trilha = Trilha.new(visivel: true, modulo_id: params[:modulo_id])
-        @modulos = Modulo.order(:nome)
+        @trilha = Trilha.new(visivel: true)
         render layout: false if turbo_frame_request? || request.xhr?
       end
 
@@ -20,7 +43,6 @@ module Universidade
             format.html { redirect_to admin_root_path, notice: "Trilha criada com sucesso." }
           end
         else
-          @modulos = Modulo.order(:nome)
           respond_to do |format|
             format.turbo_stream do
               html = render_to_string(:new, formats: [:html], layout: false)
@@ -32,7 +54,6 @@ module Universidade
       end
 
       def edit
-        @modulos = Modulo.order(:nome)
         render layout: false if turbo_frame_request? || request.xhr?
       end
 
@@ -47,7 +68,6 @@ module Universidade
             format.html { redirect_to admin_root_path, notice: "Trilha atualizada com sucesso." }
           end
         else
-          @modulos = Modulo.order(:nome)
           respond_to do |format|
             format.turbo_stream do
               html = render_to_string(:edit, formats: [:html], layout: false)
@@ -59,8 +79,9 @@ module Universidade
       end
 
       def destroy
+        nome = @trilha.nome
         @trilha.destroy
-        redirect_to admin_root_path, notice: "Trilha excluída com sucesso."
+        redirect_to admin_root_path, notice: "\"#{nome}\" excluída com sucesso."
       end
 
       def toggle_visivel
@@ -69,7 +90,7 @@ module Universidade
           format.turbo_stream do
             render turbo_stream: turbo_stream.replace(
               "trilha_#{@trilha.id}",
-              partial: "universidade/admin/trilhas/trilha_row",
+              partial: "universidade/admin/trilhas/trilha",
               locals: { trilha: @trilha }
             )
           end
@@ -78,8 +99,7 @@ module Universidade
       end
 
       def mover_acima
-        scope = @trilha.modulo_id ? Trilha.where(modulo_id: @trilha.modulo_id) : Trilha.where(modulo_id: nil)
-        trilhas = scope.order(Arel.sql("COALESCE(ordem, id)")).to_a
+        trilhas = Trilha.order(Arel.sql("COALESCE(ordem, id)")).to_a
         idx = trilhas.find_index { |t| t.id == @trilha.id }
         if idx&.positive?
           trilhas[idx], trilhas[idx - 1] = trilhas[idx - 1], trilhas[idx]
@@ -89,8 +109,7 @@ module Universidade
       end
 
       def mover_abaixo
-        scope = @trilha.modulo_id ? Trilha.where(modulo_id: @trilha.modulo_id) : Trilha.where(modulo_id: nil)
-        trilhas = scope.order(Arel.sql("COALESCE(ordem, id)")).to_a
+        trilhas = Trilha.order(Arel.sql("COALESCE(ordem, id)")).to_a
         idx = trilhas.find_index { |t| t.id == @trilha.id }
         if idx && idx < trilhas.length - 1
           trilhas[idx], trilhas[idx + 1] = trilhas[idx + 1], trilhas[idx]
@@ -107,6 +126,42 @@ module Universidade
         head :ok
       end
 
+      def adicionar_conteudos_existentes
+        @trilha = Trilha.find(params[:id])
+        conteudo_ids = Array(params[:conteudo_ids]).map(&:to_i)
+        
+        conteudos_adicionados = []
+        conteudo_ids.each do |conteudo_id|
+          conteudo = Conteudo.find_by(id: conteudo_id)
+          next unless conteudo
+          
+          # Verifica se já não está vinculado
+          next if @trilha.trilha_conteudos.exists?(conteudo_id: conteudo_id)
+          
+          # Adiciona na última posição
+          proxima_posicao = TrilhaConteudo.proxima_posicao(@trilha.id)
+          TrilhaConteudo.create!(
+            trilha: @trilha,
+            conteudo: conteudo,
+            modulo_id: params[:modulo_id].presence,
+            posicao: proxima_posicao
+          )
+          conteudos_adicionados << conteudo.titulo
+        end
+        
+        if conteudos_adicionados.any?
+          redirect_to admin_root_path, notice: "#{conteudos_adicionados.size} conteúdo(s) adicionado(s) com sucesso."
+        else
+          redirect_to admin_root_path, alert: "Nenhum conteúdo foi adicionado. Eles já podem estar vinculados a esta trilha."
+        end
+      end
+
+      def selecionar_conteudos_existentes
+        @trilha = Trilha.find(params[:id])
+        @conteudos_disponiveis = Conteudo.order(:titulo).includes(:trilha_conteudos)
+        render partial: "add_existing_content", layout: false
+      end
+
       private
 
       def set_trilha
@@ -114,7 +169,14 @@ module Universidade
       end
 
       def trilha_params
-        params.require(:trilha).permit(:nome, :tempo_estimado_minutos, :ordem, :visivel, :modulo_id)
+        permitted = params.require(:trilha).permit(:nome, :descricao, :ordem, :visivel, :tags_text, :imagem)
+        tags_text = permitted.delete(:tags_text)
+        tags_array = tags_text.to_s.split(",").map(&:strip).reject(&:blank?)
+        permitted.to_h.merge(
+          tags: tags_array,
+          user_id: current_user_id || 1,
+          store_id: current_store_id || 1
+        )
       end
 
       def apply_status_action(trilha)

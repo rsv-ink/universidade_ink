@@ -1,105 +1,153 @@
-<%# Breadcrumb %>
+<%# ————— Breadcrumb ————— %>
 <nav class="flex items-center gap-2 text-sm text-gray-500 mb-8">
-  <%= link_to "Início", root_path, class: "hover:text-pink-600 transition-colors" %>
+  <%= link_to "Trilhas", root_path, class: "hover:text-pink-600 transition-colors" %>
   <span class="text-gray-300">/</span>
-  <% if @trilha.modulo&.curso.present? %>
-    <%= link_to @trilha.modulo.curso.nome, curso_path(@trilha.modulo.curso), class: "hover:text-pink-600 transition-colors" %>
-    <span class="text-gray-300">/</span>
-  <% end %>
   <span class="text-gray-700 font-medium"><%= @trilha.nome %></span>
 </nav>
 
-<%# Layout duas colunas %>
-<div class="flex gap-8 items-start">
-
-  <%# Sidebar fixa %>
-  <%= render "universidade/artigos/sidebar_trilha",
-        trilha:        @trilha,
-        artigos:       @artigos,
-        concluidos_ids: @concluidos_ids %>
-
-  <%# Conteúdo principal %>
-  <main class="flex-1 min-w-0">
-
-    <%# Cabeçalho da trilha %>
-    <div class="mb-8">
-      <h1 class="text-2xl font-bold text-gray-900 mb-2"><%= @trilha.nome %></h1>
-
-      <div class="flex items-center gap-4 text-sm text-gray-500">
-        <% if @trilha.tempo_estimado_minutos.present? %>
-          <span class="flex items-center gap-1">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <%= @trilha.tempo_estimado_minutos %> min no total
-          </span>
-        <% end %>
-        <span><%= @artigos.size %> artigo<%= @artigos.size == 1 ? '' : 's' %></span>
-      </div>
-
-      <%# Barra de progresso geral (apenas se lojista presente) %>
-      <% if current_user_id && current_store_id && @artigos.any? %>
-        <%
-          total_art   = @artigos.size
-          concluidos  = @concluidos_ids.size
-          pct         = (concluidos.to_f / total_art * 100).round
-        %>
-        <div class="mt-4 flex items-center gap-3">
-          <div class="flex-1 bg-gray-100 rounded-full h-2">
-            <div class="h-2 rounded-full transition-all <%= pct == 100 ? 'bg-green-500' : 'bg-pink-500' %>"
-                 style="width: <%= pct %>%"></div>
-          </div>
-          <span class="text-sm font-medium text-gray-600 flex-shrink-0 w-10 text-right"><%= pct %>%</span>
-        </div>
+<%# ————— Cabeçalho da Trilha ————— %>
+<div class="mb-10">
+  <%# Tags %>
+  <% if @trilha.tags.any? %>
+    <div class="flex flex-wrap gap-1.5 mb-3">
+      <% @trilha.tags.each do |tag| %>
+        <%= badge_component(color: :blue, size: :xs, shape: :pill) { tag } %>
       <% end %>
     </div>
+  <% end %>
 
-    <%# Lista de artigos %>
-    <% if @artigos.any? %>
-      <div class="space-y-2">
-        <% @artigos.each_with_index do |artigo, idx| %>
-          <% concluido = @concluidos_ids.include?(artigo.id) %>
+  <h1 class="text-3xl font-bold text-gray-900 mb-2"><%= @trilha.nome %></h1>
 
-          <%= link_to artigo_path(artigo),
-                class: "flex items-center gap-4 bg-white rounded-xl border
-                        #{concluido ? 'border-green-200 hover:border-green-300' : 'border-gray-200 hover:border-pink-200'}
-                        hover:shadow-sm transition-all px-5 py-4 group" do %>
+  <% if @trilha.descricao.present? %>
+    <p class="text-gray-600 text-base leading-relaxed max-w-2xl"><%= @trilha.descricao %></p>
+  <% end %>
 
-            <%# Número / check %>
-            <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm
-                        <%= concluido ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500 group-hover:bg-pink-50 group-hover:text-pink-600' %>">
-              <% if concluido %>
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                </svg>
-              <% else %>
-                <%= idx + 1 %>
-              <% end %>
-            </div>
-
-            <%# Título + tempo %>
-            <div class="flex-1 min-w-0">
-              <p class="font-medium text-gray-900 group-hover:text-pink-700 transition-colors truncate">
-                <%= artigo.titulo %>
-              </p>
-              <% if artigo.tempo_estimado_minutos.present? %>
-                <p class="text-xs text-gray-400 mt-0.5"><%= artigo.tempo_estimado_minutos %> min de leitura</p>
-              <% end %>
-            </div>
-
-            <%# Seta %>
-            <svg class="flex-shrink-0 w-4 h-4 text-gray-300 group-hover:text-pink-400 transition-colors"
-                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
-
-          <% end %>
-        <% end %>
+  <%# Progresso geral da trilha %>
+  <% if current_user_id && current_store_id %>
+    <%
+      trilha_pct = (@trilha.progresso_lojista(current_user_id, current_store_id) * 100).round
+      concluido = trilha_pct == 100
+    %>
+    <div class="mt-6 flex items-center gap-4 bg-white border border-gray-200 rounded-xl px-5 py-3">
+      <div class="flex-1 bg-gray-100 rounded-full h-2">
+        <div class="h-2 rounded-full transition-all <%= concluido ? 'bg-green-500' : 'bg-pink-500' %>"
+             style="width: <%= trilha_pct %>%"></div>
       </div>
-    <% else %>
-      <p class="text-gray-400 text-sm">Esta trilha ainda não possui artigos.</p>
-    <% end %>
-
-  </main>
+      <span class="text-sm font-semibold <%= concluido ? 'text-green-600' : 'text-gray-700' %> whitespace-nowrap">
+        <%= trilha_pct %>% concluído
+      </span>
+      <% if concluido %>
+        <%= badge_component(color: :green, size: :xs, shape: :pill) { "Completo" } %>
+      <% end %>
+    </div>
+  <% end %>
 </div>
+
+<%# ————— Módulos ————— %>
+<% if @modulos.any? %>
+  <div class="space-y-4">
+    <% @modulos.each do |modulo| %>
+      <%
+        mod_progresso     = modulo.progresso(current_user_id, current_store_id)
+        mod_progresso_pct = (mod_progresso * 100).round
+        conteudos_visiveis = modulo.conteudos.select(&:visivel?)
+                                   .sort_by { |c| c.ordem || c.id }
+      %>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+
+        <%# Cabeçalho do módulo %>
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <h2 class="font-semibold text-gray-900 text-base"><%= modulo.nome %></h2>
+            <% if modulo.descricao.present? %>
+              <p class="text-xs text-gray-400 mt-0.5 truncate"><%= modulo.descricao %></p>
+            <% end %>
+          </div>
+
+          <%# Progresso do módulo (conteúdos concluídos / total) %>
+          <% if current_user_id && current_store_id %>
+            <div class="flex items-center gap-3 flex-shrink-0">
+              <% conteudos_total = conteudos_visiveis.size %>
+              <span class="text-xs text-gray-400">
+                <% conteudos_concluidos = conteudos_visiveis.count { |c| c.concluido?(current_user_id, current_store_id) } %>
+                <%= conteudos_concluidos %> / <%= conteudos_total %> conteúdo<%= conteudos_total == 1 ? '' : 's' %>
+              </span>
+              <div class="w-24 bg-gray-100 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full <%= mod_progresso_pct == 100 ? 'bg-green-500' : 'bg-pink-500' %>"
+                     style="width: <%= mod_progresso_pct %>%"></div>
+              </div>
+              <span class="text-xs font-medium text-gray-500 w-8 text-right">
+                <%= mod_progresso_pct %>%
+              </span>
+            </div>
+          <% end %>
+        </div>
+
+        <%# Lista de conteúdos do módulo %>
+        <% if conteudos_visiveis.any? %>
+          <ul class="divide-y divide-gray-50">
+            <% conteudos_visiveis.each do |conteudo| %>
+              <%
+                c_concluido = conteudo.concluido?(current_user_id, current_store_id)
+              %>
+
+              <li>
+                <%= link_to conteudo_path(conteudo), class: "flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors group" do %>
+
+                  <%# Status icon %>
+                  <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm
+                              <%= c_concluido ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400 group-hover:bg-pink-50 group-hover:text-pink-500' %>">
+                    <% if c_concluido %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    <% else %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                      </svg>
+                    <% end %>
+                  </div>
+
+                  <%# Nome e tempo estimado %>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 group-hover:text-pink-600 transition-colors truncate"><%= conteudo.titulo %></p>
+                    <% if conteudo.tempo_estimado_minutos.present? %>
+                      <p class="text-xs text-gray-400 mt-0.5"><%= conteudo.tempo_estimado_minutos %> min</p>
+                    <% end %>
+                  </div>
+
+                  <%# Status de conclusão %>
+                  <% if current_user_id && current_store_id %>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <% if c_concluido %>
+                        <span class="text-xs text-green-600 font-medium">Concluído</span>
+                      <% else %>
+                        <span class="text-xs text-gray-400">Pendente</span>
+                      <% end %>
+                    </div>
+                  <% end %>
+
+                  <%# Seta de navegação %>
+                  <svg class="flex-shrink-0 w-4 h-4 text-gray-300 group-hover:text-pink-400 transition-colors" 
+                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="px-6 py-4 text-sm text-gray-400 italic">Este módulo ainda não possui conteúdos.</p>
+        <% end %>
+
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="text-center py-16 bg-white rounded-xl border border-gray-200">
+    <p class="text-gray-400 text-sm">Esta trilha ainda não possui módulos.</p>
+  </div>
+<% end %>

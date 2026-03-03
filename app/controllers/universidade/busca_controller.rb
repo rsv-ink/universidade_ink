@@ -4,9 +4,9 @@ module Universidade
       @q = params[:q].to_s.strip
       return if @q.blank?
 
-      @cursos  = Curso.visivel.buscar(@q).order(Arel.sql("COALESCE(ordem, id)"))
-      @trilhas = Trilha.visivel.buscar(@q).includes(modulo: :curso).order(Arel.sql("COALESCE(ordem, id)"))
-      @artigos = Artigo.visivel.buscar(@q).includes(trilha: { modulo: :curso }).order(Arel.sql("COALESCE(ordem, id)"))
+      @trilhas  = Trilha.visivel.buscar(@q).order(Arel.sql("COALESCE(ordem, id)"))
+      @modulos  = Modulo.visivel.buscar(@q).includes(:trilha).order(Arel.sql("COALESCE(ordem, id)"))
+      @conteudos = Conteudo.visivel.buscar(@q).includes(modulo: :trilha).order(Arel.sql("COALESCE(ordem, id)"))
     end
   end
 end

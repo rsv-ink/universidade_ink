@@ -3,306 +3,193 @@ puts "🌱 Populando banco de dados..."
 
 # Limpar dados existentes
 Universidade::Progresso.destroy_all
-Universidade::Artigo.destroy_all
-Universidade::Trilha.destroy_all
+Universidade::Feedback.destroy_all
+Universidade::Conteudo.destroy_all
 Universidade::Modulo.destroy_all
-Universidade::Curso.destroy_all
+Universidade::Trilha.destroy_all
 
 puts "✓ Dados limpos"
 
 owner_attrs = { user_id: 1, store_id: 1 }
 
-# Criar curso
-curso = Universidade::Curso.create!(
+# Trilha 1: Ruby on Rails
+trilha1 = Universidade::Trilha.create!(
   **owner_attrs,
-  nome: "Ruby on Rails - Completo",
-  descricao: "Aprenda Ruby on Rails do zero ao avançado com este curso completo",
-  tags: ["Ruby", "Rails", "Web Development", "Backend"],
+  nome: "Ruby on Rails Essencial",
+  descricao: "Aprenda os fundamentos do framework Ruby on Rails",
+  tags: ["ruby", "rails", "backend"],
+  visivel: true,
+  rascunho: false,
+  ordem: 1
+)
+puts "✅ Trilha criada: #{trilha1.nome}"
+
+# Módulo 1.1
+modulo1_1 = Universidade::Modulo.create!(
+  **owner_attrs,
+  trilha_id: trilha1.id,
+  nome: "Introdução ao Rails",
+  descricao: "Conceitos básicos e instalação",
+  visivel: true,
+  ordem: 1
+)
+puts "  📦 Módulo: #{modulo1_1.nome}"
+
+# Conteúdos do módulo 1.1
+Universidade::Conteudo.create!(
+  **owner_attrs,
+  titulo: "O que é Ruby on Rails?",
+  corpo: "<h2>Introdução</h2><p>Ruby on Rails é um framework web de código aberto escrito em Ruby, seguindo o padrão MVC (Model-View-Controller).</p><h3>Por que usar Rails?</h3><ul><li>Convenção sobre configuração</li><li>DRY (Don't Repeat Yourself)</li><li>Desenvolvimento rápido</li><li>Grande ecossistema de gems</li></ul>",
+  modulo_id: modulo1_1.id,
   visivel: true,
   ordem: 1
 )
 
-puts "✓ Curso criado: #{curso.nome}"
-
-# Criar módulo 1
-modulo1 = Universidade::Modulo.create!(
+Universidade::Conteudo.create!(
   **owner_attrs,
-  curso: curso,
-  nome: "Fundamentos do Ruby",
-  descricao: "Aprenda os conceitos básicos da linguagem Ruby",
+  titulo: "Instalando o Rails",
+  corpo: "<h2>Passo a passo</h2><p>Para instalar o Rails, você precisa ter o Ruby instalado. Depois, basta executar:</p><pre><code>gem install rails\nrails -v\nrails new meu_app\ncd meu_app\nbin/rails server</code></pre>",
+  modulo_id: modulo1_1.id,
+  visivel: true,
+  ordem: 2
+)
+puts "    📄 2 conteúdos criados"
+
+# Módulo 1.2
+modulo1_2 = Universidade::Modulo.create!(
+  **owner_attrs,
+  trilha_id: trilha1.id,
+  nome: "Models e Banco de Dados",
+  descricao: "Active Record e migrations",
+  visivel: true,
+  ordem: 2
+)
+puts "  📦 Módulo: #{modulo1_2.nome}"
+
+Universidade::Conteudo.create!(
+  **owner_attrs,
+  titulo: "Active Record Básico",
+  corpo: "<h2>Models</h2><p>O Active Record é a camada ORM do Rails. Ele conecta objetos Ruby a tabelas do banco de dados.</p><pre><code>class User < ApplicationRecord\n  has_many :posts\n  validates :email, presence: true\nend</code></pre>",
+  modulo_id: modulo1_2.id,
   visivel: true,
   ordem: 1
 )
 
-# Criar trilha 1.1
-trilha1_1 = Universidade::Trilha.create!(
+Universidade::Conteudo.create!(
   **owner_attrs,
-  modulo: modulo1,
-  nome: "Introdução ao Ruby",
-  tempo_estimado_minutos: 45,
+  titulo: "Migrations",
+  corpo: "<h2>Gerenciando o Schema</h2><p>Migrations permitem versionar e modificar o schema do banco de dados de forma controlada.</p><pre><code>rails generate migration CreateUsers\nrails db:migrate</code></pre>",
+  modulo_id: modulo1_2.id,
+  visivel: true,
+  ordem: 2
+)
+puts "    📄 2 conteúdos criados"
+
+# Trilha 2: JavaScript Moderno
+trilha2 = Universidade::Trilha.create!(
+  **owner_attrs,
+  nome: "JavaScript Moderno",
+  descricao: "ES6+, async/await e muito mais",
+  tags: ["javascript", "frontend", "es6"],
+  visivel: true,
+  rascunho: false,
+  ordem: 2
+)
+puts "✅ Trilha criada: #{trilha2.nome}"
+
+modulo2_1 = Universidade::Modulo.create!(
+  **owner_attrs,
+  trilha_id: trilha2.id,
+  nome: "ES6 Fundamentals",
+  descricao: "Arrow functions, destructuring, etc",
+  visivel: true,
+  ordem: 1
+)
+puts "  📦 Módulo: #{modulo2_1.nome}"
+
+Universidade::Conteudo.create!(
+  **owner_attrs,
+  titulo: "Arrow Functions",
+  corpo: "<h2>Sintaxe moderna</h2><p>Arrow functions simplificam a escrita de funções em JavaScript.</p><pre><code>// Função tradicional\nfunction soma(a, b) { return a + b; }\n\n// Arrow function\nconst soma = (a, b) => a + b;</code></pre>",
+  modulo_id: modulo2_1.id,
   visivel: true,
   ordem: 1
 )
 
-Universidade::Artigo.create!(
+Universidade::Conteudo.create!(
   **owner_attrs,
-  trilha: trilha1_1,
-  titulo: "O que é Ruby?",
-  corpo: {
-    "blocks" => [
-      {
-        "type" => "header",
-        "data" => { "text" => "O que é Ruby?", "level" => 1 }
-      },
-      {
-        "type" => "paragraph",
-        "data" => { "text" => "Ruby é uma linguagem de programação interpretada, de alto nível e de propósito geral. Foi criada por Yukihiro Matsumoto em 1995 com foco na simplicidade e produtividade." }
-      },
-      {
-        "type" => "header",
-        "data" => { "text" => "Características principais", "level" => 2 }
-      },
-      {
-        "type" => "list",
-        "data" => {
-          "style" => "unordered",
-          "items" => [
-            "Sintaxe elegante e natural",
-            "Orientada a objetos",
-            "Tipagem dinâmica",
-            "Garbage collection automático",
-            "Comunidade ativa e amigável"
-          ]
-        }
-      }
-    ]
-  },
-  tempo_estimado_minutos: 10,
-  visivel: true,
-  ordem: 1
-)
-
-Universidade::Artigo.create!(
-  **owner_attrs,
-  trilha: trilha1_1,
-  titulo: "Instalando o Ruby",
-  corpo: {
-    "blocks" => [
-      {
-        "type" => "header",
-        "data" => { "text" => "Instalando o Ruby", "level" => 1 }
-      },
-      {
-        "type" => "paragraph",
-        "data" => { "text" => "Existem várias formas de instalar o Ruby no seu sistema. Vamos ver as principais." }
-      },
-      {
-        "type" => "header",
-        "data" => { "text" => "Usando asdf (Recomendado)", "level" => 2 }
-      },
-      {
-        "type" => "code",
-        "data" => {
-          "code" => "# Instalar asdf\ngit clone https://github.com/asdf-vm/asdf.git ~/.asdf\n\n# Adicionar plugin do Ruby\nasdf plugin add ruby\n\n# Instalar Ruby\nasdf install ruby 3.3.6\nasdf global ruby 3.3.6"
-        }
-      }
-    ]
-  },
-  tempo_estimado_minutos: 15,
+  titulo: "Destructuring",
+  corpo: "<h2>Extraindo valores</h2><p>Destructuring permite extrair valores de arrays e objetos de forma concisa.</p><pre><code>const pessoa = { nome: 'João', idade: 25 };\nconst { nome, idade } = pessoa;\n\nconst numeros = [1, 2, 3];\nconst [primeiro, segundo] = numeros;</code></pre>",
+  modulo_id: modulo2_1.id,
   visivel: true,
   ordem: 2
 )
 
-Universidade::Artigo.create!(
+Universidade::Conteudo.create!(
   **owner_attrs,
-  trilha: trilha1_1,
-  titulo: "Primeiro programa em Ruby",
-  corpo: {
-    "blocks" => [
-      {
-        "type" => "header",
-        "data" => { "text" => "Primeiro programa em Ruby", "level" => 1 }
-      },
-      {
-        "type" => "paragraph",
-        "data" => { "text" => "Vamos escrever nosso primeiro programa em Ruby - o clássico Hello World!" }
-      },
-      {
-        "type" => "code",
-        "data" => {
-          "code" => "puts \"Hello, World!\""
-        }
-      },
-      {
-        "type" => "paragraph",
-        "data" => { "text" => "Execute este código salvando em um arquivo hello.rb e rodando: ruby hello.rb" }
-      }
-    ]
-  },
-  tempo_estimado_minutos: 5,
+  titulo: "Promises e Async/Await",
+  corpo: "<h2>Programação assíncrona</h2><p>Promises e async/await facilitam o trabalho com código assíncrono.</p><pre><code>// Usando Promises\nfetch('/api/data')\n  .then(res => res.json())\n  .then(data => console.log(data));\n\n// Usando async/await\nasync function fetchData() {\n  const res = await fetch('/api/data');\n  const data = await res.json();\n  console.log(data);\n}</code></pre>",
+  modulo_id: modulo2_1.id,
   visivel: true,
   ordem: 3
 )
+puts "    📄 3 conteúdos criados"
 
-puts "✓ Trilha '#{trilha1_1.nome}' criada com #{trilha1_1.artigos.count} artigos"
-
-# Criar trilha 1.2
-trilha1_2 = Universidade::Trilha.create!(
+# Trilha 3: Stimulus JS
+trilha3 = Universidade::Trilha.create!(
   **owner_attrs,
-  modulo: modulo1,
-  nome: "Variáveis e Tipos de Dados",
-  tempo_estimado_minutos: 60,
+  nome: "Stimulus JS",
+  descricao: "Framework JavaScript modesto para HTML",
+  tags: ["stimulus", "javascript", "hotwire"],
   visivel: true,
-  ordem: 2
+  rascunho: false,
+  ordem: 3
 )
+puts "✅ Trilha criada: #{trilha3.nome}"
 
-Universidade::Artigo.create!(
+modulo3_1 = Universidade::Modulo.create!(
   **owner_attrs,
-  trilha: trilha1_2,
-  titulo: "Declarando Variáveis",
-  corpo: {
-    "blocks" => [
-      {
-        "type" => "header",
-        "data" => { "text" => "Variáveis em Ruby", "level" => 1 }
-      },
-      {
-        "type" => "paragraph",
-        "data" => { "text" => "Ruby possui diferentes tipos de variáveis, cada uma com seu propósito específico." }
-      },
-      {
-        "type" => "code",
-        "data" => {
-          "code" => "# Variável local\nnome = \"João\"\n\n# Variável de instância\n@idade = 25\n\n# Variável de classe\n@@contador = 0\n\n# Constante\nPI = 3.14159"
-        }
-      }
-    ]
-  },
-  tempo_estimado_minutos: 20,
+  trilha_id: trilha3.id,
+  nome: "Controllers",
+  descricao: "Criando controllers Stimulus",
+  visivel: true,
+  ordem: 1
+)
+puts "  📦 Módulo: #{modulo3_1.nome}"
+
+Universidade::Conteudo.create!(
+  **owner_attrs,
+  titulo: "Primeiro Controller",
+  corpo: "<h2>Hello Stimulus</h2><p>Vamos criar nosso primeiro controller Stimulus.</p><pre><code>// hello_controller.js\nimport { Controller } from '@hotwired/stimulus'\n\nexport default class extends Controller {\n  connect() {\n    console.log('Hello, Stimulus!')\n  }\n}</code></pre><pre><code>&lt;div data-controller=\"hello\"&gt;\n  &lt;h1&gt;Stimulus está funcionando!&lt;/h1&gt;\n&lt;/div&gt;</code></pre>",
+  modulo_id: modulo3_1.id,
   visivel: true,
   ordem: 1
 )
 
-Universidade::Artigo.create!(
+Universidade::Conteudo.create!(
   **owner_attrs,
-  trilha: trilha1_2,
-  titulo: "Strings e Números",
-  corpo: {
-    "blocks" => [
-      {
-        "type" => "header",
-        "data" => { "text" => "Trabalhando com Strings e Números", "level" => 1 }
-      },
-      {
-        "type" => "paragraph",
-        "data" => { "text" => "Strings e números são os tipos de dados mais básicos e fundamentais." }
-      },
-      {
-        "type" => "code",
-        "data" => {
-          "code" => "# Strings\nnome = \"Universidade Ink\"\nmensagem = 'Bem-vindo!'\n\n# Números\ninteiro = 42\nflutuante = 3.14\n\n# Operações\nresultado = 10 + 5\nproduto = 3 * 4"
-        }
-      }
-    ]
-  },
-  tempo_estimado_minutos: 20,
+  titulo: "Targets e Actions",
+  corpo: "<h2>Conectando HTML</h2><p>Targets são referências a elementos HTML, e actions são eventos que disparam métodos do controller.</p><pre><code>export default class extends Controller {\n  static targets = ['name', 'output']\n\n  greet() {\n    this.outputTarget.textContent = `Olá, ${this.nameTarget.value}!`\n  }\n}</code></pre><pre><code>&lt;div data-controller=\"greeter\"&gt;\n  &lt;input data-greeter-target=\"name\" type=\"text\"&gt;\n  &lt;button data-action=\"click->greeter#greet\"&gt;Cumprimentar&lt;/button&gt;\n  &lt;p data-greeter-target=\"output\"&gt;&lt;/p&gt;\n&lt;/div&gt;</code></pre>",
+  modulo_id: modulo3_1.id,
   visivel: true,
   ordem: 2
 )
+puts "    📄 2 conteúdos criados"
 
-puts "✓ Trilha '#{trilha1_2.nome}' criada com #{trilha1_2.artigos.count} artigos"
-
-# Criar módulo 2
-modulo2 = Universidade::Modulo.create!(
+# Conteúdo solto (direto na trilha, sem módulo)
+Universidade::Conteudo.create!(
   **owner_attrs,
-  curso: curso,
-  nome: "Ruby on Rails Básico",
-  descricao: "Introdução ao framework Rails",
+  titulo: "Recursos Adicionais",
+  corpo: "<h2>Links úteis</h2><ul><li><a href='https://stimulus.hotwired.dev'>Documentação oficial do Stimulus</a></li><li><a href='https://hotwired.dev'>Hotwire</a></li><li><a href='https://turbo.hotwired.dev'>Turbo</a></li></ul>",
+  trilha_id: trilha3.id,
+  modulo_id: nil,
   visivel: true,
-  ordem: 2
+  ordem: 10
 )
+puts "  📄 1 conteúdo solto criado"
 
-# Criar trilha 2.1
-trilha2_1 = Universidade::Trilha.create!(
-  **owner_attrs,
-  modulo: modulo2,
-  nome: "O que é Rails?",
-  tempo_estimado_minutos: 30,
-  visivel: true,
-  ordem: 1
-)
+puts ""
+puts "✨ Dados criados com sucesso!"
+puts "📊 Total: #{Universidade::Trilha.count} trilhas, #{Universidade::Modulo.count} módulos, #{Universidade::Conteudo.count} conteúdos"
+puts "🚀 Acesse http://localhost:3000/admin para gerenciar o conteúdo!"
 
-Universidade::Artigo.create!(
-  **owner_attrs,
-  trilha: trilha2_1,
-  titulo: "Introdução ao Rails",
-  corpo: {
-    "blocks" => [
-      {
-        "type" => "header",
-        "data" => { "text" => "Ruby on Rails", "level" => 1 }
-      },
-      {
-        "type" => "paragraph",
-        "data" => { "text" => "Rails é um framework web de código aberto escrito em Ruby, seguindo o padrão MVC (Model-View-Controller)." }
-      },
-      {
-        "type" => "header",
-        "data" => { "text" => "Por que usar Rails?", "level" => 2 }
-      },
-      {
-        "type" => "list",
-        "data" => {
-          "style" => "unordered",
-          "items" => [
-            "Convenção sobre configuração",
-            "DRY (Don't Repeat Yourself)",
-            "Desenvolvimento rápido",
-            "Grande ecossistema de gems",
-            "Comunidade ativa"
-          ]
-        }
-      }
-    ]
-  },
-  tempo_estimado_minutos: 15,
-  visivel: true,
-  ordem: 1
-)
-
-Universidade::Artigo.create!(
-  **owner_attrs,
-  trilha: trilha2_1,
-  titulo: "Instalando o Rails",
-  corpo: {
-    "blocks" => [
-      {
-        "type" => "header",
-        "data" => { "text" => "Instalando o Rails", "level" => 1 }
-      },
-      {
-        "type" => "paragraph",
-        "data" => { "text" => "Com o Ruby instalado, instalar o Rails é muito simples." }
-      },
-      {
-        "type" => "code",
-        "data" => {
-          "code" => "# Instalar Rails\ngem install rails\n\n# Verificar versão\nrails -v\n\n# Criar nova aplicação\nrails new meu_app\ncd meu_app\nbin/rails server"
-        }
-      }
-    ]
-  },
-  tempo_estimado_minutos: 15,
-  visivel: true,
-  ordem: 2
-)
-
-puts "✓ Trilha '#{trilha2_1.nome}' criada com #{trilha2_1.artigos.count} artigos"
-
-puts "\n✅ Seeds concluídas com sucesso!"
-puts "📊 Resumo:"
-puts "   - #{Universidade::Curso.count} curso(s)"
-puts "   - #{Universidade::Modulo.count} módulo(s)"
-puts "   - #{Universidade::Trilha.count} trilha(s)"
-puts "   - #{Universidade::Artigo.count} artigo(s)"
-puts "\n🚀 Acesse http://localhost:3000 para ver a aplicação!"

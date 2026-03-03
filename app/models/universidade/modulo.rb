@@ -2,9 +2,11 @@ module Universidade
   class Modulo < ApplicationRecord
     self.table_name = "universidade_modulos"
 
-    belongs_to :curso, class_name: "Universidade::Curso", optional: true
+    belongs_to :trilha, class_name: "Universidade::Trilha", optional: true
 
-    has_many :trilhas, class_name: "Universidade::Trilha", foreign_key: :modulo_id, dependent: :nullify
+    # Conteúdos são vinculados através da trilha_conteudos com modulo_id
+    has_many :trilha_conteudos, class_name: "Universidade::TrilhaConteudo", foreign_key: :modulo_id, dependent: :nullify
+    has_many :conteudos, through: :trilha_conteudos, class_name: "Universidade::Conteudo"
 
     validates :nome, presence: true
     validates :user_id, presence: true
@@ -23,17 +25,22 @@ module Universidade
       !rascunho? && !visivel?
     end
 
-    # Retorna a fração de trilhas concluídas pelo usuario (0.0 a 1.0).
-    # Uma trilha é considerada concluída quando todos os seus artigos visíveis foram concluídos.
+    # Retorna a fração de conteúdos concluídos pelo usuário (0.0 a 1.0).
+    # Conta apenas conteúdos visíveis deste módulo.
     def progresso(user_id, store_id)
       return 0.0 unless user_id && store_id
       
-      trilhas_visiveis = trilhas.visivel
-      total = trilhas_visiveis.count
+      # Get conteudos through trilha_conteudos for this module
+      conteudo_ids = trilha_conteudos.joins(:conteudo).where(universidade_conteudos: { visivel: true }).pluck(:conteudo_id)
+      total = conteudo_ids.size
       return 0.0 if total.zero?
 
-      concluidas = trilhas_visiveis.count { |trilha| trilha.concluida?(user_id, store_id) }
-      concluidas.to_f / total
+      concluidos = Progresso
+        .where(conteudo_id: conteudo_ids, user_id: user_id, store_id: store_id)
+        .where.not(concluido_em: nil)
+        .count
+
+      concluidos.to_f / total
     end
   end
 end

@@ -1,5 +1,7 @@
 module Universidade
   class Secao < ApplicationRecord
+    include ImageProcessor
+    
     self.table_name = "universidade_secoes"
 
     has_many :secao_itens, -> { order(:ordem) },

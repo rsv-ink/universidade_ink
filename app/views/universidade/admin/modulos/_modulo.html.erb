@@ -25,36 +25,36 @@
         <%= modulo.nome %>
       </span>
       <% if modulo.rascunho? %>
-        <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200">
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
           Rascunho
         </span>
       <% else %>
-        <%= form_with url: toggle_visivel_admin_modulo_path(modulo), method: :patch, class: "inline-flex" do %>
-          <% if modulo.publicado? %>
-            <button type="submit" title="Clique para despublicar"
-                    class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-green-100 text-green-700 hover:bg-green-200">
-              Publicado
-            </button>
+        <%= button_to toggle_visivel_admin_modulo_path(modulo),
+              method: :patch,
+              class: "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors #{modulo.visivel? ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}" do %>
+          <% if modulo.visivel? %>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            Visível
           <% else %>
-            <button type="submit" title="Clique para publicar"
-                    class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
-              Despublicado
-            </button>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+            </svg>
+            Invisível
           <% end %>
         <% end %>
       <% end %>
     </div>
-    <% if modulo.descricao.present? %>
-      <p class="text-xs text-gray-400 mt-0.5 truncate max-w-xs"><%= modulo.descricao %></p>
-    <% end %>
   </td>
 
-  <%# Curso vinculado %>
+  <%# Trilha vinculado %>
   <td class="px-4 py-3">
-    <% if modulo.curso.present? %>
-      <%= badge_component(color: :purple, size: :xs, shape: :pill) { modulo.curso.nome } %>
+    <% if modulo.trilha.present? %>
+      <%= badge_component(color: :purple, size: :xs, shape: :pill) { modulo.trilha.nome } %>
     <% else %>
-      <span class="text-gray-300 text-xs">Sem curso</span>
+      <span class="text-gray-300 text-xs">Sem trilha</span>
     <% end %>
   </td>
 

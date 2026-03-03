@@ -1,0 +1,3 @@
+<%= turbo_stream.replace "artigo_#{@conteudo.id}" do %>
+  <%= render "universidade/admin/artigos/avulso_item", conteudo: @conteudo %>
+<% end %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_27_190001) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_02_120010) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -39,8 +39,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_27_190001) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "universidade_artigos", force: :cascade do |t|
-    t.integer "trilha_id"
+  create_table "universidade_conteudos", force: :cascade do |t|
     t.string "titulo", null: false
     t.text "corpo"
     t.integer "ordem"
@@ -51,47 +50,28 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_27_190001) do
     t.boolean "rascunho", default: false, null: false
     t.integer "user_id", null: false
     t.integer "store_id", null: false
-    t.index ["ordem"], name: "index_universidade_artigos_on_ordem"
-    t.index ["rascunho"], name: "index_universidade_artigos_on_rascunho"
-    t.index ["store_id"], name: "index_universidade_artigos_on_store_id"
-    t.index ["trilha_id"], name: "index_universidade_artigos_on_trilha_id"
-    t.index ["user_id"], name: "index_universidade_artigos_on_user_id"
-    t.index ["visivel"], name: "index_universidade_artigos_on_visivel"
-  end
-
-  create_table "universidade_cursos", force: :cascade do |t|
-    t.string "nome", null: false
-    t.text "descricao"
-    t.text "tags"
-    t.integer "ordem"
-    t.boolean "visivel", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.boolean "rascunho", default: false, null: false
-    t.integer "user_id", null: false
-    t.integer "store_id", null: false
-    t.index ["ordem"], name: "index_universidade_cursos_on_ordem"
-    t.index ["rascunho"], name: "index_universidade_cursos_on_rascunho"
-    t.index ["store_id"], name: "index_universidade_cursos_on_store_id"
-    t.index ["user_id"], name: "index_universidade_cursos_on_user_id"
-    t.index ["visivel"], name: "index_universidade_cursos_on_visivel"
+    t.index ["ordem"], name: "index_universidade_conteudos_on_ordem"
+    t.index ["rascunho"], name: "index_universidade_conteudos_on_rascunho"
+    t.index ["store_id"], name: "index_universidade_conteudos_on_store_id"
+    t.index ["user_id"], name: "index_universidade_conteudos_on_user_id"
+    t.index ["visivel"], name: "index_universidade_conteudos_on_visivel"
   end
 
   create_table "universidade_feedbacks", force: :cascade do |t|
-    t.integer "artigo_id", null: false
+    t.integer "conteudo_id", null: false
     t.integer "sentimento", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.integer "store_id", null: false
-    t.index ["artigo_id", "user_id", "store_id"], name: "index_universidade_feedbacks_on_artigo_user_store", unique: true
-    t.index ["artigo_id"], name: "index_universidade_feedbacks_on_artigo_id"
+    t.index ["conteudo_id", "user_id", "store_id"], name: "index_universidade_feedbacks_on_conteudo_user_store", unique: true
+    t.index ["conteudo_id"], name: "index_universidade_feedbacks_on_conteudo_id"
     t.index ["store_id"], name: "index_universidade_feedbacks_on_store_id"
     t.index ["user_id"], name: "index_universidade_feedbacks_on_user_id"
   end
 
   create_table "universidade_modulos", force: :cascade do |t|
-    t.integer "curso_id"
+    t.integer "trilha_id"
     t.string "nome", null: false
     t.text "descricao"
     t.integer "ordem"
@@ -101,26 +81,26 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_27_190001) do
     t.boolean "rascunho", default: false, null: false
     t.integer "user_id", null: false
     t.integer "store_id", null: false
-    t.index ["curso_id"], name: "index_universidade_modulos_on_curso_id"
     t.index ["ordem"], name: "index_universidade_modulos_on_ordem"
     t.index ["rascunho"], name: "index_universidade_modulos_on_rascunho"
     t.index ["store_id"], name: "index_universidade_modulos_on_store_id"
+    t.index ["trilha_id"], name: "index_universidade_modulos_on_trilha_id"
     t.index ["user_id"], name: "index_universidade_modulos_on_user_id"
     t.index ["visivel"], name: "index_universidade_modulos_on_visivel"
   end
 
   create_table "universidade_progressos", force: :cascade do |t|
-    t.integer "artigo_id", null: false
+    t.integer "conteudo_id", null: false
     t.integer "trilha_id", null: false
     t.datetime "concluido_em"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.integer "store_id", null: false
-    t.index ["artigo_id"], name: "index_universidade_progressos_on_artigo_id"
+    t.index ["conteudo_id"], name: "index_universidade_progressos_on_conteudo_id"
     t.index ["store_id"], name: "index_universidade_progressos_on_store_id"
     t.index ["trilha_id"], name: "index_universidade_progressos_on_trilha_id"
-    t.index ["user_id", "artigo_id", "store_id"], name: "index_universidade_progressos_on_user_artigo_store", unique: true
+    t.index ["user_id", "conteudo_id", "store_id"], name: "index_universidade_progressos_on_user_conteudo_store", unique: true
     t.index ["user_id"], name: "index_universidade_progressos_on_user_id"
   end
 
@@ -158,18 +138,31 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_27_190001) do
     t.index ["user_id"], name: "index_universidade_secoes_on_user_id"
   end
 
-  create_table "universidade_trilhas", force: :cascade do |t|
+  create_table "universidade_trilha_conteudos", force: :cascade do |t|
+    t.integer "trilha_id", null: false
+    t.integer "conteudo_id", null: false
     t.integer "modulo_id"
+    t.integer "posicao", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conteudo_id"], name: "index_universidade_trilha_conteudos_on_conteudo_id"
+    t.index ["modulo_id"], name: "index_universidade_trilha_conteudos_on_modulo_id"
+    t.index ["trilha_id", "conteudo_id"], name: "index_trilha_conteudos_on_trilha_and_conteudo", unique: true
+    t.index ["trilha_id", "posicao"], name: "index_trilha_conteudos_on_trilha_and_posicao"
+    t.index ["trilha_id"], name: "index_universidade_trilha_conteudos_on_trilha_id"
+  end
+
+  create_table "universidade_trilhas", force: :cascade do |t|
     t.string "nome", null: false
+    t.text "descricao"
+    t.text "tags"
     t.integer "ordem"
-    t.integer "tempo_estimado_minutos"
     t.boolean "visivel", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "rascunho", default: false, null: false
     t.integer "user_id", null: false
     t.integer "store_id", null: false
-    t.index ["modulo_id"], name: "index_universidade_trilhas_on_modulo_id"
     t.index ["ordem"], name: "index_universidade_trilhas_on_ordem"
     t.index ["rascunho"], name: "index_universidade_trilhas_on_rascunho"
     t.index ["store_id"], name: "index_universidade_trilhas_on_store_id"
@@ -179,10 +172,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_27_190001) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "universidade_artigos", "universidade_trilhas", column: "trilha_id", on_delete: :nullify
-  add_foreign_key "universidade_modulos", "universidade_cursos", column: "curso_id", on_delete: :nullify
-  add_foreign_key "universidade_progressos", "universidade_artigos", column: "artigo_id", on_delete: :cascade
+  add_foreign_key "universidade_feedbacks", "universidade_conteudos", column: "conteudo_id", on_delete: :cascade
+  add_foreign_key "universidade_modulos", "universidade_trilhas", column: "trilha_id", on_delete: :nullify
+  add_foreign_key "universidade_progressos", "universidade_conteudos", column: "conteudo_id", on_delete: :cascade
   add_foreign_key "universidade_progressos", "universidade_trilhas", column: "trilha_id", on_delete: :cascade
   add_foreign_key "universidade_secao_itens", "universidade_secoes", column: "secao_id"
-  add_foreign_key "universidade_trilhas", "universidade_modulos", column: "modulo_id", on_delete: :nullify
+  add_foreign_key "universidade_trilha_conteudos", "universidade_conteudos", column: "conteudo_id", on_delete: :cascade
+  add_foreign_key "universidade_trilha_conteudos", "universidade_modulos", column: "modulo_id", on_delete: :nullify
+  add_foreign_key "universidade_trilha_conteudos", "universidade_trilhas", column: "trilha_id", on_delete: :cascade
 end

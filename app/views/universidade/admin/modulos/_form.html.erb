@@ -36,12 +36,12 @@
           placeholder: "Uma breve descrição do módulo…", rows: 3) { modulo.descricao } %>
   </div>
 
-  <%# Curso (opcional) %>
+  <%# Trilha (opcional) %>
   <div>
-    <%= label_component(for: "modulo_curso_id") { "Curso (opcional)" } %>
+    <%= label_component(for: "modulo_curso_id") { "Trilha (opcional)" } %>
     <%
       curso_choices = { "Nenhum (módulo avulso)" => "" }.merge(
-        @cursos.map { |c| [c.nome, c.id.to_s] }.to_h
+        @trilhas.map { |c| [c.nome, c.id.to_s] }.to_h
       )
     %>
     <%= select_component(

@@ -2,7 +2,7 @@ module Universidade
   module Admin
     class BaseController < ApplicationController
       layout "universidade/admin"
-      before_action :authenticate_admin!
+      # before_action :authenticate_admin!
 
       private
 

@@ -2,10 +2,9 @@ Universidade::Engine.routes.draw do
   # Páginas de exibição para lojistas
   root to: "home#index"
 
-  resources :cursos,  only: [:show]
   resources :trilhas, only: [:show]
 
-  resources :artigos, only: [:show] do
+  resources :conteudos, only: [:show] do
     member do
       post :concluir
       post :feedback
@@ -16,12 +15,11 @@ Universidade::Engine.routes.draw do
 
   # Área administrativa
   namespace :admin do
-    root to: "cursos#index"
-
-    get "busca", to: "busca#index", as: :busca
+    root to: "trilhas#index"
 
     post :rich_image_upload, to: "uploads#image"
 
+    # Landing Page (Seções)
     resources :secoes, path: :lp do
       collection { patch :reorder }
       member do
@@ -31,12 +29,15 @@ Universidade::Engine.routes.draw do
       end
     end
 
-    resources :cursos do
+    # Gestão de Trilhas
+    resources :trilhas do
       collection { patch :reorder }
       member do
         patch :toggle_visivel
         patch :mover_acima
         patch :mover_abaixo
+        get :selecionar_conteudos_existentes
+        post :adicionar_conteudos_existentes
       end
     end
 
@@ -49,7 +50,7 @@ Universidade::Engine.routes.draw do
       end
     end
 
-    resources :trilhas do
+    resources :conteudos do
       collection { patch :reorder }
       member do
         patch :toggle_visivel
@@ -58,12 +59,11 @@ Universidade::Engine.routes.draw do
       end
     end
 
-    resources :artigos do
-      collection { patch :reorder }
+    # Biblioteca de Conteúdos
+    resources :biblioteca, except: [:show] do
       member do
         patch :toggle_visivel
-        patch :mover_acima
-        patch :mover_abaixo
+        delete :desvincular_trilha
       end
     end
   end

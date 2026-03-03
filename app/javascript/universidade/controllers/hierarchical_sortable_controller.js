@@ -3,39 +3,38 @@ import Sortable from "sortablejs"
 
 export default class extends Controller {
   static values = {
-    cursoUrl: String,
-    moduloUrl: String,
     trilhaUrl: String,
-    artigoUrl: String
+    moduloUrl: String,
+    conteudoUrl: String
   }
 
   connect() {
     this.sortables = []
     this.draggedChildren = []
     
-    // Create sortable for curso tbodys (top level)
-    const cursoSortable = Sortable.create(this.element, {
+    // Create sortable for trilha tbodys (top level)
+    const trilhaSortable = Sortable.create(this.element, {
       animation: 150,
       handle: "[data-sortable-handle]",
-      draggable: "tbody[id^='curso_group_']",
+      draggable: "tbody[id^='trilha_group_']",
       filter: "tbody#avulso_group", // Don't drag avulso group
-      onEnd: this._onEndCurso.bind(this)
+      onEnd: this._onEndTrilha.bind(this)
     })
-    this.sortables.push(cursoSortable)
+    this.sortables.push(trilhaSortable)
     
-    // For each curso tbody and avulso tbody, create sortables for nested items
+    // For each trilha tbody and avulso tbody, create sortables for nested items
     const tbodies = [
-      ...this.element.querySelectorAll('tbody[id^="curso_group_"]'),
+      ...this.element.querySelectorAll('tbody[id^="trilha_group_"]'),
       ...this.element.querySelectorAll('tbody#avulso_group')
     ]
     
     tbodies.forEach(tbody => {
-      // Create sortable group for this tbody that handles nested types
+      // Create sortable group for this tbody that handles nested types (modulo, conteudo)
       const sortable = Sortable.create(tbody, {
         animation: 150,
         handle: "[data-sortable-handle]",
         draggable: "tr[data-sortable-id]", // Only rows with sortable-id
-        filter: "tr[id^='curso_']", // Don't allow dragging curso rows within tbody
+        filter: "tr[id^='trilha_']", // Don't allow dragging trilha rows within tbody
         onStart: this._onStart.bind(this),
         onMove: this._onMove.bind(this),
         onEnd: this._onEnd.bind(this)
@@ -55,20 +54,9 @@ export default class extends Controller {
     
     this.draggedChildren = []
     
-    // If dragging a modulo, collect all its trilhas and artigos
+    // If dragging a modulo, collect all its conteudos
     if (itemId.startsWith('modulo_')) {
       const children = this._collectModuloChildren(item)
-      this.draggedChildren = children
-      
-      // Mark children as being dragged
-      children.forEach(child => {
-        child.classList.add('dragging-with-parent')
-        child.style.display = 'none'
-      })
-    }
-    // If dragging a trilha, collect all its artigos
-    else if (itemId.startsWith('trilha_')) {
-      const children = this._collectTrilhaChildren(item)
       this.draggedChildren = children
       
       // Mark children as being dragged
@@ -83,30 +71,12 @@ export default class extends Controller {
     const children = []
     let sibling = moduloRow.nextElementSibling
     
-    // Collect all trilhas and artigos until we hit another modulo or end
+    // Collect all conteudos until we hit another modulo, trilha or end
     while (sibling) {
-      if (sibling.id.startsWith('modulo_') || sibling.id.startsWith('curso_')) {
+      if (sibling.id.startsWith('modulo_') || sibling.id.startsWith('trilha_')) {
         break
       }
-      if (sibling.id.startsWith('trilha_') || sibling.id.startsWith('artigo_')) {
-        children.push(sibling)
-      }
-      sibling = sibling.nextElementSibling
-    }
-    
-    return children
-  }
-
-  _collectTrilhaChildren(trilhaRow) {
-    const children = []
-    let sibling = trilhaRow.nextElementSibling
-    
-    // Collect all artigos until we hit a modulo, trilha, or end
-    while (sibling) {
-      if (sibling.id.startsWith('modulo_') || sibling.id.startsWith('trilha_') || sibling.id.startsWith('curso_')) {
-        break
-      }
-      if (sibling.id.startsWith('artigo_')) {
+      if (sibling.id.startsWith('conteudo_')) {
         children.push(sibling)
       }
       sibling = sibling.nextElementSibling
@@ -129,9 +99,9 @@ export default class extends Controller {
     
     // If dragging a modulo
     if (draggedType === 'modulo') {
-      // Can only drop next to other modulos or at the beginning
-      // Not allowed to drop in the middle of trilhas or artigos
-      if (relatedType === 'trilha' || relatedType === 'artigo') {
+      // Can only drop next to other modulos
+      // Not allowed to drop in the middle of conteudos
+      if (relatedType === 'conteudo') {
         // Check if the related element belongs to a modulo
         const relatedParent = this._findPreviousSibling(relatedEl, 'modulo_')
         if (relatedParent) {
@@ -142,47 +112,43 @@ export default class extends Controller {
       return true
     }
     
-    // If dragging a trilha
-    if (draggedType === 'trilha') {
-      // Can only drop next to other trilhas of the same modulo
-      // Not allowed to drop in the middle of artigos
-      if (relatedType === 'artigo') {
-        return false
-      }
+    // If dragging a conteudo
+    if (draggedType === 'conteudo') {
+      // Can drop next to other conteudos or modulos
+      // Need to check if they have the same parent (modulo or trilha)
       
-      // If dropping next to a trilha, check if they have the same parent modulo
-      if (relatedType === 'trilha') {
-        const draggedModulo = this._findPreviousSibling(draggedEl, 'modulo_')
-        const relatedModulo = this._findPreviousSibling(relatedEl, 'modulo_')
-        
-        const draggedModuloId = draggedModulo ? draggedModulo.id : null
-        const relatedModuloId = relatedModulo ? relatedModulo.id : null
-        
-        // Only allow if same parent modulo
-        return draggedModuloId === relatedModuloId
-      }
+      const draggedParentType = draggedEl.dataset.parentType // "modulo" or "trilha"
+      const relatedParentType = relatedEl.dataset.parentType
       
-      // If dropping next to a modulo, that's OK (insert after the modulo)
       if (relatedType === 'modulo') {
+        // If conteudo has modulo_id, cannot drop next to modulo (different level)
+        if (draggedParentType === 'modulo') {
+          return false
+        }
+        // If conteudo is solto (trilha_id), can drop next to modulo
         return true
       }
-    }
-    
-    // If dragging an artigo
-    if (draggedType === 'artigo') {
-      // Can only drop next to other artigos of the same trilha
-      if (relatedType !== 'artigo') {
-        return false
+      
+      if (relatedType === 'conteudo') {
+        // Check parent types match
+        if (draggedParentType !== relatedParentType) {
+          return false
+        }
+        
+        // If both have modulo parent, check same modulo_id
+        if (draggedParentType === 'modulo') {
+          const draggedParentId = draggedEl.dataset.parentId
+          const relatedParentId = relatedEl.dataset.parentId
+          return draggedParentId === relatedParentId
+        }
+        
+        // If both have trilha parent (soltos), check same trilha_id
+        if (draggedParentType === 'trilha') {
+          const draggedParentId = draggedEl.dataset.parentId
+          const relatedParentId = relatedEl.dataset.parentId
+          return draggedParentId === relatedParentId
+        }
       }
-      
-      const draggedTrilha = this._findPreviousSibling(draggedEl, 'trilha_')
-      const relatedTrilha = this._findPreviousSibling(relatedEl, 'trilha_')
-      
-      const draggedTrilhaId = draggedTrilha ? draggedTrilha.id : null
-      const relatedTrilhaId = relatedTrilha ? relatedTrilha.id : null
-      
-      // Only allow if same parent trilha
-      return draggedTrilhaId === relatedTrilhaId
     }
     
     return true
@@ -192,26 +158,25 @@ export default class extends Controller {
     if (!element || !element.id) return null
     
     if (element.id.startsWith('modulo_')) return 'modulo'
+    if (element.id.startsWith('conteudo_')) return 'conteudo'
     if (element.id.startsWith('trilha_')) return 'trilha'
-    if (element.id.startsWith('artigo_')) return 'artigo'
-    if (element.id.startsWith('curso_')) return 'curso'
     
     return null
   }
 
-  _onEndCurso(evt) {
+  _onEndTrilha(evt) {
     const item = evt.item
     
-    // Collect IDs of all curso tbodys in order
-    const ids = Array.from(this.element.querySelectorAll('tbody[id^="curso_group_"]'))
+    // Collect IDs of all trilha tbodys in order
+    const ids = Array.from(this.element.querySelectorAll('tbody[id^="trilha_group_"]'))
       .map(tbody => tbody.dataset.sortableId)
       .filter(Boolean)
     
-    if (ids.length === 0 || !this.cursoUrlValue) return
+    if (ids.length === 0 || !this.trilhaUrlValue) return
     
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
     
-    fetch(this.cursoUrlValue, {
+    fetch(this.trilhaUrlValue, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -237,40 +202,48 @@ export default class extends Controller {
     }
     
     // Determine type and collect siblings of same type
-    let type, url, parentId
+    let type, url, parentId, parentType
     
     if (itemId.startsWith('modulo_')) {
       type = 'modulo'
       url = this.moduloUrlValue
-      // Get curso_id from parent tbody
-      const tbody = item.closest('tbody[id^="curso_group_"]')
-      parentId = tbody ? tbody.id.replace('curso_group_', '') : null
-    } else if (itemId.startsWith('trilha_')) {
-      type = 'trilha'
-      url = this.trilhaUrlValue
-      // Get modulo_id by finding previous modulo row
-      const moduloRow = this._findPreviousSibling(item, 'modulo_')
-      parentId = moduloRow ? moduloRow.id.replace('modulo_', '') : null
-    } else if (itemId.startsWith('artigo_')) {
-      type = 'artigo'
-      url = this.artigoUrlValue
-      // Get trilha_id by finding previous trilha row
-      const trilhaRow = this._findPreviousSibling(item, 'trilha_')
-      parentId = trilhaRow ? trilhaRow.id.replace('trilha_', '') : null
+      // Get trilha_id from parent tbody
+      const tbody = item.closest('tbody[id^="trilha_group_"]')
+      parentId = tbody ? tbody.id.replace('trilha_group_', '') : null
+    } else if (itemId.startsWith('conteudo_')) {
+      type = 'conteudo'
+      url = this.conteudoUrlValue
+      
+      // Get parent info from data attributes
+      parentType = item.dataset.parentType // "modulo" or "trilha"
+      
+      if (parentType === 'modulo') {
+        // Get modulo_id by finding previous modulo row
+        const moduloRow = this._findPreviousSibling(item, 'modulo_')
+        parentId = moduloRow ? moduloRow.id.replace('modulo_', '') : null
+      } else if (parentType === 'trilha') {
+        // Get trilha_id from tbody
+        const tbody = item.closest('tbody[id^="trilha_group_"]')
+        parentId = tbody ? tbody.id.replace('trilha_group_', '') : null
+      }
     }
     
     if (!type || !url) return
     
     // Collect IDs of same type in order from current parent
-    const ids = this._collectIdsOfType(item.parentElement, type, parentId)
+    const ids = this._collectIdsOfType(item.parentElement, type, parentId, parentType)
     
     if (ids.length === 0) return
     
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
     
     const body = { ids }
-    if (type === 'artigo' && parentId) {
-      body.trilha_id = parentId
+    if (type === 'conteudo') {
+      if (parentType === 'modulo' && parentId) {
+        body.modulo_id = parentId
+      } else if (parentType === 'trilha' && parentId) {
+        body.trilha_id = parentId
+      }
     }
     
     fetch(url, {
@@ -295,45 +268,39 @@ export default class extends Controller {
     return null
   }
 
-  _collectIdsOfType(tbody, type, parentId) {
+  _collectIdsOfType(tbody, type, parentId, parentType) {
     const rows = Array.from(tbody.querySelectorAll(`tr[id^="${type}_"]`))
     const ids = []
     
     // For nested items, we need to ensure we only get items belonging to the same parent
     if (type === 'modulo') {
-      // All modulos in this tbody belong to the same curso
+      // All modulos in this tbody belong to the same trilha
       rows.forEach(row => {
         const id = row.dataset.sortableId
         if (id) ids.push(id)
       })
-    } else if (type === 'trilha') {
-      // Get only trilhas that belong to the same modulo (right after the modulo row)
-      let currentModuloId = null
-      Array.from(tbody.children).forEach(row => {
-        if (row.id.startsWith('modulo_')) {
-          currentModuloId = row.id.replace('modulo_', '')
-        } else if (row.id.startsWith('trilha_') && currentModuloId === parentId) {
-          const id = row.dataset.sortableId
-          if (id) ids.push(id)
-        } else if (row.id.startsWith('modulo_')) {
-          currentModuloId = row.id.replace('modulo_', '')
-        }
-      })
-    } else if (type === 'artigo') {
-      // Get only artigos that belong to the same trilha
-      let currentTrilhaId = null
-      Array.from(tbody.children).forEach(row => {
-        if (row.id.startsWith('trilha_')) {
-          currentTrilhaId = row.id.replace('trilha_', '')
-        } else if (row.id.startsWith('artigo_') && currentTrilhaId === parentId) {
-          const id = row.dataset.sortableId
-          if (id) ids.push(id)
-        } else if (row.id.startsWith('modulo_') || row.id.startsWith('trilha_')) {
-          if (row.id.startsWith('trilha_')) {
-            currentTrilhaId = row.id.replace('trilha_', '')
+    } else if (type === 'conteudo') {
+      // Get only conteudos that belong to the same parent
+      if (parentType === 'modulo') {
+        // Get only conteudos that belong to the same modulo
+        let currentModuloId = null
+        Array.from(tbody.children).forEach(row => {
+          if (row.id.startsWith('modulo_')) {
+            currentModuloId = row.id.replace('modulo_', '')
+          } else if (row.id.startsWith('conteudo_') && currentModuloId === parentId) {
+            const id = row.dataset.sortableId
+            if (id) ids.push(id)
           }
-        }
-      })
+        })
+      } else if (parentType === 'trilha') {
+        // Get only conteudos soltos (trilha_id direto, modulo_id nil)
+        rows.forEach(row => {
+          if (row.dataset.parentType === 'trilha' && row.dataset.parentId === parentId) {
+            const id = row.dataset.sortableId
+            if (id) ids.push(id)
+          }
+        })
+      }
     }
     
     return ids

@@ -18,5 +18,9 @@ gem "importmap-rails"
 # Ink Components
 gem "ink_components", git: "https://github.com/rsv-ink/ink_components.git"
 
+# Image Processing
+gem "image_processing", "~> 1.13"
+gem "ruby-vips"
+
 # Start debugger with binding.b [https://github.com/ruby/debug]
 # gem "debug", ">= 1.0.0"
