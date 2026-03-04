@@ -12,6 +12,13 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Exportação de relatórios
 - Notificações por email
 
+## [0.1.3] - 2026-03-04
+
+### Fixed
+- Corrigido erro de migrações duplicadas no projeto host
+- Removido carregamento automático de migrações da engine
+- Migrações agora devem ser instaladas via `rails universidade:install:migrations`
+
 ## [0.1.2] - 2026-03-04
 
 ### Changed
@@ -112,7 +119,8 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Security** - Correções de segurança
 - **Technical** - Mudanças técnicas/infraestrutura
 
-[Unreleased]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/rsv-ink/universidade_ink/compare/v0.0.1...v0.1.0
