@@ -2,15 +2,6 @@ module Universidade
   class Engine < ::Rails::Engine
     isolate_namespace Universidade
 
-    # Add engine's migration path
-    initializer "universidade.migrations" do |app|
-      unless app.root.to_s.match?(root.to_s)
-        config.paths["db/migrate"].expanded.each do |expanded_path|
-          app.config.paths["db/migrate"] << expanded_path
-        end
-      end
-    end
-
     # Inflexão portuguesa: secao → secoes (Rails usa inglês por padrão)
     initializer "universidade.inflections" do
       ActiveSupport::Inflector.inflections(:en) do |inflect|
