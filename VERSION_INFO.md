@@ -2,7 +2,7 @@
 
 ## Versão Atual
 
-**v0.1.0** - 4 de março de 2026
+**v0.1.5** - 4 de março de 2026
 
 ## Estrutura de Versionamento
 
@@ -94,6 +94,12 @@ cd spec/dummy && bundle exec rake universidade:version:major
 | `README.md`       | Documentação principal         |
 
 ## Histórico de Versões
+
+### 0.1.5 (2026-03-04)
+- Suporte a esbuild para integração com monolitos
+- JavaScript adaptado para bundling externo
+- Compartilhamento de instância Stimulus
+- Layouts atualizados para carregar dependências corretamente
 
 ### 0.1.0 (2026-03-04)
 - Versão inicial com versionamento completo

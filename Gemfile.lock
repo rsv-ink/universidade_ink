@@ -13,7 +13,7 @@ GIT
 PATH
   remote: .
   specs:
-    universidade (0.1.3)
+    universidade (0.1.4)
       importmap-rails
       pg
       rails (>= 7.0.8.7)

@@ -24,6 +24,9 @@
   <% if respond_to?(:javascript_importmap_tags) %>
     <%= javascript_importmap_tags %>
   <% else %>
+    <%# Load main app JavaScript first (includes Stimulus, Turbo, and other dependencies) %>
+    <%= javascript_include_tag "stores", "data-turbo-track": "reload", defer: true %>
+    <%# Then load Universidade controllers %>
     <%= javascript_include_tag "universidade/application", "data-turbo-track": "reload", defer: true %>
   <% end %>
   <style>

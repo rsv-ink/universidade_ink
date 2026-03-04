@@ -12,6 +12,18 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Exportação de relatórios
 - Notificações por email
 
+## [0.1.5] - 2026-03-04
+
+### Changed
+- JavaScript adaptado para funcionar com esbuild
+- `application.js` atualizado para bundlers externos
+- Controllers Stimulus agora usam instância compartilhada (`window.Stimulus`)
+- Layouts atualizados para carregar JavaScript do host app primeiro
+
+### Added
+- Suporte a integração com sistemas de build modernos (esbuild, webpack, etc)
+- Documentação de integração com monolitos
+
 ## [0.1.4] - 2026-03-04
 
 ### Fixed

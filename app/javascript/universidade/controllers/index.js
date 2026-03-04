@@ -23,7 +23,8 @@ import CategoriaSelectorController from "./categoria_selector_controller"
 import CategoriaCreatorController from "./categoria_creator_controller"
 import BuscaRapidaController     from "./busca_rapida_controller"
 
-const application = Application.start()
+// Use the existing Stimulus application from the host app or create a new one
+const application = window.Stimulus || Application.start()
 
 // Configure Stimulus development experience
 application.debug = false
