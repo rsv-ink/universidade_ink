@@ -1,4 +1,4 @@
-class CreateUniversidadeSecoes < ActiveRecord::Migration[7.0]
+class CreateUniversidadeSecoes < ActiveRecord::Migration[7.2]
   def change
     create_table :universidade_secoes do |t|
       t.string  :titulo,       null: false, default: ""

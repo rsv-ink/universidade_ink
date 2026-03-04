@@ -1,4 +1,4 @@
-class CreateUniversidadeSidebarItems < ActiveRecord::Migration[7.0]
+class CreateUniversidadeSidebarItems < ActiveRecord::Migration[7.2]
   def change
     create_table :universidade_sidebar_items do |t|
       t.string  :nome,    null: false

@@ -1,4 +1,4 @@
-class CreateUniversidadeSecaoItens < ActiveRecord::Migration[7.0]
+class CreateUniversidadeSecaoItens < ActiveRecord::Migration[7.2]
   def change
     create_table :universidade_secao_itens do |t|
       t.references :secao,    null: false, foreign_key: { to_table: :universidade_secoes }

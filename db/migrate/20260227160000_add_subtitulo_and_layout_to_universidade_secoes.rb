@@ -1,4 +1,4 @@
-class AddSubtituloAndLayoutToUniversidadeSecoes < ActiveRecord::Migration[7.0]
+class AddSubtituloAndLayoutToUniversidadeSecoes < ActiveRecord::Migration[7.2]
   def up
     add_column :universidade_secoes, :subtitulo, :string
     add_column :universidade_secoes, :layout_exibicao, :string, null: false, default: "galeria"

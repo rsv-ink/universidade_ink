@@ -1,4 +1,4 @@
-class CreateUniversidadeProgressos < ActiveRecord::Migration[7.0]
+class CreateUniversidadeProgressos < ActiveRecord::Migration[7.2]
   def change
     create_table :universidade_progressos do |t|
       t.integer :lojista_id, null: false

@@ -1,4 +1,4 @@
-class AddUserAndStoreIdsToUniversidadeTables < ActiveRecord::Migration[7.0]
+class AddUserAndStoreIdsToUniversidadeTables < ActiveRecord::Migration[7.2]
   def up
     add_column :universidade_cursos, :user_id, :integer
     add_column :universidade_cursos, :store_id, :integer

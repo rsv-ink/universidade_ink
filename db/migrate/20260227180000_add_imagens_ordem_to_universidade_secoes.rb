@@ -1,4 +1,4 @@
-class AddImagensOrdemToUniversidadeSecoes < ActiveRecord::Migration[7.0]
+class AddImagensOrdemToUniversidadeSecoes < ActiveRecord::Migration[7.2]
   def up
     add_column :universidade_secoes, :imagens_ordem, :text
 

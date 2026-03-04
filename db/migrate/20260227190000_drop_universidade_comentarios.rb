@@ -1,4 +1,4 @@
-class DropUniversidadeComentarios < ActiveRecord::Migration[7.0]
+class DropUniversidadeComentarios < ActiveRecord::Migration[7.2]
   def change
     drop_table :universidade_comentarios do |t|
       t.integer :lojista_id, null: false

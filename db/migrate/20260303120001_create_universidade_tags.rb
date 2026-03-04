@@ -1,4 +1,4 @@
-class CreateUniversidadeTags < ActiveRecord::Migration[7.0]
+class CreateUniversidadeTags < ActiveRecord::Migration[7.2]
   def change
     create_table :universidade_tags do |t|
       t.string :nome, null: false

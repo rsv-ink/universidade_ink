@@ -1,4 +1,4 @@
-class CreateUniversidadeConteudoTags < ActiveRecord::Migration[7.0]
+class CreateUniversidadeConteudoTags < ActiveRecord::Migration[7.2]
   def change
     create_table :universidade_conteudo_tags do |t|
       t.references :conteudo, null: false, foreign_key: { to_table: :universidade_conteudos }, index: true

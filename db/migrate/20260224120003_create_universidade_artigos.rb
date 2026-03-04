@@ -1,4 +1,4 @@
-class CreateUniversidadeArtigos < ActiveRecord::Migration[7.0]
+class CreateUniversidadeArtigos < ActiveRecord::Migration[7.2]
   def change
     create_table :universidade_artigos do |t|
       t.integer :trilha_id, null: true

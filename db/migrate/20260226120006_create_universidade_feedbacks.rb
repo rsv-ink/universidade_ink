@@ -1,4 +1,4 @@
-class CreateUniversidadeFeedbacks < ActiveRecord::Migration[7.0]
+class CreateUniversidadeFeedbacks < ActiveRecord::Migration[7.2]
   def change
     create_table :universidade_feedbacks do |t|
       t.integer :artigo_id, null: false
