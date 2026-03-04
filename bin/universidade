@@ -1,0 +1,60 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require_relative "../lib/universidade/version"
+
+command = ARGV[0]
+
+case command
+when "version", "v", "--version", "-v"
+  puts "Universidade v#{Universidade::VERSION}"
+when "info", "i"
+  puts "\n╔═══════════════════════════════════════════════════════════╗"
+  puts "║              Universidade Gem Information                 ║"
+  puts "╠═══════════════════════════════════════════════════════════╣"
+  puts "║ Version:        #{Universidade::VERSION.ljust(39)} ║"
+  puts "║ License:        MIT#{' ' * 36} ║"
+  puts "║ Engine:         Mountable Rails Engine#{' ' * 18} ║"
+  puts "╠═══════════════════════════════════════════════════════════╣"
+  puts "║ Features:                                                 ║"
+  puts "║  • Taxonomia (categorias e tags)                          ║"
+  puts "║  • Trilhas, Módulos e Conteúdos                           ║"
+  puts "║  • Sistema de Progresso                                   ║"
+  puts "║  • Seções personalizáveis                                 ║"
+  puts "║  • Multi-tenancy (user_id, store_id)                      ║"
+  puts "║  • Turbo & Stimulus                                       ║"
+  puts "╚═══════════════════════════════════════════════════════════╝\n"
+when "help", "h", "--help", "-h", nil
+  puts <<~HELP
+    
+    Universidade Gem - v#{Universidade::VERSION}
+    ════════════════════════════════════════════
+    
+    Comandos disponíveis:
+    
+      bin/universidade version       Mostrar versão
+      bin/universidade info          Informações da gem
+      bin/universidade help          Esta mensagem
+    
+    Rake Tasks (usar dentro de spec/dummy ou no projeto host):
+    
+      rake universidade:version:show    Mostrar versão
+      rake universidade:version:patch   Incrementar PATCH
+      rake universidade:version:minor   Incrementar MINOR
+      rake universidade:version:major   Incrementar MAJOR
+      rake universidade:info            Informações da gem
+      rake universidade:validate        Validar estrutura
+    
+    Documentação:
+    
+      README.md       - Visão geral
+      CHANGELOG.md    - Histórico de mudanças
+      RELEASE.md      - Guia de release
+    
+  HELP
+else
+  puts "Comando desconhecido: #{command}"
+  puts "Use 'bin/universidade help' para ver comandos disponíveis"
+  exit 1
+end

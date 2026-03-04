@@ -1,0 +1,180 @@
+#!/usr/bin/env bash
+# Script para build e gestão da gem Universidade
+
+set -e
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Funções auxiliares
+print_success() {
+    echo -e "${GREEN}✓${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}✗${NC} $1"
+}
+
+print_info() {
+    echo -e "${BLUE}ℹ${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠${NC} $1"
+}
+
+# Função para mostrar ajuda
+show_help() {
+    cat << EOF
+
+╔════════════════════════════════════════════════════════════╗
+║         Universidade Gem - Build & Release Script          ║
+╚════════════════════════════════════════════════════════════╝
+
+Uso: bin/build [comando]
+
+Comandos:
+
+  build         Compilar a gem
+  clean         Limpar gems antigas
+  validate      Validar estrutura da gem
+  install       Instalar localmente
+  release       Preparar release (build + tag)
+  help          Mostrar esta mensagem
+
+Exemplos:
+
+  bin/build build          # Compila a gem
+  bin/build clean          # Remove *.gem
+  bin/build validate       # Valida estrutura
+  bin/build install        # Instala localmente
+
+EOF
+}
+
+# Função para limpar
+clean_gems() {
+    print_info "Limpando gems antigas..."
+    rm -f *.gem
+    print_success "Gems antigas removidas"
+}
+
+# Função para validar
+validate() {
+    print_info "Validando estrutura da gem..."
+    cd spec/dummy
+    bundle exec rake universidade:validate
+    cd ../..
+}
+
+# Função para build
+build_gem() {
+    print_info "Compilando gem..."
+    
+    # Validar primeiro
+    validate
+    
+    # Limpar gems antigas
+    clean_gems
+    
+    # Build
+    gem build universidade.gemspec
+    
+    if [ $? -eq 0 ]; then
+        version=$(ruby -r ./lib/universidade/version.rb -e "puts Universidade::VERSION")
+        gem_file="universidade-${version}.gem"
+        
+        if [ -f "$gem_file" ]; then
+            size=$(ls -lh "$gem_file" | awk '{print $5}')
+            print_success "Gem compilada: $gem_file ($size)"
+        else
+            print_error "Arquivo gem não encontrado"
+            exit 1
+        fi
+    else
+        print_error "Falha ao compilar gem"
+        exit 1
+    fi
+}
+
+# Função para instalar localmente
+install_local() {
+    print_info "Instalando gem localmente..."
+    
+    version=$(ruby -r ./lib/universidade/version.rb -e "puts Universidade::VERSION")
+    gem_file="universidade-${version}.gem"
+    
+    if [ ! -f "$gem_file" ]; then
+        print_warning "Gem não encontrada. Compilando primeiro..."
+        build_gem
+    fi
+    
+    gem install "$gem_file"
+    
+    if [ $? -eq 0 ]; then
+        print_success "Gem instalada localmente"
+    else
+        print_error "Falha ao instalar gem"
+        exit 1
+    fi
+}
+
+# Função para release
+prepare_release() {
+    version=$(ruby -r ./lib/universidade/version.rb -e "puts Universidade::VERSION")
+    
+    echo ""
+    print_info "Preparando release v${version}"
+    echo ""
+    
+    # Validar
+    validate
+    
+    # Build
+    build_gem
+    
+    echo ""
+    print_success "Release preparado!"
+    echo ""
+    print_info "Próximos passos:"
+    echo ""
+    echo "  1. Revisar CHANGELOG.md"
+    echo "  2. Commitar mudanças:"
+    echo "     ${BLUE}git add . && git commit -m 'Release v${version}'${NC}"
+    echo "  3. Criar tag:"
+    echo "     ${BLUE}git tag -a v${version} -m 'Release version ${version}'${NC}"
+    echo "  4. Push:"
+    echo "     ${BLUE}git push origin main && git push origin v${version}${NC}"
+    echo ""
+}
+
+# Parse comando
+case "${1:-help}" in
+    build|b)
+        build_gem
+        ;;
+    clean|c)
+        clean_gems
+        ;;
+    validate|v)
+        validate
+        ;;
+    install|i)
+        install_local
+        ;;
+    release|r)
+        prepare_release
+        ;;
+    help|h|--help|-h)
+        show_help
+        ;;
+    *)
+        print_error "Comando desconhecido: $1"
+        echo ""
+        show_help
+        exit 1
+        ;;
+esac
