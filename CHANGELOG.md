@@ -12,6 +12,17 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Exportação de relatórios
 - Notificações por email
 
+## [0.1.2] - 2026-03-04
+
+### Changed
+- Autenticação agora é opcional, delegada ao projeto host
+- ApplicationController não força mais autenticação via before_action
+
+### Removed
+- Sistema de autenticação obrigatório (`authenticate_universidade!`)
+- Método `user_in_universidade?` e validações relacionadas
+- Referência ao método `in_universidade?` na documentação
+
 ## [0.1.1] - 2026-03-04
 
 ### Added
@@ -101,7 +112,8 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Security** - Correções de segurança
 - **Technical** - Mudanças técnicas/infraestrutura
 
-[Unreleased]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/rsv-ink/universidade_ink/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/rsv-ink/universidade_ink/releases/tag/v0.0.1
