@@ -2,7 +2,6 @@ module Universidade
   module Admin
     class BaseController < ApplicationController
       layout "universidade/admin"
-      skip_before_action :authenticate_universidade!
       before_action :authenticate_admin!
 
       private
