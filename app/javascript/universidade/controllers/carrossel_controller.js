@@ -5,7 +5,21 @@ export default class extends Controller {
   static values  = { index: { type: Number, default: 0 }, visible: { type: Number, default: 1 } }
 
   connect() {
+    this._currentVisible = this._computeVisible()
     this._setupInfinite()
+
+    this._mq = window.matchMedia("(min-width: 1024px)")
+    this._mqHandler = () => this._onBreakpointChange()
+    this._mq.addEventListener("change", this._mqHandler)
+  }
+
+  disconnect() {
+    if (this._onTransitionEnd) {
+      this.trackTarget.removeEventListener("transitionend", this._onTransitionEnd)
+    }
+    if (this._mq && this._mqHandler) {
+      this._mq.removeEventListener("change", this._mqHandler)
+    }
   }
 
   prev() {
@@ -22,9 +36,34 @@ export default class extends Controller {
     this._go(parseInt(event.currentTarget.dataset.index) || 0)
   }
 
+  _computeVisible() {
+    const css = parseInt(
+      getComputedStyle(this.element).getPropertyValue("--carrossel-visible").trim()
+    )
+    return css > 0 ? css : Math.max(1, this.visibleValue)
+  }
+
+  _onBreakpointChange() {
+    const newVisible = this._computeVisible()
+    if (newVisible === this._currentVisible) return
+
+    // Remove clones and re-setup with new visible count
+    Array.from(this.trackTarget.children)
+      .filter(el => el.dataset.clone)
+      .forEach(el => el.remove())
+    delete this.trackTarget.dataset.infiniteReady
+    if (this._onTransitionEnd) {
+      this.trackTarget.removeEventListener("transitionend", this._onTransitionEnd)
+      this._onTransitionEnd = null
+    }
+    this._currentVisible = newVisible
+    this.indexValue = 0
+    this._setupInfinite()
+  }
+
   _go(index, animate = true) {
     const total = this._totalSteps()
-    const visible = Math.max(1, this.visibleValue)
+    const visible = this._currentVisible
     const stepPercent = 100 / visible
     const offset = this._offset || 0
     const normalized = ((index % total) + total) % total
@@ -39,7 +78,7 @@ export default class extends Controller {
   }
 
   _setupInfinite() {
-    const visible = Math.max(1, this.visibleValue)
+    const visible = this._currentVisible
     const slides = Array.from(this.trackTarget.children).filter(
       (el) => !el.dataset.clone
     )
@@ -86,11 +125,5 @@ export default class extends Controller {
     }
 
     this.trackTarget.addEventListener("transitionend", this._onTransitionEnd)
-  }
-
-  disconnect() {
-    if (this._onTransitionEnd) {
-      this.trackTarget.removeEventListener("transitionend", this._onTransitionEnd)
-    }
   }
 }

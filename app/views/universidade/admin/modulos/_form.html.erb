@@ -38,16 +38,16 @@
 
   <%# Trilha (opcional) %>
   <div>
-    <%= label_component(for: "modulo_curso_id") { "Trilha (opcional)" } %>
+    <%= label_component(for: "modulo_trilha_id") { "Trilha (opcional)" } %>
     <%
-      curso_choices = { "Nenhum (módulo avulso)" => "" }.merge(
+      trilha_choices = { "Nenhum (módulo avulso)" => "" }.merge(
         @trilhas.map { |c| [c.nome, c.id.to_s] }.to_h
       )
     %>
     <%= select_component(
-          name: "modulo[curso_id]", id: "modulo_curso_id",
-          choices: curso_choices,
-          options: { selected: modulo.curso_id.to_s }) %>
+          name: "modulo[trilha_id]", id: "modulo_trilha_id",
+          choices: trilha_choices,
+          options: { selected: modulo.trilha_id.to_s }) %>
   </div>
 
   <%# Visível %>

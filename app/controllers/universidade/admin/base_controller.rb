@@ -2,12 +2,13 @@ module Universidade
   module Admin
     class BaseController < ApplicationController
       layout "universidade/admin"
-      # before_action :authenticate_admin!
+      skip_before_action :authenticate_universidade!
+      before_action :authenticate_admin!
 
       private
 
       def authenticate_admin!
-        return if admin_user?(Universidade.current_user(self))
+        return if admin_user?(universidade_current_user)
 
         redirect_to main_app.root_path, alert: "Acesso negado"
       end

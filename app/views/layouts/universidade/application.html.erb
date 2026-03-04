@@ -1,10 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <title>Universidade</title>
+  <title><%= page_title %></title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
+
+  <%# SEO Meta Tags %>
+  <%= meta_description %>
+  <%= meta_keywords %>
+  <%= canonical_tag %>
+  <%= og_tags %>
+  <%= twitter_card_tags %>
+
+  <%# Structured Data %>
+  <%= yield :json_ld %>
+
+  <%# Google Analytics 4 %>
+  <% if Universidade.tracking_id.present? %>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<%= Universidade.tracking_id %>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '<%= Universidade.tracking_id %>', {
+        'send_page_view': false  // Handled by Turbo
+      });
+    </script>
+  <% end %>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -44,12 +69,12 @@
       color: #111827 !important; /* gray-900 */
       border-color: #d1d5db !important; /* gray-300 */
     }
-    
+
     input::placeholder,
     textarea::placeholder {
       color: #9ca3af !important; /* gray-400 */
     }
-    
+
     input:focus,
     textarea:focus,
     select:focus {
@@ -58,58 +83,154 @@
       outline: none !important;
       box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1) !important;
     }
-    
+
     /* Checkbox and radio styles */
     input[type="checkbox"],
     input[type="radio"] {
       background-color: white !important;
       border-color: #d1d5db !important;
     }
-    
+
     /* Labels */
     label {
       color: #374151 !important; /* gray-700 */
     }
-    
+
     /* Apply Poppins to all content including prose */
     * {
       font-family: 'Poppins', system-ui, sans-serif;
     }
   </style>
-</head>
-<body class="bg-gray-50 min-h-screen antialiased text-gray-900" style="font-family: 'Poppins', system-ui, sans-serif;">
 
-  <header class="bg-white border-b border-gray-200">
-    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-      <%= link_to root_path, class: "font-bold text-lg text-gray-900 hover:text-pink-600 transition-colors" do %>
-        Universidade
-      <% end %>
-      
-      <div class="flex items-center gap-3">
-        <%# Busca de conteúdo %>
-        <%= form_with url: busca_path, method: :get, local: true,
-              class: "flex items-center gap-1" do |f| %>
-          <%= f.search_field :q, value: params[:q], placeholder: "Buscar...",
-                class: "text-sm border border-gray-200 rounded-full px-4 py-1.5 w-48 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent" %>
-          <button type="submit" class="text-gray-400 hover:text-pink-500 transition-colors p-1" title="Buscar">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+  <%# Apply sidebar spacing before paint to avoid layout shift %>
+  <% sidebar_items = Universidade::SidebarItem.visivel.ordenado %>
+  <% if sidebar_items.any? %>
+    <script>
+      (function() {
+        var collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        var w = collapsed ? 56 : 220;
+        if (window.innerWidth >= 1024) {
+          document.addEventListener('DOMContentLoaded', function() {
+            var header = document.getElementById('main-header');
+            if (header) header.style.left = w + 'px';
+            var main = document.querySelector('[data-sidebar-spacing-target="main"]');
+            if (main) main.style.marginLeft = w + 'px';
+          });
+        }
+      })();
+    </script>
+  <% end %>
+</head>
+<body class="bg-gray-50 min-h-screen antialiased text-gray-900"
+      style="font-family: 'Poppins', system-ui, sans-serif;"
+      data-controller="analytics mobile-sidebar sidebar-spacing">
+
+  <%= render 'universidade/shared/sidebar', sidebar_items: sidebar_items %>
+
+  <header class="bg-white border-b border-gray-200 fixed top-0 right-0 z-30 transition-all duration-300"
+          id="main-header"
+          style="height: 72px; left: 0;"
+          data-sidebar-spacing-target="header">
+    <div class="px-4 lg:px-6 h-full flex items-center justify-between gap-3">
+
+      <%# Left side: hamburger on mobile, logo on desktop %>
+      <div class="flex items-center gap-2">
+        <% if sidebar_items.any? %>
+          <%# Hamburger - mobile only %>
+          <button type="button"
+                  data-action="click->mobile-sidebar#toggle"
+                  class="lg:hidden p-2 -ml-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Menu">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
           </button>
         <% end %>
 
-        <%= link_to admin_root_path, class: "text-sm text-gray-400 hover:text-pink-600 transition-colors flex items-center gap-1" do %>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        <%# Logo - desktop only (on mobile it moves to right) %>
+        <%= link_to root_path, class: "#{'hidden lg:block' if sidebar_items.any?} hover:opacity-80 transition-opacity" do %>
+          <%= image_tag "universidade/ink-logo.svg", alt: "INK", class: "h-8" %>
+        <% end %>
+      </div>
+
+      <%# Right side %>
+      <div class="flex items-center gap-3">
+        <%# Logo on mobile right (only when sidebar exists so hamburger is on left) %>
+        <% if sidebar_items.any? %>
+          <%= link_to root_path, class: "lg:hidden hover:opacity-80 transition-opacity" do %>
+            <%= image_tag "universidade/ink-logo.svg", alt: "INK", class: "h-8" %>
+          <% end %>
+        <% end %>
+
+        <%# Busca — ícone mobile %>
+        <%= link_to busca_path, class: "lg:hidden p-2 text-gray-400 hover:text-pink-500 transition-colors", title: "Buscar" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
           </svg>
-          Admin
+        <% end %>
+
+        <%# Busca com dropdown — desktop only %>
+        <div class="hidden lg:block relative"
+             data-controller="busca-rapida"
+             data-rapida-url="<%= busca_rapida_path %>"
+             data-busca-url="<%= busca_path %>">
+          <%= form_with url: busca_path, method: :get, local: true,
+                data: { action: "submit->analytics#trackSearch submit->busca-rapida#hideDropdown" },
+                class: "flex items-center gap-1" do |f| %>
+            <%= f.search_field :q, value: params[:q], placeholder: "Buscar...",
+                  autocomplete: "off",
+                  data: { "busca-rapida-target": "input", action: "input->busca-rapida#search" },
+                  class: "text-sm border border-gray-200 rounded-full px-4 py-1.5 w-48 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent" %>
+            <button type="submit" class="text-gray-400 hover:text-pink-500 transition-colors p-1" title="Buscar">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+              </svg>
+            </button>
+          <% end %>
+
+          <%# Dropdown de resultados rápidos %>
+          <div data-busca-rapida-target="dropdown"
+               class="hidden absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1 overflow-hidden">
+            <div data-busca-rapida-target="results"></div>
+          </div>
+        </div>
+
+        <%# User menu dropdown (no mobile fica dentro do sidebar; no desktop fica aqui) %>
+        <% user = Universidade.current_user(self) %>
+        <% if user %>
+          <div data-controller="user-menu" class="<%= sidebar_items.any? ? 'hidden lg:block' : 'block' %> relative">
+            <button type="button"
+                    data-action="click->user-menu#toggle"
+                    class="w-9 h-9 rounded-full bg-gray-200 text-gray-700 font-semibold text-sm flex items-center justify-center hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                    title="Menu do usuário">
+              <%= user_initials(user) %>
+            </button>
+
+            <div data-user-menu-target="dropdown"
+                 class="hidden absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              <div class="px-4 py-3 border-b border-gray-200">
+                <p class="text-sm font-semibold text-gray-900"><%= [user.first_name, user.last_name].compact.join(' ') %></p>
+                <p class="text-xs text-gray-500 mt-1"><%= user.email %></p>
+              </div>
+              <div class="py-2">
+                <%= link_to "https://reserva.ink/user/dashboard/ink_panel",
+                    class: "flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                  </svg>
+                  Ver Painel INK
+                <% end %>
+              </div>
+            </div>
+          </div>
         <% end %>
       </div>
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto px-6 py-10">
+  <main class="max-w-7xl mx-auto px-6 py-10"
+        data-sidebar-spacing-target="main"
+        style="margin-top: 72px;">
     <%= yield %>
   </main>
 

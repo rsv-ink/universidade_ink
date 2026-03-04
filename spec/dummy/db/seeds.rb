@@ -4,23 +4,61 @@ puts "🌱 Populando banco de dados..."
 # Limpar dados existentes
 Universidade::Progresso.destroy_all
 Universidade::Feedback.destroy_all
+Universidade::ConteudoTag.destroy_all
 Universidade::Conteudo.destroy_all
 Universidade::Modulo.destroy_all
 Universidade::Trilha.destroy_all
+Universidade::Tag.destroy_all
+Universidade::Categoria.destroy_all
 
 puts "✓ Dados limpos"
 
 owner_attrs = { user_id: 1, store_id: 1 }
 
-# Trilha 1: Ruby on Rails
+# ========== TAXONOMIA: CATEGORIAS ==========
+puts "\n📁 Criando categorias..."
+cat_trafego = Universidade::Categoria.create!(
+  nome: "Tráfego Pago",
+  descricao: "Conteúdos sobre anúncios, meta ads, google ads e estratégias de mídia paga"
+)
+cat_gestao = Universidade::Categoria.create!(
+  nome: "Gestão de Loja",
+  descricao: "Administração, organização e otimização da sua loja virtual"
+)
+cat_produtos = Universidade::Categoria.create!(
+  nome: "Produtos",
+  descricao: "Fotografia, descrições, precificação e gestão de catálogo"
+)
+cat_atendimento = Universidade::Categoria.create!(
+  nome: "Atendimento",
+  descricao: "Relacionamento com clientes, vendas e pós-venda"
+)
+puts "✅ #{Universidade::Categoria.count} categorias criadas"
+
+# ========== TAXONOMIA: TAGS ==========
+puts "\n🏷️  Criando tags..."
+tags_data = %w[
+  instagram facebook meta-ads google-ads
+  iniciante intermediario avancado
+  fotografia video
+  conversao funil vendas
+  whatsapp email chat
+]
+tags_data.each { |nome| Universidade::Tag.create!(nome: nome) }
+puts "✅ #{Universidade::Tag.count} tags criadas"
+
+# ========== TRILHAS E CONTEÚDOS ==========
+
+# Trilha 1: Tráfego Pago
+puts "\n📚 Criando Trilha 1: Tráfego Pago..."
 trilha1 = Universidade::Trilha.create!(
   **owner_attrs,
-  nome: "Ruby on Rails Essencial",
-  descricao: "Aprenda os fundamentos do framework Ruby on Rails",
-  tags: ["ruby", "rails", "backend"],
+  nome: "Tráfego Pago para E-commerce",
+  descricao: "Aprenda a criar campanhas de anúncios para impulsionar suas vendas",
+  tags: ["meta-ads", "google-ads"],
   visivel: true,
   rascunho: false,
-  ordem: 1
+ordem: 1
 )
 puts "✅ Trilha criada: #{trilha1.nome}"
 
@@ -28,69 +66,94 @@ puts "✅ Trilha criada: #{trilha1.nome}"
 modulo1_1 = Universidade::Modulo.create!(
   **owner_attrs,
   trilha_id: trilha1.id,
-  nome: "Introdução ao Rails",
-  descricao: "Conceitos básicos e instalação",
+  nome: "Introdução ao Instagram Ads",
+  descricao: "Conceitos básicos e configuração inicial",
   visivel: true,
   ordem: 1
 )
 puts "  📦 Módulo: #{modulo1_1.nome}"
 
-# Conteúdos do módulo 1.1
-Universidade::Conteudo.create!(
+# Conteúdo 1.1.1
+conteudo1 = Universidade::Conteudo.create!(
   **owner_attrs,
-  titulo: "O que é Ruby on Rails?",
-  corpo: "<h2>Introdução</h2><p>Ruby on Rails é um framework web de código aberto escrito em Ruby, seguindo o padrão MVC (Model-View-Controller).</p><h3>Por que usar Rails?</h3><ul><li>Convenção sobre configuração</li><li>DRY (Don't Repeat Yourself)</li><li>Desenvolvimento rápido</li><li>Grande ecossistema de gems</li></ul>",
-  modulo_id: modulo1_1.id,
+  titulo: "Como usar Instagram para vender produtos",
+  corpo: '{"blocks":[{"type":"titulo","data":{"text":"Instagram: A Vitrine do Seu E-commerce"}},{"type":"texto","data":{"html":"<p>O Instagram é uma das plataformas mais poderosas para vender produtos online. Neste conteúdo, você aprenderá estratégias essenciais para usar Instagram Ads e impulsionar suas vendas.</p>"}},{"type":"titulo","data":{"text":"Por que investir em Meta Ads?"}},{"type":"texto","data":{"html":"<p>As campanhas de Meta Ads (Facebook e Instagram) oferecem:</p><ul><li>Segmentação precisa do público</li><li>Alcance massivo</li><li>Retorno mensurável sobre investimento</li></ul>"}}]}',
+  categoria_id: cat_trafego.id,
   visivel: true,
-  ordem: 1
+  tempo_estimado_minutos: 8
 )
+conteudo1.tags << Universidade::Tag.find_by(nome: "instagram")
+conteudo1.tags << Universidade::Tag.find_by(nome: "meta-ads")
+conteudo1.tags << Universidade::Tag.find_by(nome: "iniciante")
 
-Universidade::Conteudo.create!(
-  **owner_attrs,
-  titulo: "Instalando o Rails",
-  corpo: "<h2>Passo a passo</h2><p>Para instalar o Rails, você precisa ter o Ruby instalado. Depois, basta executar:</p><pre><code>gem install rails\nrails -v\nrails new meu_app\ncd meu_app\nbin/rails server</code></pre>",
-  modulo_id: modulo1_1.id,
-  visivel: true,
-  ordem: 2
+# Associar à trilha via TrilhaConteudo
+Universidade::TrilhaConteudo.create!(
+  trilha: trilha1,
+  conteudo: conteudo1,
+  modulo: modulo1_1,
+  posicao: 1
 )
-puts "    📄 2 conteúdos criados"
+puts "    📄 Conteúdo: #{conteudo1.titulo}"
+
+# Conteúdo 1.1.2
+conteudo2 = Universidade::Conteudo.create!(
+  **owner_attrs,
+  titulo: "Configurando sua primeira campanha de anúncios",
+  corpo: '{"blocks":[{"type":"titulo","data":{"text":"Passo a passo para criar sua campanha"}},{"type":"texto","data":{"html":"<p>Criar uma campanha de sucesso requer planejamento. Vamos aprender o processo completo.</p>"}},{"type":"destaque","data":{"text":"Dica: Comece com um orçamento pequeno para testar diferentes estratégias."}}]}',
+  categoria_id: cat_trafego.id,
+  visivel: true,
+  tempo_estimado_minutos: 12
+)
+conteudo2.tags << Universidade::Tag.find_by(nome: "meta-ads")
+conteudo2.tags << Universidade::Tag.find_by(nome: "iniciante")
+
+Universidade::TrilhaConteudo.create!(
+  trilha: trilha1,
+  conteudo: conteudo2,
+  modulo: modulo1_1,
+  posicao: 2
+)
+puts "    📄 Conteúdo: #{conteudo2.titulo}"
 
 # Módulo 1.2
 modulo1_2 = Universidade::Modulo.create!(
   **owner_attrs,
   trilha_id: trilha1.id,
-  nome: "Models e Banco de Dados",
-  descricao: "Active Record e migrations",
+  nome: "Otimização e Conversão",
+  descricao: "Maximize o retorno dos seus anúncios",
   visivel: true,
   ordem: 2
 )
 puts "  📦 Módulo: #{modulo1_2.nome}"
 
-Universidade::Conteudo.create!(
+# Conteúdo 1.2.1
+conteudo3 = Universidade::Conteudo.create!(
   **owner_attrs,
-  titulo: "Active Record Básico",
-  corpo: "<h2>Models</h2><p>O Active Record é a camada ORM do Rails. Ele conecta objetos Ruby a tabelas do banco de dados.</p><pre><code>class User < ApplicationRecord\n  has_many :posts\n  validates :email, presence: true\nend</code></pre>",
-  modulo_id: modulo1_2.id,
+  titulo: "Estratégias de funil de vendas",
+  corpo: '{"blocks":[{"type":"titulo","data":{"text":"Entendendo o Funil de Conversão"}},{"type":"texto","data":{"html":"<p>O funil de vendas é essencial para guiar seu público até a compra.</p>"}}]}',
+  categoria_id: cat_trafego.id,
   visivel: true,
-  ordem: 1
+  tempo_estimado_minutos: 15
 )
+conteudo3.tags << Universidade::Tag.find_by(nome: "conversao")
+conteudo3.tags << Universidade::Tag.find_by(nome: "funil")
+conteudo3.tags << Universidade::Tag.find_by(nome: "intermediario")
 
-Universidade::Conteudo.create!(
-  **owner_attrs,
-  titulo: "Migrations",
-  corpo: "<h2>Gerenciando o Schema</h2><p>Migrations permitem versionar e modificar o schema do banco de dados de forma controlada.</p><pre><code>rails generate migration CreateUsers\nrails db:migrate</code></pre>",
-  modulo_id: modulo1_2.id,
-  visivel: true,
-  ordem: 2
+Universidade::TrilhaConteudo.create!(
+  trilha: trilha1,
+  conteudo: conteudo3,
+  modulo: modulo1_2,
+  posicao: 1
 )
-puts "    📄 2 conteúdos criados"
+puts "    📄 Conteúdo: #{conteudo3.titulo}"
 
-# Trilha 2: JavaScript Moderno
+# Trilha 2: Gestão de Produtos
+puts "\n📚 Criando Trilha 2: Gestão de Produtos..."
 trilha2 = Universidade::Trilha.create!(
   **owner_attrs,
-  nome: "JavaScript Moderno",
-  descricao: "ES6+, async/await e muito mais",
-  tags: ["javascript", "frontend", "es6"],
+  nome: "Gestão de Produtos e Fotografia",
+  descricao: "Aprenda a fotografar e apresentar seus produtos para vender mais",
+  tags: ["fotografia", "produtos"],
   visivel: true,
   rascunho: false,
   ordem: 2
@@ -100,96 +163,58 @@ puts "✅ Trilha criada: #{trilha2.nome}"
 modulo2_1 = Universidade::Modulo.create!(
   **owner_attrs,
   trilha_id: trilha2.id,
-  nome: "ES6 Fundamentals",
-  descricao: "Arrow functions, destructuring, etc",
+  nome: "Fotografia de Produtos",
+  descricao: "Técnicas para fotos profissionais",
   visivel: true,
   ordem: 1
 )
 puts "  📦 Módulo: #{modulo2_1.nome}"
 
-Universidade::Conteudo.create!(
+conteudo4 = Universidade::Conteudo.create!(
   **owner_attrs,
-  titulo: "Arrow Functions",
-  corpo: "<h2>Sintaxe moderna</h2><p>Arrow functions simplificam a escrita de funções em JavaScript.</p><pre><code>// Função tradicional\nfunction soma(a, b) { return a + b; }\n\n// Arrow function\nconst soma = (a, b) => a + b;</code></pre>",
-  modulo_id: modulo2_1.id,
+  titulo: "Fotografia de produtos com celular",
+  corpo: '{"blocks":[{"type":"titulo","data":{"text":"Fotos Profissionais com Seu Celular"}},{"type":"texto","data":{"html":"<p>Você não precisa de equipamento caro para criar fotos incríveis de produtos.</p>"}}]}',
+  categoria_id: cat_produtos.id,
   visivel: true,
-  ordem: 1
+  tempo_estimado_minutos: 10
 )
+conteudo4.tags << Universidade::Tag.find_by(nome: "fotografia")
+conteudo4.tags << Universidade::Tag.find_by(nome: "iniciante")
 
-Universidade::Conteudo.create!(
+Universidade::TrilhaConteudo.create!(
+  trilha: trilha2,
+  conteudo: conteudo4,
+  modulo: modulo2_1,
+  posicao: 1
+)
+puts "    📄 Conteúdo: #{conteudo4.titulo}"
+
+# Conteúdo solto (não vinculado a trilha)
+puts "\n📄 Criando conteúdos soltos..."
+conteudo_solto = Universidade::Conteudo.create!(
   **owner_attrs,
-  titulo: "Destructuring",
-  corpo: "<h2>Extraindo valores</h2><p>Destructuring permite extrair valores de arrays e objetos de forma concisa.</p><pre><code>const pessoa = { nome: 'João', idade: 25 };\nconst { nome, idade } = pessoa;\n\nconst numeros = [1, 2, 3];\nconst [primeiro, segundo] = numeros;</code></pre>",
-  modulo_id: modulo2_1.id,
+  titulo: "Como melhorar o atendimento via WhatsApp",
+  corpo: '{"blocks":[{"type":"titulo","data":{"text":"WhatsApp: Seu Canal de Vendas"}},{"type":"texto","data":{"html":"<p>O WhatsApp é fundamental para o atendimento e vendas em e-commerce brasileiro.</p>"}}]}',
+  categoria_id: cat_atendimento.id,
   visivel: true,
-  ordem: 2
+  tempo_estimado_minutos: 7
 )
+conteudo_solto.tags << Universidade::Tag.find_by(nome: "whatsapp")
+conteudo_solto.tags << Universidade::Tag.find_by(nome: "iniciante")
+conteudo_solto.tags << Universidade::Tag.find_by(nome: "vendas")
+puts "✅ Conteúdo solto: #{conteudo_solto.titulo}"
 
-Universidade::Conteudo.create!(
-  **owner_attrs,
-  titulo: "Promises e Async/Await",
-  corpo: "<h2>Programação assíncrona</h2><p>Promises e async/await facilitam o trabalho com código assíncrono.</p><pre><code>// Usando Promises\nfetch('/api/data')\n  .then(res => res.json())\n  .then(data => console.log(data));\n\n// Usando async/await\nasync function fetchData() {\n  const res = await fetch('/api/data');\n  const data = await res.json();\n  console.log(data);\n}</code></pre>",
-  modulo_id: modulo2_1.id,
-  visivel: true,
-  ordem: 3
-)
-puts "    📄 3 conteúdos criados"
+puts "\n" + "="*60
+puts "✨ Banco de dados populado com sucesso!"
+puts "="*60
+puts "📊 Resumo:"
+puts "  - #{Universidade::Categoria.count} categorias"
+puts "  - #{Universidade::Tag.count} tags"
+puts "  - #{Universidade::Trilha.count} trilhas"
+puts "  - #{Universidade::Modulo.count} módulos"
+puts "  - #{Universidade::Conteudo.count} conteúdos"
+puts "  - #{Universidade::TrilhaConteudo.count} vínculos trilha-conteúdo"
+puts "="*60
+puts "🚀 Acesse /admin para gerenciar categorias, tags e conteúdos!"
 
-# Trilha 3: Stimulus JS
-trilha3 = Universidade::Trilha.create!(
-  **owner_attrs,
-  nome: "Stimulus JS",
-  descricao: "Framework JavaScript modesto para HTML",
-  tags: ["stimulus", "javascript", "hotwire"],
-  visivel: true,
-  rascunho: false,
-  ordem: 3
-)
-puts "✅ Trilha criada: #{trilha3.nome}"
-
-modulo3_1 = Universidade::Modulo.create!(
-  **owner_attrs,
-  trilha_id: trilha3.id,
-  nome: "Controllers",
-  descricao: "Criando controllers Stimulus",
-  visivel: true,
-  ordem: 1
-)
-puts "  📦 Módulo: #{modulo3_1.nome}"
-
-Universidade::Conteudo.create!(
-  **owner_attrs,
-  titulo: "Primeiro Controller",
-  corpo: "<h2>Hello Stimulus</h2><p>Vamos criar nosso primeiro controller Stimulus.</p><pre><code>// hello_controller.js\nimport { Controller } from '@hotwired/stimulus'\n\nexport default class extends Controller {\n  connect() {\n    console.log('Hello, Stimulus!')\n  }\n}</code></pre><pre><code>&lt;div data-controller=\"hello\"&gt;\n  &lt;h1&gt;Stimulus está funcionando!&lt;/h1&gt;\n&lt;/div&gt;</code></pre>",
-  modulo_id: modulo3_1.id,
-  visivel: true,
-  ordem: 1
-)
-
-Universidade::Conteudo.create!(
-  **owner_attrs,
-  titulo: "Targets e Actions",
-  corpo: "<h2>Conectando HTML</h2><p>Targets são referências a elementos HTML, e actions são eventos que disparam métodos do controller.</p><pre><code>export default class extends Controller {\n  static targets = ['name', 'output']\n\n  greet() {\n    this.outputTarget.textContent = `Olá, ${this.nameTarget.value}!`\n  }\n}</code></pre><pre><code>&lt;div data-controller=\"greeter\"&gt;\n  &lt;input data-greeter-target=\"name\" type=\"text\"&gt;\n  &lt;button data-action=\"click->greeter#greet\"&gt;Cumprimentar&lt;/button&gt;\n  &lt;p data-greeter-target=\"output\"&gt;&lt;/p&gt;\n&lt;/div&gt;</code></pre>",
-  modulo_id: modulo3_1.id,
-  visivel: true,
-  ordem: 2
-)
-puts "    📄 2 conteúdos criados"
-
-# Conteúdo solto (direto na trilha, sem módulo)
-Universidade::Conteudo.create!(
-  **owner_attrs,
-  titulo: "Recursos Adicionais",
-  corpo: "<h2>Links úteis</h2><ul><li><a href='https://stimulus.hotwired.dev'>Documentação oficial do Stimulus</a></li><li><a href='https://hotwired.dev'>Hotwire</a></li><li><a href='https://turbo.hotwired.dev'>Turbo</a></li></ul>",
-  trilha_id: trilha3.id,
-  modulo_id: nil,
-  visivel: true,
-  ordem: 10
-)
-puts "  📄 1 conteúdo solto criado"
-
-puts ""
-puts "✨ Dados criados com sucesso!"
-puts "📊 Total: #{Universidade::Trilha.count} trilhas, #{Universidade::Modulo.count} módulos, #{Universidade::Conteudo.count} conteúdos"
-puts "🚀 Acesse http://localhost:3000/admin para gerenciar o conteúdo!"
 

@@ -1,0 +1,81 @@
+<div class="max-w-5xl mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Categorias</h1>
+    <%= link_to "Nova Categoria", 
+                new_admin_categoria_path, 
+                class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition",
+                data: { turbo_frame: "modal-content", action: "modal#open" } %>
+  </div>
+
+  <%# Busca %>
+  <%= turbo_frame_tag "categorias_list" do %>
+    <div class="mb-6">
+      <%= form_with url: admin_categorias_path, method: :get, data: { turbo_frame: "categorias_list", turbo_action: "replace" }, class: "flex gap-2" do |f| %>
+        <%= f.text_field :q, 
+            value: @busca, 
+            placeholder: "Buscar categorias...",
+            class: "flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+        <%= f.submit "Buscar", class: "px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700" %>
+        <%= link_to "Limpar", admin_categorias_path, class: "px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50" if @busca.present? %>
+      <% end %>
+    </div>
+
+    <% if @categorias.any? %>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conteúdos</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% @categorias.each do |categoria| %>
+              <tr id="categoria_<%= categoria.id %>">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900"><%= categoria.nome %></div>
+                  <div class="text-xs text-gray-500"><%= categoria.slug %></div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-600"><%= truncate(categoria.descricao, length: 80) %></div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <%= categoria.conteudos_count %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <%= link_to "Editar", 
+                              edit_admin_categoria_path(categoria), 
+                              class: "text-blue-600 hover:text-blue-900 mr-3",
+                              data: { turbo_frame: "modal-content", action: "modal#open" } %>
+                  <%= button_to "Excluir", 
+                                admin_categoria_path(categoria), 
+                                method: :delete,
+                                form: { data: { turbo_confirm: "Tem certeza?" } },
+                                class: "text-red-600 hover:text-red-900 inline" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-12 bg-white rounded-lg shadow">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhuma categoria encontrada</h3>
+        <p class="mt-1 text-sm text-gray-500">
+          <% if @busca.present? %>
+            Tente buscar com outros termos.
+          <% else %>
+            Comece criando uma nova categoria.
+          <% end %>
+        </p>
+      </div>
+    <% end %>
+  <% end %>
+</div>

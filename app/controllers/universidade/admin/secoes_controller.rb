@@ -9,10 +9,11 @@ module Universidade
       end
 
       def new
-        @secao = Secao.new(visivel: true, tipo: "conteudo", formato_card: "quadrado", layout_exibicao: "galeria", colunas_galeria: 3)
+        @secao = Secao.new(visivel: true, tipo: "conteudo", formato_card: "quadrado", layout_exibicao: "galeria", colunas_galeria: 3, colunas_galeria_mobile: 1)
         @trilhas  = Trilha.order(:nome)
         @conteudos = Conteudo.order(:titulo)
         respond_to do |format|
+          format.html { redirect_to admin_secoes_path }
           format.turbo_stream do
             render turbo_stream: turbo_stream.update(
               "modal-content",
@@ -65,6 +66,7 @@ module Universidade
         @trilhas  = Trilha.order(:nome)
         @conteudos = Conteudo.order(:titulo)
         respond_to do |format|
+          format.html { redirect_to admin_secoes_path }
           format.turbo_stream do
             render turbo_stream: turbo_stream.update(
               "modal-content",
@@ -163,9 +165,9 @@ module Universidade
       end
 
       def secao_params
-        params.require(:secao).permit(:titulo, :subtitulo, :tipo, :formato_card, :layout_exibicao, :colunas_galeria, :visivel, imagens_ordem: [], imagens_links: {}, new_imagens_links: []).merge(
-          user_id: current_user_id || 1,
-          store_id: current_store_id || 1
+        params.require(:secao).permit(:titulo, :subtitulo, :tipo, :formato_card, :layout_exibicao, :colunas_galeria, :colunas_galeria_mobile, :visivel, imagens_ordem: [], imagens_links: {}).merge(
+          user_id: universidade_current_user.id,
+          store_id: universidade_current_user.store_id
         )
       end
 
@@ -183,8 +185,8 @@ module Universidade
           secao.secao_itens.create!(
             item: trilha,
             ordem: ordem,
-            user_id: current_user_id || 1,
-            store_id: current_store_id || 1
+            user_id: universidade_current_user.id,
+            store_id: universidade_current_user.store_id
           )
         end
 
@@ -195,8 +197,8 @@ module Universidade
           secao.secao_itens.create!(
             item: conteudo,
             ordem: ordem,
-            user_id: current_user_id || 1,
-            store_id: current_store_id || 1
+            user_id: universidade_current_user.id,
+            store_id: universidade_current_user.store_id
           )
         end
       end

@@ -1,0 +1,85 @@
+<%# Taxonomia: Categoria e Tags %>
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6"
+     data-controller="taxonomy-suggestions tags-selector"
+     data-taxonomy-suggestions-titulo-value="<%= conteudo.titulo %>"
+     data-taxonomy-suggestions-corpo-value="<%= conteudo.corpo %>">
+  <h2 class="text-lg font-semibold text-gray-900 mb-1">Categoria e Tags</h2>
+  <p class="text-sm text-gray-500 mb-4">Opcional: Classifique o conteúdo para facilitar a busca</p>
+
+  <%# Categoria %>
+  <div class="mb-4">
+    <%= render "universidade/admin/shared/categoria_selector",
+          form: form,
+          selected_value: conteudo.categoria_id %>
+  </div>
+
+  <%# Tags %>
+  <div class="mb-4">
+    <label class="block text-sm font-medium text-gray-700 mb-2">
+      Tags
+    </label>
+    
+    <%# Campo de busca e seleção de tags %>
+    <div class="relative">
+      <div class="flex items-center gap-2 flex-wrap p-2 border border-gray-300 rounded-lg min-h-[42px] focus-within:ring-2 focus-within:ring-pink-300 focus-within:border-transparent"
+           data-tags-selector-target="selectedContainer">
+        <%# Tags selecionadas (renderizadas como chips) %>
+        <% if conteudo.tags.any? %>
+          <% conteudo.tags.each do |tag| %>
+            <span class="inline-flex items-center gap-1 px-2 py-1.5 bg-gray-100 text-gray-700 text-sm rounded" data-tag-id="<%= tag.id %>">
+              <%= tag.nome %>
+              <button type="button" 
+                      data-action="click->tags-selector#removeTag"
+                      data-tag-id="<%= tag.id %>"
+                      class="text-gray-500 hover:text-gray-700">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </span>
+          <% end %>
+        <% end %>
+        
+        <%# Input para buscar/criar tags %>
+        <input type="text"
+               data-tags-selector-target="searchInput"
+               data-action="input->tags-selector#onInput focus->tags-selector#onFocus"
+               placeholder="Digite para buscar ou criar tags..."
+               class="flex-1 min-w-[200px] px-2 py-1 border-0 focus:outline-none text-sm">
+      </div>
+      
+      <%# Dropdown com resultados da busca %>
+      <div data-tags-selector-target="dropdown"
+           class="hidden absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-auto">
+        <div data-tags-selector-target="dropdownResults" class="py-1">
+          <%# Resultados da busca serão inseridos aqui via JS %>
+        </div>
+      </div>
+    </div>
+    
+    <%# Hidden inputs para enviar tags selecionadas %>
+    <div data-tags-selector-target="hiddenInputsContainer">
+      <% if conteudo.tags.any? %>
+        <% conteudo.tags.each do |tag| %>
+          <input type="hidden" name="conteudo[tag_ids][]" value="<%= tag.id %>" data-tag-id="<%= tag.id %>">
+        <% end %>
+      <% end %>
+    </div>
+    
+    <p class="mt-1 text-xs text-gray-500">Digite e selecione tags existentes ou crie novas</p>
+  </div>
+
+  <%# Sugestões Automáticas %>
+  <div data-taxonomy-suggestions-target="suggestionsContainer" class="hidden mt-4 p-4 bg-pink-50 border border-pink-200 rounded-lg">
+    <p class="text-sm font-medium text-pink-900 mb-2">💡 Sugestões baseadas no conteúdo:</p>
+    <div class="flex flex-wrap gap-2" data-taxonomy-suggestions-target="suggestionsList">
+      <%# Sugestões serão inseridas aqui via JS %>
+    </div>
+  </div>
+</div>
+
+<%# Passa todas as tags para o JavaScript %>
+<script>
+  window.universidadeTags = <%= Universidade::Tag.ordem_alfabetica.map { |t| { id: t.id, nome: t.nome } }.to_json.html_safe %>;
+  window.universidadeCategorias = <%= Universidade::Categoria.ordem_alfabetica.map { |c| { id: c.id, nome: c.nome } }.to_json.html_safe %>;
+</script>

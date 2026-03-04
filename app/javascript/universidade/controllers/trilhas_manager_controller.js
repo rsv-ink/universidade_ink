@@ -2,10 +2,32 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["trilhasList", "trilhasDropdown", "selectedCount", "applyButton", "searchInput", "trilhasContainer"]
+  static values = { trilhaInicial: Object, moduloInicialId: String }
   
   connect() {
     this.selectedTrilhas = new Set()
     this.updateSelectedCount()
+    
+    // Vincular trilha inicial se fornecida
+    if (this.hasTrilhaInicialValue && this.trilhaInicialValue.id) {
+      this.vincularTrilhaInicial()
+    }
+  }
+  
+  vincularTrilhaInicial() {
+    const trilha = this.trilhaInicialValue
+    const moduloId = this.hasModuloInicialIdValue ? this.moduloInicialIdValue : null
+    
+    // Adicionar a trilha à lista visualizada com o módulo pré-selecionado
+    this.addTrilhaRow(trilha, moduloId)
+    
+    // Marcar o checkbox correspondente
+    const checkbox = this.element.querySelector(`input[type="checkbox"][value="${trilha.id}"]`)
+    if (checkbox) {
+      checkbox.checked = true
+      this.selectedTrilhas.add(trilha.id.toString())
+      this.updateSelectedCount()
+    }
   }
 
   filterTrilhas(event) {
@@ -68,13 +90,13 @@ export default class extends Controller {
     this.resetDropdown()
   }
 
-  addTrilhaRow(trilha) {
+  addTrilhaRow(trilha, moduloIdInicial = null) {
     // Check if trilha is already in the list
     const existingRow = this.trilhasListTarget.querySelector(`[data-trilha-id="${trilha.id}"]`)
     if (existingRow) return
     
     // Get modulos for this trilha
-    const modulosSelect = this.buildModulosSelect(trilha.id)
+    const modulosSelect = this.buildModulosSelect(trilha.id, moduloIdInicial)
     
     const row = document.createElement('div')
     row.dataset.trilhaId = trilha.id
@@ -99,13 +121,14 @@ export default class extends Controller {
     this.trilhasListTarget.appendChild(row)
   }
 
-  buildModulosSelect(trilhaId) {
+  buildModulosSelect(trilhaId, moduloIdSelecionado = null) {
     const modulosData = JSON.parse(this.element.dataset.trilhasManagerModulosValue || '[]')
     const trilhaModulos = modulosData.filter(m => m.trilha_id.toString() === trilhaId.toString())
     
     let options = '<option value="">Nenhum módulo</option>'
     trilhaModulos.forEach(modulo => {
-      options += `<option value="${modulo.id}">${modulo.nome}</option>`
+      const selected = moduloIdSelecionado && modulo.id.toString() === moduloIdSelecionado.toString() ? 'selected' : ''
+      options += `<option value="${modulo.id}" ${selected}>${modulo.nome}</option>`
     })
     
     return `

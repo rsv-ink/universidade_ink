@@ -1,8 +1,8 @@
 <%
-  progresso       = trilha.progresso_lojista(current_user_id, current_store_id)
+  progresso       = trilha.progresso_lojista(universidade_current_user.id, universidade_current_user.store_id)
   progresso_pct   = (progresso * 100).round
   concluida       = progresso_pct == 100
-  primeiro_artigo = trilha.artigos.visivel.order(Arel.sql("COALESCE(ordem, id)")).first
+  primeiro_artigo = trilha.conteudos_ordenados.first
   trilha_url      = primeiro_artigo ? conteudo_path(primeiro_artigo) : trilha_path(trilha)
 %>
 
@@ -32,15 +32,13 @@
   </div>
 
   <%# Progresso %>
-  <% if current_user_id && current_store_id %>
-    <div class="flex items-center gap-3 flex-shrink-0">
+  <div class="flex items-center gap-3 flex-shrink-0">
       <div class="w-24 bg-gray-100 rounded-full h-1.5">
         <div class="h-1.5 rounded-full <%= concluida ? 'bg-green-500' : 'bg-pink-500' %>"
              style="width: <%= progresso_pct %>%"></div>
       </div>
       <span class="text-xs font-medium text-gray-500 w-8 text-right"><%= progresso_pct %>%</span>
     </div>
-  <% end %>
 
   <%# Seta de navegação %>
   <svg class="flex-shrink-0 w-4 h-4 text-gray-300 group-hover:text-pink-400 transition-colors" 

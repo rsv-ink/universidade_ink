@@ -95,18 +95,49 @@
         </div>
       </div>
 
-      <%# Cards por linha %>
+      <%# Cards por linha — Desktop e Mobile %>
       <div>
-        <%= f.label :colunas_galeria, "Itens por linha", class: "block text-sm font-medium text-gray-700 mb-2" %>
-        <div class="grid grid-cols-4 gap-2">
-          <% [1, 2, 3, 4].each do |val| %>
-            <label class="flex items-center justify-center gap-2 p-2 border border-gray-300 rounded-lg cursor-pointer hover:border-pink-400 transition-colors has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50">
-              <%= f.radio_button :colunas_galeria, val, class: "text-pink-600 focus:ring-0 focus:outline-none" %>
-              <span class="text-sm text-gray-900"><%= val %></span>
-            </label>
-          <% end %>
+        <label class="block text-sm font-medium text-gray-700 mb-3">Itens por linha</label>
+        <div class="grid grid-cols-2 gap-4">
+
+          <%# Desktop %>
+          <div>
+            <p class="text-xs font-semibold text-gray-500 mb-2 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              Desktop
+            </p>
+            <div class="grid grid-cols-4 gap-1.5">
+              <% [1, 2, 3, 4].each do |val| %>
+                <label class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:border-pink-400 transition-colors has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50">
+                  <%= f.radio_button :colunas_galeria, val, class: "sr-only" %>
+                  <span class="text-sm font-medium text-gray-900"><%= val %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <%# Mobile %>
+          <div>
+            <p class="text-xs font-semibold text-gray-500 mb-2 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
+              Mobile
+            </p>
+            <div class="grid grid-cols-4 gap-1.5">
+              <% [1, 2, 3, 4].each do |val| %>
+                <label class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:border-pink-400 transition-colors has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50">
+                  <%= f.radio_button :colunas_galeria_mobile, val, class: "sr-only" %>
+                  <span class="text-sm font-medium text-gray-900"><%= val %></span>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
         </div>
-        <p class="text-xs text-gray-400 mt-2">Define quantos cards serão exibidos por linha.</p>
+        <p class="text-xs text-gray-400 mt-2">Define quantos cards serão exibidos por linha em cada dispositivo.</p>
       </div>
 
       <%= f.hidden_field :formato_card, value: "quadrado" %>

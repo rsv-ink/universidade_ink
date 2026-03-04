@@ -14,6 +14,7 @@ module Universidade
     attribute :subtitulo, :string
     attribute :layout_exibicao, :string, default: "galeria"
     attribute :colunas_galeria, :integer, default: 3
+    attribute :colunas_galeria_mobile, :integer, default: 1
     attribute :imagens_ordem, default: []
     attribute :imagens_links, default: {}
 
@@ -25,6 +26,7 @@ module Universidade
     validates :formato_card, inclusion: { in: %w[quadrado] }
     validates :layout_exibicao, inclusion: { in: %w[carrossel galeria] }
     validates :colunas_galeria, inclusion: { in: [1, 2, 3, 4] }
+    validates :colunas_galeria_mobile, inclusion: { in: [1, 2, 3, 4] }
     validates :user_id, presence: true
     validates :store_id, presence: true
 

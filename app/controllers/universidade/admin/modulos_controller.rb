@@ -1,7 +1,7 @@
 module Universidade
   module Admin
     class ModulosController < BaseController
-      before_action :set_modulo, only: %i[edit update destroy toggle_visivel mover_acima mover_abaixo]
+      before_action :set_modulo, only: %i[edit update destroy confirmar_exclusao toggle_visivel mover_acima mover_abaixo]
 
       def new
         @modulo = Modulo.new(visivel: true, trilha_id: params[:trilha_id])
@@ -58,9 +58,17 @@ module Universidade
         end
       end
 
+      def confirmar_exclusao
+        render layout: false if turbo_frame_request? || request.xhr?
+      end
+
       def destroy
-        @modulo.destroy
-        redirect_to admin_root_path, notice: "Módulo excluído com sucesso."
+        nome = @modulo.nome
+        excluir_conteudos = params[:excluir_conteudos] == "true"
+        
+        @modulo.excluir_com_opcoes(excluir_conteudos: excluir_conteudos)
+        
+        redirect_to admin_root_path, notice: "\"#{nome}\" excluído com sucesso."
       end
 
       def toggle_visivel
@@ -115,8 +123,8 @@ module Universidade
 
       def modulo_params
         params.require(:modulo).permit(:nome, :descricao, :ordem, :visivel, :trilha_id).merge(
-          user_id: current_user_id || 1,
-          store_id: current_store_id || 1
+          user_id: universidade_current_user.id,
+          store_id: universidade_current_user.store_id
         )
       end
 

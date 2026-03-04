@@ -1,7 +1,7 @@
 module Universidade
   module Admin
     class TrilhasController < BaseController
-      before_action :set_trilha, only: %i[show edit update destroy toggle_visivel mover_acima mover_abaixo selecionar_conteudos_existentes adicionar_conteudos_existentes]
+      before_action :set_trilha, only: %i[show edit update destroy confirmar_exclusao toggle_visivel mover_acima mover_abaixo selecionar_conteudos_existentes adicionar_conteudos_existentes]
 
       def index
         @busca = params[:q].presence
@@ -36,6 +36,7 @@ module Universidade
         @trilha = Trilha.new(trilha_params)
         apply_status_action(@trilha)
         if @trilha.save
+          sincronizar_tags(@trilha)
           respond_to do |format|
             format.turbo_stream do
               render turbo_stream: turbo_stream.replace("modal-content", "")
@@ -61,6 +62,7 @@ module Universidade
         @trilha.assign_attributes(trilha_params)
         apply_status_action(@trilha)
         if @trilha.save
+          sincronizar_tags(@trilha)
           respond_to do |format|
             format.turbo_stream do
               render turbo_stream: turbo_stream.replace("modal-content", "")
@@ -78,9 +80,16 @@ module Universidade
         end
       end
 
+      def confirmar_exclusao
+        render layout: false if turbo_frame_request? || request.xhr?
+      end
+
       def destroy
         nome = @trilha.nome
-        @trilha.destroy
+        excluir_conteudos = params[:excluir_conteudos] == "true"
+        
+        @trilha.excluir_com_opcoes(excluir_conteudos: excluir_conteudos)
+        
         redirect_to admin_root_path, notice: "\"#{nome}\" excluída com sucesso."
       end
 
@@ -159,7 +168,11 @@ module Universidade
       def selecionar_conteudos_existentes
         @trilha = Trilha.find(params[:id])
         @conteudos_disponiveis = Conteudo.order(:titulo).includes(:trilha_conteudos)
-        render partial: "add_existing_content", layout: false
+        if turbo_frame_request? || request.xhr?
+          render partial: "add_existing_content", layout: false
+        else
+          render :selecionar_conteudos_existentes
+        end
       end
 
       private
@@ -169,14 +182,16 @@ module Universidade
       end
 
       def trilha_params
-        permitted = params.require(:trilha).permit(:nome, :descricao, :ordem, :visivel, :tags_text, :imagem)
-        tags_text = permitted.delete(:tags_text)
-        tags_array = tags_text.to_s.split(",").map(&:strip).reject(&:blank?)
-        permitted.to_h.merge(
-          tags: tags_array,
-          user_id: current_user_id || 1,
-          store_id: current_store_id || 1
+        params.require(:trilha).permit(:nome, :descricao, :ordem, :visivel, :imagem).to_h.merge(
+          user_id: universidade_current_user.id,
+          store_id: universidade_current_user.store_id
         )
+      end
+
+      def sincronizar_tags(trilha)
+        nomes = params.dig(:trilha, :tags_text).to_s.split(",").map(&:strip).reject(&:blank?)
+        tags = nomes.map { |nome| Tag.find_by("lower(nome) = lower(?)", nome) || Tag.create!(nome: nome) }
+        trilha.tags = tags
       end
 
       def apply_status_action(trilha)

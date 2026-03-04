@@ -1,54 +1,81 @@
 <div class="p-6">
   <% modulo_id = params[:modulo_id] %>
-  <div class="flex items-center justify-between mb-4">
+  
+  <%# Título do modal %>
+  <div class="mb-5">
     <h3 class="text-lg font-semibold text-gray-900">
       <%= modulo_id ? "Adicionar Conteúdos ao Módulo" : "Adicionar Conteúdos à Trilha" %>
     </h3>
+    <p class="text-xs text-gray-500 mt-1">Selecione da biblioteca ou crie um novo</p>
+  </div>
+  
+  <%# Opções de ação com igual importância %>
+  <div class="grid grid-cols-2 gap-3 mb-5">
+    <%# Opção: Selecionar existentes %>
+    <div class="p-3 border-2 border-pink-600 bg-pink-50 rounded-lg">
+      <div class="flex items-start gap-2">
+        <svg class="w-4 h-4 text-pink-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div>
+          <p class="text-xs font-semibold text-gray-900">Selecionar existentes</p>
+          <p class="text-xs text-gray-600 mt-0.5">Escolha da biblioteca abaixo</p>
+        </div>
+      </div>
+    </div>
+    
+    <%# Opção: Criar novo %>
     <%= link_to new_admin_biblioteca_path(trilha_id: @trilha.id, modulo_id: modulo_id),
-          class: "inline-flex items-center gap-1.5 px-3 py-1.5 bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-      </svg>
-      Criar Novo
+          class: "p-3 border-2 border-gray-300 bg-white rounded-lg hover:border-gray-400 transition-colors" do %>
+      <div class="flex items-start gap-2">
+        <svg class="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <div>
+          <p class="text-xs font-semibold text-gray-900">Criar novo</p>
+          <p class="text-xs text-gray-600 mt-0.5">Adicionar conteúdo inédito</p>
+        </div>
+      </div>
     <% end %>
   </div>
   
   <%= form_with url: adicionar_conteudos_existentes_admin_trilha_path(@trilha, modulo_id: modulo_id), method: :post, class: "space-y-4" do |f| %>
     <%= hidden_field_tag :modulo_id, modulo_id if modulo_id %>
-    <%# Campo de busca %>
+    
+    <%# Campo de busca - com fontes menores %>
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Buscar conteúdos</label>
+      <label class="block text-xs font-medium text-gray-700 mb-1.5">Buscar conteúdos</label>
       <input type="text" 
              id="conteudo-search"
              placeholder="Digite para buscar por título..."
-             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent">
+             class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent">
     </div>
     
-    <%# Lista de conteúdos disponíveis %>
-    <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+    <%# Lista de conteúdos disponíveis - altura reduzida %>
+    <div class="max-h-80 overflow-y-auto border border-gray-200 rounded-lg">
       <% if @conteudos_disponiveis.empty? %>
         <div class="p-8 text-center text-gray-500">
-          <p>Nenhum conteúdo disponível na biblioteca.</p>
+          <p class="text-sm">Nenhum conteúdo disponível na biblioteca.</p>
           <%= link_to "Criar novo conteúdo", new_admin_biblioteca_path, 
-                class: "text-pink-600 hover:underline font-medium", 
+                class: "text-sm text-pink-600 hover:underline font-medium", 
                 target: "_blank" %>
         </div>
       <% else %>
         <div class="divide-y divide-gray-100">
           <% @conteudos_disponiveis.each do |conteudo| %>
-            <label class="flex items-start gap-3 p-3 hover:bg-gray-50 cursor-pointer conteudo-item" 
+            <label class="flex items-start gap-2.5 p-2.5 hover:bg-gray-50 cursor-pointer conteudo-item" 
                    data-titulo="<%= conteudo.titulo.downcase %>">
               <%= check_box_tag "conteudo_ids[]", conteudo.id, false, 
-                    class: "mt-1 w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500" %>
-              <div class="flex-1">
-                <p class="font-medium text-gray-900"><%= conteudo.titulo %></p>
+                    class: "mt-0.5 w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500" %>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate"><%= conteudo.titulo %></p>
                 <% if conteudo.trilhas_count > 0 %>
-                  <p class="text-xs text-gray-500 mt-1">
+                  <p class="text-xs text-gray-500 mt-0.5">
                     Já está em <%= conteudo.trilhas_count %> trilha(s)
                   </p>
                 <% else %>
-                  <p class="text-xs text-amber-600 mt-1">
-                    <svg class="inline w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <p class="text-xs text-amber-600 mt-0.5 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                     </svg>
                     Sem trilha
@@ -61,14 +88,14 @@
       <% end %>
     </div>
     
-    <%# Ações %>
+    <%# Ações - apenas Adicionar é primário %>
     <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
       <button type="button"
               onclick="document.getElementById('modal').classList.add('hidden')"
               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
         Cancelar
       </button>
-      <%= f.submit "Adicionar Selecionados",
+      <%= f.submit "Adicionar",
             class: "px-4 py-2 text-sm font-medium text-white bg-pink-600 rounded-lg hover:bg-pink-700 transition-colors" %>
     </div>
   <% end %>

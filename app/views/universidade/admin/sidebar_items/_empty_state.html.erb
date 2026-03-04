@@ -1,0 +1,16 @@
+<div class="px-4 py-16 text-center text-gray-400 text-sm">
+  <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+  </svg>
+  <p class="font-medium mb-1">Nenhum item configurado</p>
+  <p class="text-xs text-gray-400 mb-4">A sidebar ficará vazia até que você adicione itens.</p>
+  <%= link_to new_admin_sidebar_item_path,
+        data: { turbo_stream: true },
+        class: "inline-flex items-center gap-1.5 text-sm text-pink-600 hover:text-pink-700 font-medium" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Criar o primeiro item
+  <% end %>
+</div>

@@ -31,6 +31,10 @@ export default class extends Controller {
   static values  = { uploadUrl: String }
 
   connect() {
+    console.log('🔷 BlocksEditor: connect() chamado')
+    console.log('🔷 Palette target:', this.paletteTarget)
+    console.log('🔷 Canvas target:', this.canvasTarget)
+    
     this._setupSortable()
     this._loadInitialContent()
     const form = this.element.closest("form")
@@ -74,10 +78,23 @@ export default class extends Controller {
   // ── Sortable setup ───────────────────────────────────────────────────
 
   _setupSortable() {
+    console.log('🔷 _setupSortable() iniciando...')
+    console.log('🔷 Palette items encontrados:', this.paletteTarget.querySelectorAll('.palette-item').length)
+    
     this._paletteSortable = Sortable.create(this.paletteTarget, {
       group:     { name: "blocks", pull: "clone", put: false },
       sort:      false,
       animation: 150,
+      draggable: ".palette-item",
+      onStart: (evt) => {
+        console.log('🟢 DRAG INICIADO!', evt.item)
+      },
+      onEnd: (evt) => {
+        console.log('🔴 DRAG FINALIZADO!', evt)
+      },
+      onClone: (evt) => {
+        console.log('📋 CLONE criado!', evt)
+      }
     })
 
     this._canvasSortable = Sortable.create(this.canvasTarget, {
@@ -86,6 +103,7 @@ export default class extends Controller {
       handle:     ".block-drag-handle",
       ghostClass: "block-ghost",
       onAdd: (event) => {
+        console.log('✅ BLOCO ADICIONADO AO CANVAS!', event.item.dataset.blockType)
         const type = event.item.dataset.blockType
         if (!type || !BLOCK_TYPES[type]) { event.item.remove(); return }
         const blockEl = this._createBlockElement(type, this._uid(), {})
@@ -95,6 +113,9 @@ export default class extends Controller {
         this._focusFirstInput(blockEl)
       },
     })
+    
+    console.log('🔷 Sortable configurado. Palette:', this._paletteSortable)
+    console.log('🔷 Sortable configurado. Canvas:', this._canvasSortable)
   }
 
   // ── Block creation ───────────────────────────────────────────────────

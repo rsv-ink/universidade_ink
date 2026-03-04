@@ -1,0 +1,138 @@
+<div class="bg-white px-6 py-4 border-b border-gray-200">
+  <h2 class="text-xl font-semibold text-gray-900">
+    <%= sidebar_item.new_record? ? "Novo Item" : "Editar Item" %>
+  </h2>
+</div>
+
+<div class="p-6">
+  <%= form_with model: sidebar_item,
+    url: url,
+    data: { turbo_stream: true, controller: "sidebar-item-form" },
+    class: "space-y-5" do |f| %>
+
+    <% if sidebar_item.errors.any? %>
+      <div class="rounded-md bg-red-50 p-4 border border-red-200">
+        <div class="flex">
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">
+              <%= sidebar_item.errors.count %> erro(s) impediram o salvamento:
+            </h3>
+            <div class="mt-2 text-sm text-red-700">
+              <ul class="list-disc list-inside space-y-1">
+                <% sidebar_item.errors.full_messages.each do |msg| %>
+                  <li><%= msg %></li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Tipo %>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        Tipo *
+      </label>
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2 px-4 py-2 border rounded-lg cursor-pointer hover:bg-gray-50 <%= 'border-blue-500 bg-blue-50' if sidebar_item.tipo == 'link' %>">
+          <%= f.radio_button :tipo, 'link', class: "text-blue-600", data: { action: "sidebar-item-form#toggleTipo" } %>
+          <span class="text-sm font-medium">Link</span>
+        </label>
+        <label class="flex items-center gap-2 px-4 py-2 border rounded-lg cursor-pointer hover:bg-gray-50 <%= 'border-blue-500 bg-blue-50' if sidebar_item.tipo == 'divider' %>">
+          <%= f.radio_button :tipo, 'divider', class: "text-blue-600", data: { action: "sidebar-item-form#toggleTipo" } %>
+          <span class="text-sm font-medium">Divisor</span>
+        </label>
+      </div>
+      <p class="mt-1 text-xs text-gray-500">Links navegam para URLs, divisores são apenas textos de separação</p>
+    </div>
+
+    <%# Nome %>
+    <div>
+      <label for="sidebar_item_nome" class="block text-sm font-medium text-gray-700 mb-1">
+        Nome *
+      </label>
+      <%= f.text_field :nome,
+          id: "sidebar_item_nome",
+          class: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent #{sidebar_item.errors[:nome].any? ? 'border-red-500' : ''}",
+          placeholder: "Ex: Biblioteca de Conteúdos" %>
+      <% if sidebar_item.errors[:nome].any? %>
+        <p class="mt-1 text-sm text-red-600"><%= sidebar_item.errors[:nome].first %></p>
+      <% end %>
+    </div>
+
+    <%# Campos condicionais para tipo 'link' %>
+    <div data-sidebar-item-form-target="linkFields" class="space-y-5 <%= 'hidden' if sidebar_item.tipo == 'divider' %>">
+      
+      <%# URL %>
+      <div>
+        <label for="sidebar_item_url" class="block text-sm font-medium text-gray-700 mb-1">
+          URL *
+        </label>
+        <%= f.text_field :url,
+            id: "sidebar_item_url",
+            class: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent #{sidebar_item.errors[:url].any? ? 'border-red-500' : ''}",
+            placeholder: "Ex: /trilhas ou https://exemplo.com" %>
+        <% if sidebar_item.errors[:url].any? %>
+          <p class="mt-1 text-sm text-red-600"><%= sidebar_item.errors[:url].first %></p>
+        <% end %>
+        <p class="mt-1 text-xs text-gray-500">Pode ser um caminho interno (/trilhas) ou URL externa (https://...)</p>
+      </div>
+
+      <%# Ícone SVG %>
+      <div>
+        <label for="sidebar_item_icone" class="block text-sm font-medium text-gray-700 mb-1">
+          Ícone SVG *
+        </label>
+        <div class="flex gap-2 mb-2">
+          <%= link_to "Buscar ícones no Flowbite →",
+              "https://flowbite.com/icons/",
+              target: "_blank",
+              rel: "noopener noreferrer",
+              class: "text-sm text-pink-600 hover:text-pink-700 font-medium" %>
+        </div>
+        <%= f.text_area :icone,
+            id: "sidebar_item_icone",
+            rows: 4,
+            class: "w-full px-4 py-2 border border-gray-300 rounded-lg font-mono text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent #{sidebar_item.errors[:icone].any? ? 'border-red-500' : ''}",
+            placeholder: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">...</svg>' %>
+        <% if sidebar_item.errors[:icone].any? %>
+          <p class="mt-1 text-sm text-red-600"><%= sidebar_item.errors[:icone].first %></p>
+        <% end %>
+        <p class="mt-1 text-xs text-gray-500">Cole o código SVG completo do ícone. <strong>Importante:</strong> Remova classes como <code>text-gray-800</code> e <code>dark:text-white</code> para que o ícone herde a cor do contexto.</p>
+      </div>
+    </div>
+    
+    <%# Preview do ícone - sempre visível quando há ícone %>
+    <div data-sidebar-item-form-target="linkFields" class="<%= 'hidden' if sidebar_item.tipo == 'divider' %>">
+      <div id="icon-preview" class="<%= 'hidden' unless sidebar_item.icone.present? %>">
+        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <p class="text-xs font-medium text-gray-700 mb-2">Preview:</p>
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 text-gray-700" id="preview-icon">
+              <%= sidebar_item.icone.html_safe if sidebar_item.icone.present? %>
+            </div>
+            <span class="text-sm text-gray-600" id="preview-nome"><%= sidebar_item.nome.presence || "Nome do item" %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# Visibilidade %>
+    <div class="flex items-center gap-2">
+      <%= f.check_box :visivel, class: "w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" %>
+      <%= f.label :visivel, "Item visível no sidebar", class: "text-sm font-medium text-gray-700" %>
+    </div>
+
+    <%# Botões %>
+    <div class="flex justify-end gap-3 pt-4 border-t">
+      <%= link_to "Cancelar",
+          "#",
+          data: { action: "modal#close" },
+          class: "px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" %>
+      <%= f.submit sidebar_item.new_record? ? "Criar Item" : "Salvar Alterações",
+          class: "px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors" %>
+    </div>
+
+  <% end %>
+</div>

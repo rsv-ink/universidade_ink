@@ -13,18 +13,23 @@
     </div>
   <% end %>
 
+  <%
+    raw_desktop  = secao.colunas_galeria.to_i
+    raw_mobile   = secao.colunas_galeria_mobile.to_i
+    cols_desktop = [1, 2, 3, 4].include?(raw_desktop) ? raw_desktop : 3
+    cols_mobile  = [1, 2, 3, 4].include?(raw_mobile)  ? raw_mobile  : 1
+  %>
+
   <% if secao.imagem_tipo? %>
 
     <%# ── Seção de imagem ──────────────────────────────────── %>
     <% if secao.imagens.attached? %>
       <% imagens = secao.imagens_ordenadas %>
       <% if secao.layout_exibicao == "carrossel" %>
-        <%
-          colunas = secao.colunas_galeria.to_i
-          colunas = 3 unless [1, 2, 3, 4].include?(colunas)
-          steps = [imagens.size, 1].max
-        %>
-        <div class="imagem-carrossel" data-controller="carrossel" data-carrossel-visible-value="<%= colunas %>" style="--carrossel-visible: <%= colunas %>">
+        <div class="imagem-carrossel"
+             data-controller="carrossel"
+             data-carrossel-visible-value="<%= cols_desktop %>"
+             style="--cols-mobile: <%= cols_mobile %>; --cols-desktop: <%= cols_desktop %>">
           <div class="carrossel-viewport">
             <div class="carrossel-track" data-carrossel-target="track">
               <% imagens.each do |img| %>
@@ -41,11 +46,11 @@
               <% end %>
             </div>
           </div>
-          <% if steps > 1 %>
+          <% if imagens.size > 1 %>
             <button class="carrossel-btn carrossel-btn-prev" data-action="click->carrossel#prev" type="button"></button>
             <button class="carrossel-btn carrossel-btn-next" data-action="click->carrossel#next" type="button"></button>
             <div class="carrossel-dots">
-              <% steps.times do |i| %>
+              <% imagens.size.times do |i| %>
                 <button class="carrossel-dot <%= "active" if i.zero? %>"
                         data-carrossel-target="dot"
                         data-index="<%= i %>"
@@ -56,17 +61,7 @@
           <% end %>
         </div>
       <% else %>
-        <%
-          colunas = secao.colunas_galeria.to_i
-          colunas = 3 unless [1, 2, 3, 4].include?(colunas)
-          grid_classes = case colunas
-                         when 1 then "grid-cols-1"
-                         when 2 then "grid-cols-1 sm:grid-cols-2"
-                         when 4 then "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-                         else "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                         end
-        %>
-        <div class="imagem-galeria <%= grid_classes %>">
+        <div class="imagem-galeria" style="--cols-mobile: <%= cols_mobile %>; --cols-desktop: <%= cols_desktop %>">
           <% imagens.each do |img| %>
             <% link = secao.imagens_links&.dig(img.blob_id.to_s) %>
             <% if link.present? %>
@@ -98,12 +93,10 @@
 
     <% if itens.any? %>
       <% if secao.layout_exibicao == "carrossel" %>
-        <%
-          colunas = secao.colunas_galeria.to_i
-          colunas = 3 unless [1, 2, 3, 4].include?(colunas)
-          steps = [itens.size, 1].max
-        %>
-        <div class="imagem-carrossel" data-controller="carrossel" data-carrossel-visible-value="<%= colunas %>" style="--carrossel-visible: <%= colunas %>">
+        <div class="imagem-carrossel"
+             data-controller="carrossel"
+             data-carrossel-visible-value="<%= cols_desktop %>"
+             style="--cols-mobile: <%= cols_mobile %>; --cols-desktop: <%= cols_desktop %>">
           <div class="carrossel-viewport">
             <div class="carrossel-track" data-carrossel-target="track">
               <% itens.each do |item| %>
@@ -119,11 +112,11 @@
               <% end %>
             </div>
           </div>
-          <% if steps > 1 %>
+          <% if itens.size > 1 %>
             <button class="carrossel-btn carrossel-btn-prev" data-action="click->carrossel#prev" type="button"></button>
             <button class="carrossel-btn carrossel-btn-next" data-action="click->carrossel#next" type="button"></button>
             <div class="carrossel-dots">
-              <% steps.times do |i| %>
+              <% itens.size.times do |i| %>
                 <button class="carrossel-dot <%= "active" if i.zero? %>"
                         data-carrossel-target="dot"
                         data-index="<%= i %>"
@@ -134,17 +127,7 @@
           <% end %>
         </div>
       <% else %>
-        <%
-          colunas = secao.colunas_galeria.to_i
-          colunas = 3 unless [1, 2, 3, 4].include?(colunas)
-          grid_classes = case colunas
-                         when 1 then "grid-cols-1"
-                         when 2 then "grid-cols-1 sm:grid-cols-2"
-                         when 4 then "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-                         else "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                         end
-        %>
-        <div class="grid <%= grid_classes %> gap-4">
+        <div class="galeria-grid" style="--cols-mobile: <%= cols_mobile %>; --cols-desktop: <%= cols_desktop %>">
           <% itens.each do |item| %>
             <% if item.is_a?(Universidade::Trilha) %>
               <%= render "trilha_card", trilha: item %>

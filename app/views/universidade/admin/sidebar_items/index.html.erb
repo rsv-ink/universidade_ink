@@ -1,0 +1,54 @@
+<div class="px-6 py-6 max-w-7xl mx-auto">
+
+  <%# ── Header ──────────────────────────────────────────────── %>
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Sidebar</h1>
+      <p class="text-sm text-gray-500 mt-1">Configure os itens exibidos na barra lateral da Universidade</p>
+    </div>
+  </div>
+
+  <%# ── Info banner ─────────────────────────────────────────── %>
+  <% if @sidebar_items.any? %>
+    <div class="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 flex items-start gap-2">
+      <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>
+        A sidebar exibirá os itens <strong>visíveis</strong> na ordem abaixo.
+        Use <strong>Links</strong> para adicionar navegação e <strong>Divisores</strong> para organizar visualmente os itens.
+      </span>
+    </div>
+  <% end %>
+
+  <%# ── Itens ───────────────────────────────────────────────── %>
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-lg font-semibold text-gray-900">Itens do Sidebar</h2>
+    <div class="flex items-center gap-3">
+      <p class="text-xs text-gray-500"><%= @sidebar_items.size %> item(ns) · <%= @sidebar_items.count(&:visivel?) %> visível(is)</p>
+      <%= link_to new_admin_sidebar_item_path,
+            data: { turbo_stream: true },
+            class: "inline-flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Novo Item
+      <% end %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <% if @sidebar_items.empty? %>
+      <div id="sidebar_items_empty_state">
+        <%= render "empty_state" %>
+      </div>
+    <% else %>
+      <div class="divide-y divide-gray-100" id="sidebar_items_lista" data-controller="sortable" data-sortable-url-value="<%= reorder_admin_sidebar_items_path %>">
+        <% @sidebar_items.each do |sidebar_item| %>
+          <%= render "sidebar_item", sidebar_item: sidebar_item %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+</div>

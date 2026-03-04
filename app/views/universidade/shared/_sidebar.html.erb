@@ -1,0 +1,109 @@
+<% sidebar_items = local_assigns[:sidebar_items] || Universidade::SidebarItem.visivel.ordenado %>
+<% if sidebar_items.any? %>
+  <aside data-controller="sidebar-toggle"
+         data-sidebar-toggle-collapsed-value="false"
+         data-action="mouseenter->sidebar-toggle#mouseEnter mouseleave->sidebar-toggle#mouseLeave"
+         class="hidden lg:flex lg:flex-col fixed left-0 bg-white border-r border-gray-200 z-20 transition-all duration-300"
+         data-sidebar-toggle-target="sidebar"
+         style="top: 72px; bottom: 0; width: 220px;">
+    <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+      <% sidebar_items.each do |item| %>
+        <% if item.link? %>
+          <%= link_to item.url,
+                class: "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors group",
+                data: {
+                  "sidebar-toggle-target": "navLink",
+                  action: "click->analytics#trackSidebarClick"
+                },
+                title: item.nome do %>
+            <% if item.icone.present? %>
+              <div class="w-5 h-5 flex-shrink-0 text-gray-500 group-hover:text-pink-600 transition-colors">
+                <%= item.icone.html_safe %>
+              </div>
+            <% end %>
+            <span class="text-sm font-medium whitespace-nowrap overflow-hidden" data-sidebar-toggle-target="itemLabel"><%= item.nome %></span>
+          <% end %>
+        <% else %>
+          <div class="px-3 py-2 mt-4 first:mt-0" data-sidebar-toggle-target="divider">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap overflow-hidden">
+              <%= item.nome %>
+            </p>
+          </div>
+        <% end %>
+      <% end %>
+    </nav>
+
+    <%# Botão recolher no final %>
+    <div class="flex-shrink-0 flex items-center justify-center px-3 py-3 border-t border-gray-200">
+      <button type="button"
+              data-action="click->sidebar-toggle#toggle"
+              class="p-2 text-gray-400 hover:text-gray-600 rounded transition-colors"
+              title="Recolher sidebar">
+        <svg data-sidebar-toggle-target="iconExpanded" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+        </svg>
+        <svg data-sidebar-toggle-target="iconCollapsed" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <%# Mobile sidebar overlay (começa abaixo do header para manter navbar visível) %>
+  <div data-mobile-sidebar-target="overlay"
+       class="lg:hidden hidden fixed inset-x-0 bottom-0 bg-black bg-opacity-50 z-20"
+       style="top: 72px;"
+       data-action="click->mobile-sidebar#close">
+  </div>
+
+  <%# Mobile sidebar %>
+  <aside data-mobile-sidebar-target="sidebar"
+         class="lg:hidden fixed left-0 w-64 bg-white border-r border-gray-200 z-30 transform -translate-x-full transition-transform duration-300 flex flex-col"
+         style="top: 72px; bottom: 0;">
+    <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+      <% sidebar_items.each do |item| %>
+        <% if item.link? %>
+          <%= link_to item.url,
+                class: "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors group",
+                data: { action: "click->analytics#trackSidebarClick click->mobile-sidebar#close" } do %>
+            <% if item.icone.present? %>
+              <div class="w-5 h-5 flex-shrink-0 text-gray-500 group-hover:text-pink-600 transition-colors">
+                <%= item.icone.html_safe %>
+              </div>
+            <% end %>
+            <span class="text-sm font-medium"><%= item.nome %></span>
+          <% end %>
+        <% else %>
+          <div class="px-3 py-2 mt-4 first:mt-0">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <%= item.nome %>
+            </p>
+          </div>
+        <% end %>
+      <% end %>
+    </nav>
+
+    <%# Menu do usuário no rodapé do sidebar mobile %>
+    <% mobile_user = Universidade.current_user(self) %>
+    <% if mobile_user %>
+      <div class="flex-shrink-0 border-t border-gray-200 p-3">
+        <div class="flex items-center gap-3 px-2 py-2 mb-1">
+          <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 font-semibold text-xs flex items-center justify-center flex-shrink-0">
+            <%= user_initials(mobile_user) %>
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-gray-900 truncate"><%= [mobile_user.first_name, mobile_user.last_name].compact.join(' ') %></p>
+            <p class="text-xs text-gray-500 truncate"><%= mobile_user.email %></p>
+          </div>
+        </div>
+        <%= link_to "https://reserva.ink/user/dashboard/ink_panel",
+              class: "flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors" do %>
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          Ver Painel INK
+        <% end %>
+      </div>
+    <% end %>
+  </aside>
+<% end %>

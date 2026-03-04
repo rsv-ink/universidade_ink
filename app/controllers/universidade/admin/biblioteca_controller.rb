@@ -11,8 +11,16 @@ module Universidade
           @conteudos = @conteudos.where("lower(titulo) LIKE lower(?)", "%#{params[:q]}%")
         end
         
+        # Filtros de taxonomia
+        if params[:categoria_id].present?
+          @conteudos = @conteudos.por_categoria(params[:categoria_id])
+        end
+
         @conteudos = @conteudos.order(created_at: :desc)
-                               .includes(:trilha_conteudos, :trilhas)
+                               .includes(:trilha_conteudos, :trilhas, :categoria)
+
+        # Para os filtros
+        @categorias = Categoria.ordem_alfabetica
       end
 
       def new
@@ -27,6 +35,9 @@ module Universidade
         apply_status_action(@conteudo)
         
         if @conteudo.save
+          # Sincronizar tags
+          sincronizar_tags
+          
           # Vincular trilhas selecionadas
           if params[:trilhas].present?
             trilha_ids = Array(params[:trilhas]).reject(&:blank?)
@@ -65,6 +76,9 @@ module Universidade
         apply_status_action(@conteudo)
         
         if @conteudo.save
+          # Sincronizar tags
+          sincronizar_tags
+          
           # Atualizar módulos das trilhas existentes
           if params[:trilha_modulos].present?
             params[:trilha_modulos].each do |trilha_conteudo_id, modulo_id|
@@ -162,26 +176,33 @@ module Universidade
       end
 
       def conteudo_params
-        params.require(:conteudo).permit(:titulo, :corpo, :tempo_estimado_minutos, :visivel).merge(
-          user_id: current_user_id || 1,
-          store_id: current_store_id || 1
+        params.require(:conteudo).permit(:titulo, :corpo, :tempo_estimado_minutos, :visivel, :categoria_id).merge(
+          user_id: universidade_current_user.id,
+          store_id: universidade_current_user.store_id
         )
       end
 
-      def current_user_id
-        # Retorna o ID do usuário atual se disponível
-        Universidade.current_user(self)&.id || Universidade.current_user_id(self)
-      end
-
-      def current_store_id
-        # Retorna o ID da loja atual se disponível
-        Universidade.current_store_id(self)
+      def sincronizar_tags
+        if params[:conteudo] && params[:conteudo][:tag_ids]
+          tag_ids = Array(params[:conteudo][:tag_ids]).reject(&:blank?)
+          @conteudo.tag_ids = tag_ids
+        end
       end
 
       def load_trilhas_e_modulos
         @trilhas = Trilha.order(:nome)
         @modulos = Modulo.includes(:trilha).order(:nome)
         @modulos_json = @modulos.map { |m| { id: m.id, nome: m.nome, trilha_id: m.trilha_id } }.to_json
+        
+        # Preparar trilha pré-selecionada se vier dos params
+        if @trilha_id.present?
+          trilha = Trilha.find_by(id: @trilha_id)
+          if trilha
+            @trilha_inicial = { id: trilha.id, nome: trilha.nome }.to_json
+            # Também passar o módulo_id se fornecido
+            @modulo_inicial_id = @modulo_id if @modulo_id.present?
+          end
+        end
       end
     end
   end

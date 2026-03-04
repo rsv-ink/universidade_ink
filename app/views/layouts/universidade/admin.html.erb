@@ -98,6 +98,22 @@
       color: #666;
     }
     
+    /* Estilos para itens selecionados nas listas de trilhas/conteúdos */
+    .secao-item.is-selected {
+      background: #fff !important;
+      border: 1px solid #ec4899;
+      box-shadow: 0 1px 3px rgba(236, 72, 153, 0.1);
+    }
+    
+    .secao-item.is-selected [data-sortable-handle] {
+      color: #ec4899 !important;
+      cursor: grab;
+    }
+    
+    .secao-item.is-selected [data-sortable-handle]:active {
+      cursor: grabbing;
+    }
+    
     /* Apply Poppins to all content */
     * {
       font-family: 'Poppins', system-ui, sans-serif;
@@ -130,12 +146,13 @@
   <%# ── Top header bar ─────────────────────────────────────── %>
   <header class="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
     <div class="flex items-center gap-6">
-      <span class="font-semibold text-sm text-gray-900">
-        Universidade <span class="text-pink-500">Admin</span>
-      </span>
+      <%= link_to admin_root_path, class: "hover:opacity-80 transition-opacity" do %>
+        <%= image_tag "universidade/ink-admin-logo.svg", alt: "INK Admin", class: "h-6" %>
+      <% end %>
 
       <%# Navegação entre áreas %>
       <% active_lp = controller_path == "universidade/admin/secoes" %>
+      <% active_sidebar = controller_path == "universidade/admin/sidebar_items" %>
       <% active_trilhas = ["universidade/admin/trilhas", "universidade/admin/modulos", "universidade/admin/conteudos"].include?(controller_path) %>
       <% active_biblioteca = controller_path == "universidade/admin/biblioteca" %>
       
@@ -143,6 +160,10 @@
         <%= link_to admin_secoes_path,
               class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{active_lp ? 'bg-pink-50 text-pink-600' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>
           Landing Page
+        <% end %>
+        <%= link_to admin_sidebar_items_path,
+              class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{active_sidebar ? 'bg-pink-50 text-pink-600' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>
+          Sidebar
         <% end %>
         <%= link_to admin_root_path,
               class: "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors #{active_trilhas ? 'bg-pink-50 text-pink-600' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>

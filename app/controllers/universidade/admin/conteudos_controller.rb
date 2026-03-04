@@ -116,16 +116,27 @@ module Universidade
         ids = Array(params[:ids]).map(&:to_i)
         trilha_id = params[:trilha_id].presence
         modulo_id = params[:modulo_id].presence
+        from_trilha_id = params[:from_trilha_id].presence
 
         return head(:bad_request) unless trilha_id
-
-        scope = TrilhaConteudo.where(trilha_id: trilha_id)
-        scope = scope.where(modulo_id: modulo_id) if modulo_id.present?
+        return head(:ok) if ids.empty?
 
         TrilhaConteudo.transaction do
           ids.each_with_index do |conteudo_id, i|
-            tc = scope.find_by(conteudo_id: conteudo_id)
-            tc&.update_column(:posicao, i + 1)
+            tc = TrilhaConteudo.find_or_initialize_by(trilha_id: trilha_id, conteudo_id: conteudo_id)
+            tc.modulo_id = modulo_id
+            tc.posicao = i + 1
+            tc.save!
+
+            if from_trilha_id.present? && from_trilha_id != trilha_id
+              TrilhaConteudo.where(trilha_id: from_trilha_id, conteudo_id: conteudo_id)
+                            .where.not(id: tc.id)
+                            .delete_all
+            end
+          end
+
+          if from_trilha_id.present? && from_trilha_id != trilha_id
+            resequence_trilha_conteudos(from_trilha_id, modulo_id: nil)
           end
         end
 
@@ -134,14 +145,21 @@ module Universidade
 
       private
 
+      def resequence_trilha_conteudos(trilha_id, modulo_id: nil)
+        scope = TrilhaConteudo.where(trilha_id: trilha_id, modulo_id: modulo_id)
+        scope.order(:posicao, :id).each_with_index do |tc, index|
+          tc.update_column(:posicao, index + 1)
+        end
+      end
+
       def set_conteudo
         @conteudo = Conteudo.find(params[:id])
       end
 
       def conteudo_params
         params.require(:conteudo).permit(:titulo, :ordem, :tempo_estimado_minutos, :visivel, :corpo).merge(
-          user_id: current_user_id || 1,
-          store_id: current_store_id || 1
+          user_id: universidade_current_user.id,
+          store_id: universidade_current_user.store_id
         )
       end
 

@@ -46,10 +46,15 @@
       </div>
     </div>
 
+    <%# Taxonomia %>
+    <%= render "taxonomy_fields", form: f, conteudo: @conteudo %>
+
     <%# Vincular Trilhas %>
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6"
          data-controller="trilhas-manager"
-         data-trilhas-manager-modulos-value='<%= @modulos_json %>'>
+         data-trilhas-manager-modulos-value='<%= @modulos_json %>'
+         <%= "data-trilhas-manager-trilha-inicial-value='#{@trilha_inicial}'".html_safe if @trilha_inicial.present? %>
+         <%= "data-trilhas-manager-modulo-inicial-id-value='#{@modulo_inicial_id}'".html_safe if @modulo_inicial_id.present? %>>
       <h2 class="text-lg font-semibold text-gray-900 mb-1">Trilhas</h2>
       <p class="text-sm text-gray-500 mb-4">Opcional: Vincule este conteúdo a uma ou mais trilhas e organize em módulos</p>
 
@@ -69,7 +74,7 @@
           </button>
 
           <div data-trilhas-manager-target="trilhasDropdown"
-                 class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                 class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
               <div class="p-3 border-b border-gray-200">
                 <input type="text"
                        data-trilhas-manager-target="searchInput"

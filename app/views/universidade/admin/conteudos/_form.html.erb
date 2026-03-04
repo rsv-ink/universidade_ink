@@ -64,7 +64,10 @@
           Publicar
         </button>
       <% else %>
-        <%= button_component(color: :pink, size: :md) { "Salvar alterações" } %>
+        <button type="submit"
+                class="px-4 py-2 text-sm font-medium text-white bg-pink-600 rounded-lg hover:bg-pink-700 transition-colors">
+          Salvar alterações
+        </button>
       <% end %>
 
     </div>

@@ -2,22 +2,24 @@ require "universidade/version"
 require "universidade/engine"
 
 module Universidade
-  # Procs configuraveis pela aplicacao host para retornar os IDs atuais.
+  # Procs configuráveis pela aplicação host.
   #
-  # Exemplo de configuracao no host (config/initializers/universidade.rb):
-  #   Universidade.current_user_id_proc  = ->(controller) { controller.current_user&.id }
-  #   Universidade.current_store_id_proc = ->(controller) { controller.current_store&.id }
-  mattr_accessor :current_user_proc, :current_user_id_proc, :current_store_id_proc
+  # Exemplo de configuração no host (config/initializers/universidade.rb):
+  #   Universidade.current_user_proc = ->(controller) { controller.current_user }
+  #   Universidade.tracking_id_proc  = -> { ENV['GA_TRACKING_ID'] }
+  #
+  # O objeto retornado por current_user_proc deve responder a:
+  #   .id          → ID do usuário
+  #   .store_id    → ID da loja
+  #   .in_universidade? → se o usuário tem acesso à universidade
+  #   .is_admin?   → se o usuário é admin (para área administrativa)
+  mattr_accessor :current_user_proc, :tracking_id_proc
 
   def self.current_user(controller_instance)
     current_user_proc&.call(controller_instance)
   end
 
-  def self.current_user_id(controller_instance)
-    current_user_id_proc&.call(controller_instance)
-  end
-
-  def self.current_store_id(controller_instance)
-    current_store_id_proc&.call(controller_instance)
+  def self.tracking_id
+    tracking_id_proc&.call
   end
 end

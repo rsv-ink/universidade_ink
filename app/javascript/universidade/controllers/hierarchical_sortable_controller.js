@@ -35,6 +35,14 @@ export default class extends Controller {
         handle: "[data-sortable-handle]",
         draggable: "tr[data-sortable-id]", // Only rows with sortable-id
         filter: "tr[id^='trilha_']", // Don't allow dragging trilha rows within tbody
+        group: {
+          name: "trilha-items",
+          pull: true,
+          put: (to, from, dragEl) => {
+            if (to === from) return true
+            return !!(dragEl && dragEl.id && dragEl.id.startsWith("conteudo_") && dragEl.dataset.parentType === "trilha")
+          }
+        },
         onStart: this._onStart.bind(this),
         onMove: this._onMove.bind(this),
         onEnd: this._onEnd.bind(this)
@@ -53,6 +61,7 @@ export default class extends Controller {
     const itemId = item.id
     
     this.draggedChildren = []
+    this.dragContext = null
     
     // If dragging a modulo, collect all its conteudos
     if (itemId.startsWith('modulo_')) {
@@ -64,6 +73,18 @@ export default class extends Controller {
         child.classList.add('dragging-with-parent')
         child.style.display = 'none'
       })
+    }
+
+    if (itemId.startsWith('conteudo_')) {
+      const fromParentType = item.dataset.parentType
+      const fromParentId = item.dataset.parentId
+      const fromTrilhaId = item.closest('tbody[id^="trilha_group_"]')?.id.replace('trilha_group_', '')
+
+      this.dragContext = {
+        fromParentType,
+        fromParentId,
+        fromTrilhaId
+      }
     }
   }
 
@@ -125,15 +146,12 @@ export default class extends Controller {
         if (draggedParentType === 'modulo') {
           return false
         }
-        // If conteudo is solto (trilha_id), can drop next to modulo
+        // Conteudo solto pode ser reposicionado perto de modulos
         return true
       }
       
       if (relatedType === 'conteudo') {
-        // Check parent types match
-        if (draggedParentType !== relatedParentType) {
-          return false
-        }
+        if (draggedParentType !== relatedParentType) return false
         
         // If both have modulo parent, check same modulo_id
         if (draggedParentType === 'modulo') {
@@ -144,9 +162,7 @@ export default class extends Controller {
         
         // If both have trilha parent (soltos), check same trilha_id
         if (draggedParentType === 'trilha') {
-          const draggedParentId = draggedEl.dataset.parentId
-          const relatedParentId = relatedEl.dataset.parentId
-          return draggedParentId === relatedParentId
+          return true
         }
       }
     }
@@ -205,6 +221,7 @@ export default class extends Controller {
     let type, url, parentId, parentType
     
     if (itemId.startsWith('modulo_')) {
+      this._reflowModuloChildren(item.parentElement)
       type = 'modulo'
       url = this.moduloUrlValue
       // Get trilha_id from parent tbody
@@ -216,15 +233,15 @@ export default class extends Controller {
       
       // Get parent info from data attributes
       parentType = item.dataset.parentType // "modulo" or "trilha"
+      const toTrilhaId = item.closest('tbody[id^="trilha_group_"]')?.id.replace('trilha_group_', '')
       
       if (parentType === 'modulo') {
         // Get modulo_id by finding previous modulo row
         const moduloRow = this._findPreviousSibling(item, 'modulo_')
         parentId = moduloRow ? moduloRow.id.replace('modulo_', '') : null
       } else if (parentType === 'trilha') {
-        // Get trilha_id from tbody
-        const tbody = item.closest('tbody[id^="trilha_group_"]')
-        parentId = tbody ? tbody.id.replace('trilha_group_', '') : null
+        parentId = toTrilhaId
+        if (parentId) item.dataset.parentId = parentId
       }
     }
     
@@ -239,6 +256,9 @@ export default class extends Controller {
     
     const body = { ids }
     if (type === 'conteudo') {
+      if (this.dragContext?.fromTrilhaId && parentType === 'trilha' && parentId && this.dragContext.fromTrilhaId !== parentId) {
+        body.from_trilha_id = this.dragContext.fromTrilhaId
+      }
       if (parentType === 'modulo' && parentId) {
         body.modulo_id = parentId
       } else if (parentType === 'trilha' && parentId) {
@@ -255,6 +275,38 @@ export default class extends Controller {
       },
       body: JSON.stringify(body)
     })
+  }
+
+  _reflowModuloChildren(tbody) {
+    if (!tbody) return
+
+    const rows = Array.from(tbody.querySelectorAll("tr"))
+    const moduleRows = rows.filter(row => row.id?.startsWith("modulo_"))
+    const moduleChildrenMap = {}
+    const trilhaChildren = []
+
+    rows.forEach(row => {
+      if (!row.id?.startsWith("conteudo_")) return
+      const parentType = row.dataset.parentType
+      const parentId = row.dataset.parentId
+      if (parentType === "modulo" && parentId) {
+        moduleChildrenMap[parentId] ||= []
+        moduleChildrenMap[parentId].push(row)
+      } else if (parentType === "trilha") {
+        trilhaChildren.push(row)
+      }
+    })
+
+    const fragment = document.createDocumentFragment()
+    moduleRows.forEach(modRow => {
+      fragment.appendChild(modRow)
+      const modId = modRow.id.replace("modulo_", "")
+      const children = moduleChildrenMap[modId] || []
+      children.forEach(child => fragment.appendChild(child))
+    })
+
+    trilhaChildren.forEach(child => fragment.appendChild(child))
+    tbody.appendChild(fragment)
   }
 
   _findPreviousSibling(element, prefix) {

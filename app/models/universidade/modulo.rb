@@ -42,5 +42,42 @@ module Universidade
 
       concluidos.to_f / total
     end
+
+    # Retorna conteúdos que estão vinculados a outras trilhas além da trilha deste módulo
+    def conteudos_compartilhados
+      conteudos.select { |c| c.trilhas_count > 1 }
+    end
+
+    # Retorna se o módulo possui conteúdos compartilhados
+    def tem_conteudos_compartilhados?
+      conteudos_compartilhados.any?
+    end
+
+    # Exclui o módulo e opcionalmente os conteúdos
+    # Opções:
+    # - excluir_conteudos: true = exclui conteúdos que pertencem apenas a esta trilha
+    #                      false = mantém todos os conteúdos (apenas desvincula do módulo)
+    def excluir_com_opcoes(excluir_conteudos: false)
+      transaction do
+        if excluir_conteudos
+          # Exclui conteúdos que estão apenas nesta trilha (a trilha do módulo)
+          if trilha
+            conteudos_do_modulo = conteudos.to_a
+            conteudos_do_modulo.each do |conteudo|
+              # Se o conteúdo só está nesta trilha, pode excluir
+              if conteudo.trilhas_count == 1
+                conteudo.destroy
+              end
+            end
+          else
+            # Módulo sem trilha - exclui todos os conteúdos vinculados apenas a ele
+            conteudos.each { |c| c.destroy if c.trilhas_count == 1 }
+          end
+        end
+        
+        # A exclusão do módulo nullifica trilha_conteudos.modulo_id (dependent: :nullify)
+        destroy
+      end
+    end
   end
 end

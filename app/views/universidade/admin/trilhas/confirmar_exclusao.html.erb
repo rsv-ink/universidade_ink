@@ -1,0 +1,91 @@
+<div class="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4">
+    <%# Cabeçalho %>
+    <div class="flex items-start gap-3">
+      <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-lg font-semibold text-gray-900">Confirmar Exclusão</h3>
+        <p class="text-sm text-gray-600 mt-1">Você está prestes a excluir a trilha "<%= @trilha.nome %>"</p>
+      </div>
+    </div>
+
+    <%# Informações sobre o conteúdo %>
+    <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+      <% if @trilha.tem_modulos? %>
+        <div class="flex items-center gap-2 text-sm text-gray-700">
+          <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          <span><strong><%= @trilha.modulos.count %></strong> módulo(s) será(ão) desvinculado(s)</span>
+        </div>
+      <% end %>
+      
+      <% if @trilha.conteudos.any? %>
+        <div class="flex items-center gap-2 text-sm text-gray-700">
+          <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span><strong><%= @trilha.conteudos.count %></strong> conteúdo(s) vinculado(s)</span>
+        </div>
+      <% end %>
+      
+      <% if @trilha.tem_conteudos_compartilhados? %>
+        <div class="flex items-start gap-2 text-sm text-amber-700 bg-amber-50 p-2 rounded">
+          <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span><strong><%= @trilha.conteudos_compartilhados.count %></strong> conteúdo(s) está(ão) em outras trilhas</span>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Opções de Exclusão %>
+    <div class="space-y-3">
+      <p class="text-sm font-medium text-gray-700">O que deseja fazer com os conteúdos?</p>
+      
+      <%= form_with url: admin_trilha_path(@trilha), method: :delete, class: "space-y-3" do |f| %>
+        <div class="space-y-2">
+          <%# Opção 1: Manter conteúdos %>
+          <label class="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 hover:bg-blue-50/50 transition-colors">
+            <%= f.radio_button :excluir_conteudos, "false", checked: true, class: "mt-0.5" %>
+            <div class="flex-1">
+              <div class="font-medium text-gray-900">Manter conteúdos</div>
+              <div class="text-sm text-gray-600">Os conteúdos ficarão disponíveis <% if @trilha.tem_conteudos_compartilhados? %>nas outras trilhas e <% end %>na biblioteca</div>
+            </div>
+          </label>
+
+          <%# Opção 2: Excluir tudo %>
+          <label class="flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-300 hover:bg-red-50/50 transition-colors">
+            <%= f.radio_button :excluir_conteudos, "true", class: "mt-0.5" %>
+            <div class="flex-1">
+              <div class="font-medium text-gray-900">Excluir conteúdos exclusivos</div>
+              <div class="text-sm text-gray-600">
+                Conteúdos que existem apenas nesta trilha serão excluídos permanentemente
+                <% if @trilha.tem_conteudos_compartilhados? %>
+                  <br><span class="text-amber-700 font-medium">⚠️ Conteúdos em outras trilhas serão mantidos</span>
+                <% end %>
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <%# Botões de Ação %>
+        <div class="flex gap-3 pt-2">
+          <%= link_to admin_root_path,
+                data: { controller: "modal-link", action: "click->modal-link#close", turbo: "false" },
+                class: "flex-1 px-4 py-2.5 text-center border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors" do %>
+            Cancelar
+          <% end %>
+          
+          <%= f.submit "Excluir Trilha",
+                data: { turbo: true },
+                class: "flex-1 px-4 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

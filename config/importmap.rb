@@ -17,7 +17,12 @@ pin "controllers/carrossel_controller",   to: "universidade/controllers/carrosse
 pin "controllers/secao_form_controller", to: "universidade/controllers/secao_form_controller.js"
 pin "controllers/trilha_modulo_selector_controller", to: "universidade/controllers/trilha_modulo_selector_controller.js"
 pin "controllers/trilhas_manager_controller", to: "universidade/controllers/trilhas_manager_controller.js"
+pin "controllers/analytics_controller", to: "universidade/controllers/analytics_controller.js"
+pin "controllers/user_menu_controller", to: "universidade/controllers/user_menu_controller.js"
+pin "controllers/taxonomy_suggestions_controller", to: "universidade/controllers/taxonomy_suggestions_controller.js"
+pin "controllers/tags_selector_controller", to: "universidade/controllers/tags_selector_controller.js"
+pin "controllers/categoria_creator_controller", to: "universidade/controllers/categoria_creator_controller.js"
 
 # Sortable.js — drag & drop
-pin "sortablejs", to: "https://esm.sh/sortablejs@1.15.6?bundle"
+pin "sortablejs", to: "https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/+esm"
 

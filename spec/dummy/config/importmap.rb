@@ -12,5 +12,5 @@ pin "controllers/sortable_controller",  to: "universidade/controllers/sortable_c
 pin "controllers/sidebar_controller",   to: "universidade/controllers/sidebar_controller.js"
 
 # Sortable.js — drag & drop
-pin "sortablejs", to: "https://esm.sh/sortablejs@1.15.6?bundle"
+pin "sortablejs", to: "https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/+esm"
 

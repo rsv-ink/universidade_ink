@@ -1,5 +1,5 @@
 <%
-  progresso     = trilha.progresso_lojista(current_user_id, current_store_id)
+  progresso     = trilha.progresso_lojista(universidade_current_user.id, universidade_current_user.store_id)
   progresso_pct = (progresso * 100).round
 %>
 
@@ -38,20 +38,18 @@
     <% end %>
 
     <%# Barra de progresso %>
-    <% if current_user_id && current_store_id %>
-      <div class="mt-auto">
-        <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
-          <span>Progresso</span>
-          <span class="font-medium <%= progresso_pct == 100 ? 'text-green-600' : 'text-gray-600' %>">
-            <%= progresso_pct %>%
-          </span>
-        </div>
-        <div class="w-full bg-gray-100 rounded-full h-1.5">
-          <div class="h-1.5 rounded-full transition-all <%= progresso_pct == 100 ? 'bg-green-500' : 'bg-pink-500' %>"
-               style="width: <%= progresso_pct %>%"></div>
-        </div>
+    <div class="mt-auto">
+      <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+        <span>Progresso</span>
+        <span class="font-medium <%= progresso_pct == 100 ? 'text-green-600' : 'text-gray-600' %>">
+          <%= progresso_pct %>%
+        </span>
       </div>
-    <% end %>
+      <div class="w-full bg-gray-100 rounded-full h-1.5">
+        <div class="h-1.5 rounded-full transition-all <%= progresso_pct == 100 ? 'bg-green-500' : 'bg-pink-500' %>"
+             style="width: <%= progresso_pct %>%"></div>
+      </div>
+    </div>
 
   </div>
 

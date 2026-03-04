@@ -1,3 +1,18 @@
+<%# JSON-LD Structured Data %>
+<% content_for :json_ld do %>
+  <%= json_ld_article(@conteudo) %>
+  <% if @trilha %>
+    <%
+      breadcrumb_items = [
+        { name: "Início", url: root_url },
+        { name: @trilha.nome, url: trilha_url(@trilha) },
+        { name: @conteudo.titulo, url: conteudo_url(@conteudo) }
+      ]
+    %>
+    <%= json_ld_breadcrumbs(breadcrumb_items) %>
+  <% end %>
+<% end %>
+
 <%# ————— Layout: sidebar + conteúdo principal ————— %>
 <div class="flex gap-8 items-start">
 
@@ -71,6 +86,12 @@
           
           <% if @conteudo_anterior %>
             <%= link_to conteudo_path(@conteudo_anterior),
+                  data: { 
+                    action: "click->analytics#trackNavigation",
+                    direction: "prev",
+                    from_content: @conteudo.id,
+                    to_content: @conteudo_anterior.id
+                  },
                   class: "flex items-center gap-2 text-sm text-gray-600 hover:text-pink-600 transition-colors group" do %>
               <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -85,13 +106,18 @@
           <% end %>
 
           <% if @proximo_conteudo %>
-            <% if current_user_id && current_store_id && !@progresso&.concluido? %>
+            <% if !@progresso&.concluido? %>
               <%# Se houver próximo conteúdo e o conteúdo atual não foi concluído, marcar como concluído ao clicar %>
               <%= form_with url: concluir_conteudo_path(@conteudo), method: :post, 
                     data: { turbo: false }, 
                     class: "inline-block" do %>
                 <%= hidden_field_tag :redirect_to, conteudo_path(@proximo_conteudo) %>
-                <%= button_tag type: "submit", 
+                <%= button_tag type: "submit",
+                      data: {
+                        action: "click->analytics#trackCompletion",
+                        content_id: @conteudo.id,
+                        content_title: @conteudo.titulo
+                      },
                       class: "flex items-center gap-2 text-sm text-pink-600 hover:text-pink-700 transition-colors group" do %>
                   <span>
                     <span class="block text-xs text-gray-400 group-hover:text-pink-400">Próximo</span>
@@ -105,6 +131,12 @@
             <% else %>
               <%# Se já foi concluído, apenas navegar %>
               <%= link_to conteudo_path(@proximo_conteudo),
+                    data: { 
+                      action: "click->analytics#trackNavigation",
+                      direction: "next",
+                      from_content: @conteudo.id,
+                      to_content: @proximo_conteudo.id
+                    },
                     class: "flex items-center gap-2 text-sm text-pink-600 hover:text-pink-700 transition-colors group text-right" do %>
                 <span>
                   <span class="block text-xs text-gray-400 group-hover:text-pink-400">Próximo</span>
@@ -117,11 +149,11 @@
             <% end %>
           <% else %>
             <%# Último conteúdo da trilha %>
-            <% if current_user_id && current_store_id && !@progresso&.concluido? %>
+            <% if !@progresso&.concluido? %>
               <%= form_with url: concluir_conteudo_path(@conteudo), method: :post, 
                     data: { turbo: false }, 
                     class: "inline-block" do %>
-                <%= hidden_field_tag :redirect_to, curso_path(@trilha.modulo.curso) if @trilha.modulo&.curso %>
+                <%= hidden_field_tag :redirect_to, trilha_path(@trilha) if @trilha %>
                 <%= button_tag type: "submit", 
                       class: "flex items-center gap-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-colors px-5 py-2.5 rounded-lg shadow-sm" do %>
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,6 +180,46 @@
     <div id="conteudo_feedback">
       <%= render "feedback", conteudo: @conteudo, feedback: @feedback %>
     </div>
+
+    <%# ———————— Conteúdos Relacionados ———————— %>
+    <% if @conteudos_relacionados.any? %>
+      <div class="mt-8 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Você também pode gostar</h2>
+        <div class="grid grid-cols-1 gap-4">
+          <% @conteudos_relacionados.each do |conteudo_relacionado| %>
+            <%= link_to conteudo_path(conteudo_relacionado), 
+                  class: "block p-4 border border-gray-200 rounded-lg hover:border-pink-300 hover:bg-pink-50 transition group" do %>
+              <h3 class="font-semibold text-gray-900 group-hover:text-pink-600 mb-1">
+                <%= conteudo_relacionado.titulo %>
+              </h3>
+              <div class="flex items-center gap-3 text-sm text-gray-500">
+                <% if conteudo_relacionado.tempo_estimado_minutos.present? %>
+                  <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <%= conteudo_relacionado.tempo_estimado_minutos %> min
+                  </span>
+                <% end %>
+                <% if conteudo_relacionado.categoria.present? %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                    <%= conteudo_relacionado.categoria.nome %>
+                  </span>
+                <% end %>
+                <% if conteudo_relacionado.tags.any? %>
+                  <% conteudo_relacionado.tags.first(2).each do |tag| %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-pink-50 text-pink-600 text-xs rounded">
+                      <%= tag.nome %>
+                    </span>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
 
   </main>
 </div>

@@ -9,6 +9,18 @@ export default class extends Controller {
     this.updatePanels()
     this.setupSortables()
     this.previewSortable = null
+    
+    // Organizar listas no carregamento inicial (após o DOM estar pronto)
+    requestAnimationFrame(() => {
+      if (this.hasTrilhasListTarget) {
+        console.log("Reorganizando trilhas no connect")
+        this.reorganizeList(this.trilhasListTarget)
+      }
+      if (this.hasConteudosListTarget) {
+        console.log("Reorganizando conteúdos no connect")
+        this.reorganizeList(this.conteudosListTarget)
+      }
+    })
   }
 
   disconnect() {
@@ -62,7 +74,60 @@ export default class extends Controller {
   toggleSelection(event) {
     const label = event.target.closest(".secao-item")
     if (!label) return
+    const list = label.parentElement
+    
     label.classList.toggle("is-selected", event.target.checked)
+    
+    // Reorganizar: itens selecionados no topo, separados dos não selecionados
+    this.reorganizeList(list)
+  }
+
+  reorganizeList(list) {
+    console.log("reorganizeList chamado para:", list)
+    const items = Array.from(list.querySelectorAll('.secao-item'))
+    console.log("Total de itens:", items.length)
+    
+    // Sincronizar classe is-selected com estado do checkbox
+    items.forEach(item => {
+      const checkbox = item.querySelector('input[type="checkbox"]')
+      if (checkbox) {
+        if (checkbox.checked) {
+          item.classList.add('is-selected')
+          console.log("Item marcado como selecionado:", checkbox.value)
+        } else {
+          item.classList.remove('is-selected')
+        }
+      }
+    })
+    
+    const selected = items.filter(item => item.classList.contains('is-selected'))
+    const notSelected = items.filter(item => !item.classList.contains('is-selected'))
+    
+    console.log("Selecionados:", selected.length, "Não selecionados:", notSelected.length)
+    
+    // Remover separador existente
+    const existingSeparator = list.querySelector('.items-separator')
+    if (existingSeparator) {
+      existingSeparator.remove()
+    }
+    
+    // Limpar lista
+    list.innerHTML = ''
+    
+    // Adicionar itens selecionados
+    selected.forEach(item => list.appendChild(item))
+    
+    // Adicionar separador se houver itens selecionados E não selecionados
+    if (selected.length > 0 && notSelected.length > 0) {
+      const separator = document.createElement('div')
+      separator.className = 'items-separator pt-3 pb-1'
+      separator.innerHTML = '<div class="flex items-center gap-2"><div class="flex-1 border-t border-gray-300"></div><span class="text-xs text-gray-400 px-2">Não selecionados</span><div class="flex-1 border-t border-gray-300"></div></div>'
+      list.appendChild(separator)
+      console.log("Separador adicionado")
+    }
+    
+    // Adicionar itens não selecionados
+    notSelected.forEach(item => list.appendChild(item))
   }
 
   filterTrilhas(event) {
@@ -74,6 +139,9 @@ export default class extends Controller {
       const matches = searchableText.includes(searchTerm)
       item.style.display = matches ? "" : "none"
     })
+    
+    // Mostrar/ocultar separador baseado em itens visíveis
+    this.updateSeparatorVisibility(this.trilhasListTarget)
   }
 
   filterConteudos(event) {
@@ -85,6 +153,25 @@ export default class extends Controller {
       const matches = searchableText.includes(searchTerm)
       item.style.display = matches ? "" : "none"
     })
+    
+    // Mostrar/ocultar separador baseado em itens visíveis
+    this.updateSeparatorVisibility(this.conteudosListTarget)
+  }
+
+  updateSeparatorVisibility(list) {
+    const separator = list.querySelector('.items-separator')
+    if (!separator) return
+    
+    const items = Array.from(list.querySelectorAll('.secao-item'))
+    const visibleSelected = items.filter(item => 
+      item.classList.contains('is-selected') && item.style.display !== 'none'
+    )
+    const visibleNotSelected = items.filter(item => 
+      !item.classList.contains('is-selected') && item.style.display !== 'none'
+    )
+    
+    // Mostrar separador apenas se houver itens visíveis em ambos os grupos
+    separator.style.display = (visibleSelected.length > 0 && visibleNotSelected.length > 0) ? '' : 'none'
   }
 
   handleImageSelect(event) {

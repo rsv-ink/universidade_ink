@@ -2,7 +2,7 @@
 <div class="px-6 py-6 max-w-7xl mx-auto">
   <div class="flex items-center justify-between mb-4">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Conteúdo</h1>
+      <h1 class="text-2xl font-bold text-gray-900">Gestão de Trilha</h1>
     </div>
   </div>
 
@@ -78,13 +78,19 @@
 
               <%# Conteúdos do módulo através de trilha_conteudos %>
               <% trilha.trilha_conteudos.where(modulo_id: modulo.id).order(:posicao).each do |tc| %>
-                <%= render "universidade/admin/conteudos/conteudo_row", conteudo: tc.conteudo %>
+                <%= render "universidade/admin/conteudos/conteudo_row",
+                      conteudo: tc.conteudo,
+                      parent_type: "modulo",
+                      parent_id: modulo.id %>
               <% end %>
             <% end %>
 
             <%# Conteúdos vinculados diretamente à trilha (sem módulo) %>
             <% trilha.trilha_conteudos.where(modulo_id: nil).order(:posicao).each do |tc| %>
-              <%= render "universidade/admin/conteudos/conteudo_row", conteudo: tc.conteudo %>
+              <%= render "universidade/admin/conteudos/conteudo_row",
+                    conteudo: tc.conteudo,
+                    parent_type: "trilha",
+                    parent_id: trilha.id %>
             <% end %>
 
           </tbody>

@@ -1,0 +1,89 @@
+<div class="max-w-5xl mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Tags</h1>
+    <%= link_to "Nova Tag", 
+                new_admin_tag_path, 
+                class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition",
+                data: { turbo_frame: "modal-content", action: "modal#open" } %>
+  </div>
+
+  <%# Busca e Ordenação %>
+  <%= turbo_frame_tag "tags_list" do %>
+    <div class="mb-6 flex gap-3">
+      <%= form_with url: admin_tags_path, method: :get, data: { turbo_frame: "tags_list", turbo_action: "replace" }, class: "flex gap-2 flex-1" do |f| %>
+        <%= f.text_field :q, 
+            value: @busca, 
+            placeholder: "Buscar tags...",
+            class: "flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+        <%= f.hidden_field :ordem, value: @ordem %>
+        <%= f.submit "Buscar", class: "px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700" %>
+        <%= link_to "Limpar", admin_tags_path(ordem: @ordem), class: "px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50" if @busca.present? %>
+      <% end %>
+      
+      <div class="flex gap-2">
+        <%= link_to "Mais usadas", admin_tags_path(ordem: "mais_usadas", q: @busca), 
+            class: "px-4 py-2 rounded-lg #{@ordem == 'mais_usadas' ? 'bg-blue-600 text-white' : 'border border-gray-300 hover:bg-gray-50'}" %>
+        <%= link_to "A-Z", admin_tags_path(ordem: "alfabetica", q: @busca), 
+            class: "px-4 py-2 rounded-lg #{@ordem == 'alfabetica' ? 'bg-blue-600 text-white' : 'border border-gray-300 hover:bg-gray-50'}" %>
+      </div>
+    </div>
+
+    <% if @tags.any? %>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conteúdos</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% @tags.each do |tag| %>
+              <tr id="tag_<%= tag.id %>">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                      <%= tag.nome %>
+                    </span>
+                    <span class="ml-2 text-xs text-gray-500"><%= tag.slug %></span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <%= tag.conteudos_count %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <%= link_to "Editar", 
+                              edit_admin_tag_path(tag), 
+                              class: "text-blue-600 hover:text-blue-900 mr-3",
+                              data: { turbo_frame: "modal-content", action: "modal#open" } %>
+                  <%= button_to "Excluir", 
+                                admin_tag_path(tag), 
+                                method: :delete,
+                                form: { data: { turbo_confirm: "Tem certeza?" } },
+                                class: "text-red-600 hover:text-red-900 inline" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-12 bg-white rounded-lg shadow">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhuma tag encontrada</h3>
+        <p class="mt-1 text-sm text-gray-500">
+          <% if @busca.present? %>
+            Tente buscar com outros termos.
+          <% else %>
+            Comece criando uma nova tag.
+          <% end %>
+        </p>
+      </div>
+    <% end %>
+  <% end %>
+</div>
