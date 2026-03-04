@@ -12,6 +12,17 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Exportação de relatórios
 - Notificações por email
 
+## [0.1.1] - 2026-03-04
+
+### Added
+- Sistema de autenticação e controle de acesso à engine
+- Método `authenticate_universidade!` para proteger rotas
+- Verificação de permissões via `user_in_universidade?`
+- Redirecionamento com alerta para usuários sem acesso
+
+### Changed
+- ApplicationController agora valida acesso do usuário antes de permitir navegação
+
 ## [0.1.0] - 2026-03-04
 
 ### Added
@@ -90,6 +101,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Security** - Correções de segurança
 - **Technical** - Mudanças técnicas/infraestrutura
 
-[Unreleased]: https://github.com/seu-usuario/universidade/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/seu-usuario/universidade/compare/v0.0.1...v0.1.0
-[0.0.1]: https://github.com/seu-usuario/universidade/releases/tag/v0.0.1
+[Unreleased]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/rsv-ink/universidade_ink/compare/v0.0.1...v0.1.0
+[0.0.1]: https://github.com/rsv-ink/universidade_ink/releases/tag/v0.0.1
