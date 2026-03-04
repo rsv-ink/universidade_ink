@@ -12,6 +12,12 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Exportação de relatórios
 - Notificações por email
 
+## [0.1.4] - 2026-03-04
+
+### Fixed
+- Removido `skip_before_action :authenticate_universidade!` do Admin::BaseController
+- Ação não existia mais desde a v0.1.2
+
 ## [0.1.3] - 2026-03-04
 
 ### Fixed
@@ -119,7 +125,8 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Security** - Correções de segurança
 - **Technical** - Mudanças técnicas/infraestrutura
 
-[Unreleased]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.0...v0.1.1
