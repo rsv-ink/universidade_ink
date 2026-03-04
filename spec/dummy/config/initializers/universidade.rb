@@ -5,7 +5,6 @@
 
 # Mock user object for development
 MockUser = Struct.new(:id, :store_id, :first_name, :last_name, :email, keyword_init: true) do
-  def in_universidade? = true
   def is_admin? = true
 end
 

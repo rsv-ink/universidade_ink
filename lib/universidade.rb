@@ -11,7 +11,6 @@ module Universidade
   # O objeto retornado por current_user_proc deve responder a:
   #   .id          → ID do usuário
   #   .store_id    → ID da loja
-  #   .in_universidade? → se o usuário tem acesso à universidade
   #   .is_admin?   → se o usuário é admin (para área administrativa)
   mattr_accessor :current_user_proc, :tracking_id_proc
 
