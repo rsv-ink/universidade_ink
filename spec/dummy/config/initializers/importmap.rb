@@ -1,9 +1,9 @@
-# Configure o importmap para servir arquivos JavaScript da engine
+# Merge engine importmap into dummy app
+# This allows the dummy app to load engine controllers via importmap
 Rails.application.config.after_initialize do
-  # Adiciona o caminho da engine ao asset path se não estiver presente
-  engine_js_path = Universidade::Engine.root.join("app/javascript")
-  
-  unless Rails.application.config.assets.paths.include?(engine_js_path.to_s)
-    Rails.application.config.assets.paths.unshift(engine_js_path.to_s)
+  # Merge engine's importmap into the app's importmap
+  if defined?(Universidade::Engine) && Rails.application.importmap
+    engine_importmap_path = Universidade::Engine.root.join("config/importmap.rb")
+    Rails.application.importmap.instance_eval(File.read(engine_importmap_path)) if File.exist?(engine_importmap_path)
   end
 end

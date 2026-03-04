@@ -1,16 +1,16 @@
-pin "application", to: "universidade/application.js", preload: true
-pin "@hotwired/turbo-rails", to: "turbo.min.js", preload: true
-pin "@hotwired/stimulus", to: "stimulus.min.js", preload: true
-pin "@hotwired/stimulus-loading", to: "stimulus-loading.js", preload: true
+# Pin npm packages by running ./bin/importmap
 
-# Controllers da engine
-pin "controllers", to: "universidade/controllers/index.js"
-pin "controllers/editor_controller",   to: "universidade/controllers/editor_controller.js"
-pin "controllers/accordion_controller", to: "universidade/controllers/accordion_controller.js"
-pin "controllers/modal_controller",     to: "universidade/controllers/modal_controller.js"
-pin "controllers/sortable_controller",  to: "universidade/controllers/sortable_controller.js"
-pin "controllers/sidebar_controller",   to: "universidade/controllers/sidebar_controller.js"
+pin "application", preload: true
+pin "@hotwired/turbo-rails", to: "https://cdn.jsdelivr.net/npm/@hotwired/turbo-rails@8.0.12/+esm", preload: true
+pin "@hotwired/stimulus", to: "https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2.2/dist/stimulus.js", preload: true
+pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
+
+# Engine JavaScript - loaded by application.js after Stimulus is ready
+pin "universidade/application", to: "universidade/application.js"
 
 # Sortable.js — drag & drop
 pin "sortablejs", to: "https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/+esm"
+
+# Engine importmap with all controllers will be merged automatically by the initializer
+
 

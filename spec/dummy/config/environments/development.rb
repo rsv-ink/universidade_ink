@@ -59,6 +59,10 @@ Rails.application.configure do
   # Suppress logger output for asset requests.
   config.assets.quiet = true
 
+  # Allow serving assets from app/javascript via Sprockets in development
+  # This is needed for importmap to work with engine JavaScript
+  config.assets.check_precompiled_asset = false
+
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
 

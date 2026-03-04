@@ -1,0 +1,40 @@
+{
+  "name": "@majestic/universidade",
+  "version": "0.1.6",
+  "description": "Universidade - Learning Management System Engine",
+  "main": "app/javascript/universidade/index.js",
+  "module": "app/javascript/universidade/index.js",
+  "type": "module",
+  "exports": {
+    ".": "./app/javascript/universidade/index.js",
+    "./controllers": "./app/javascript/universidade/controllers/index.js",
+    "./controllers/*": "./app/javascript/universidade/controllers/*.js"
+  },
+  "files": [
+    "app/javascript/universidade/**/*.js"
+  ],
+  "peerDependencies": {
+    "@hotwired/stimulus": "^3.2.0",
+    "@hotwired/turbo-rails": "^7.0.0 || ^8.0.0",
+    "sortablejs": "^1.15.0"
+  },
+  "devDependencies": {
+    "@hotwired/stimulus": "^3.2.2",
+    "@hotwired/turbo-rails": "^8.0.12",
+    "sortablejs": "^1.15.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/majestic-monolith/universidade.git"
+  },
+  "keywords": [
+    "rails",
+    "engine",
+    "lms",
+    "learning",
+    "stimulus",
+    "hotwire"
+  ],
+  "author": "Majestic Monolith Team",
+  "license": "MIT"
+}

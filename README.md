@@ -1,6 +1,60 @@
 # Universidade
 
-Rails Engine para gestão universitária, empacotado como gem.
+Rails Engine para gestão universitária e LMS (Learning Management System), empacotado como gem Ruby e NPM package.
+
+## 📦 Dual Package: Ruby Gem + NPM
+
+Esta engine é distribuída de duas formas:
+
+1. **Ruby Gem** - Para integração Rails (modelos, controllers, views, rotas)
+2. **NPM Package** (`@majestic/universidade`) - Para JavaScript/Stimulus controllers
+
+## 🚀 Quick Start
+
+### 1. Instalar Gem
+
+```ruby
+# Gemfile
+gem "universidade", path: "../universidade_ink"
+```
+
+```bash
+bundle install
+rails universidade:install:migrations
+rails db:migrate
+```
+
+### 2. Montar Engine
+
+```ruby
+# config/routes.rb
+Rails.application.routes.draw do
+  mount Universidade::Engine => "/universidade"
+end
+```
+
+### 3. Integrar JavaScript
+
+```bash
+# No diretório do app host
+yarn add file:../universidade_ink
+```
+
+```javascript
+// app/javascript/application.js
+import { Application } from "@hotwired/stimulus"
+window.Stimulus = Application.start()
+
+import "@majestic/universidade"
+```
+
+```bash
+yarn build
+```
+
+**Documentação completa:** [QUICK_START.md](QUICK_START.md)
+
+---
 
 ## Tecnologias
 
@@ -8,6 +62,7 @@ Rails Engine para gestão universitária, empacotado como gem.
 - Hotwire (Turbo + Stimulus)
 - PostgreSQL
 - Ink Components
+- ES Modules / esbuild
 
 ## Instalação
 
@@ -107,6 +162,34 @@ Esta é uma Rails Engine mountable seguindo o Rails way:
 - `config/routes.rb` - Rotas isoladas da engine
 - `lib/universidade/engine.rb` - Configuração da engine
 - `spec/dummy/` - Aplicação Rails de teste
+
+## 📚 Documentação
+
+### Guias de Integração
+
+- **[QUICK_START.md](QUICK_START.md)** - Setup rápido (5 minutos)
+- **[NPM_PACKAGE.md](NPM_PACKAGE.md)** - Documentação completa do package JavaScript
+- **[INTEGRATION_GUIDES.md](INTEGRATION_GUIDES.md)** - Índice de todos os guias
+- **[ESBUILD_INTEGRATION.md](ESBUILD_INTEGRATION.md)** - Troubleshooting e configuração avançada
+
+### Features Implementadas
+
+- **[TAXONOMY_IMPLEMENTATION.md](TAXONOMY_IMPLEMENTATION.md)** - Sistema de categorias e tags
+- **[IMPLEMENTACAO_EXCLUSAO.md](IMPLEMENTACAO_EXCLUSAO.md)** - Sistema de exclusão em cascata
+- **[INTEGRACAO_JAVASCRIPT.md](INTEGRACAO_JAVASCRIPT.md)** - Arquitetura JavaScript
+
+### JavaScript/Stimulus Controllers
+
+A engine inclui 23 Stimulus controllers:
+
+- Modal, Accordion, Editor
+- Sortable (drag-and-drop)
+- Busca rápida, Tags, Categorias
+- Analytics tracking
+- Navigation, Sidebar
+- E mais...
+
+Veja [NPM_PACKAGE.md](NPM_PACKAGE.md) para lista completa e API.
 
 ## Contributing
 

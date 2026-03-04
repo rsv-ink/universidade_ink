@@ -12,6 +12,43 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Exportação de relatórios
 - Notificações por email
 
+## [0.1.6] - 2026-03-04
+
+### Added
+- **NPM Package Support**: Engine agora é distribuída como pacote NPM (`@majestic/universidade`)
+- `package.json` configurado com exports e peer dependencies
+- `app/javascript/universidade/index.js`: Entry point para integração via NPM/yarn
+- Documentação completa de integração:
+  - `NPM_PACKAGE.md`: Guia completo do pacote NPM
+  - `QUICK_START.md`: Setup rápido em 5 minutos
+  - `INTEGRATION_GUIDES.md`: Índice de todos os guias
+  - `ESBUILD_INTEGRATION.md`: Integração detalhada com esbuild
+  - `INTEGRACAO_JAVASCRIPT.md`: Arquitetura JavaScript
+
+### Changed
+- **Dual Mode JavaScript**: Suporta tanto importmap (standalone) quanto NPM package (monolito)
+- Controllers Stimulus agora usam imports ES6 nativos (`import { Controller } from "@hotwired/stimulus"`)
+- `application.js` detecta automaticamente se `window.Stimulus` existe e adapta comportamento
+- Importmap configurado para carregar dependências do CDN em modo standalone
+- Asset manifest simplificado (apenas CSS, JavaScript via importmap)
+- Engine agora exporta função `registerUniversidadeControllers()` para registro manual
+- Controllers individuais podem ser importados seletivamente
+- README.md atualizado com instruções de instalação NPM
+
+### Fixed
+- Corrigido erro `Sprockets::FileNotPrecompiledError` em modo standalone
+- Corrigido erro de asset não encontrado adicionando `config.assets.check_precompiled_asset = false`
+- Removidas duplicatas de pins no importmap
+- Controllers agora registram com nomes corretos (sem prefixo em standalone, com prefixo em NPM)
+- Paths de import corrigidos para funcionar com importmap
+
+### Technical
+- 23 Stimulus controllers totalmente funcionais
+- Compatível com esbuild, webpack, vite e outros bundlers modernos
+- Peer dependencies: @hotwired/stimulus ^3.2.0, @hotwired/turbo-rails ^7-8, sortablejs ^1.15.0
+- Suporte a tree-shaking e code splitting
+- Auto-registro inteligente de controllers
+
 ## [0.1.5] - 2026-03-04
 
 ### Changed

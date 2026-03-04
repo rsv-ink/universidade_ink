@@ -15,18 +15,15 @@ module Universidade
       g.factory_bot dir: 'spec/factories'
     end
 
-    # Add engine's JavaScript path to asset pipeline FIRST
+    # Add engine's JavaScript path to asset pipeline for importmap serving
     initializer "universidade.assets", before: :set_autoload_paths do |app|
-      # Adiciona o caminho JavaScript ao asset pipeline
+      # Adiciona o caminho JavaScript ao asset pipeline para importmap servir os arquivos
       app.config.assets.paths << root.join("app/javascript").to_s
       
-      # Precompila os assets da engine
+      # Precompila apenas os assets CSS da engine (JS é servido pelo importmap)
       app.config.assets.precompile += %w[
         universidade_manifest.js
         universidade/application.css
-        universidade/application.js
-        universidade/controllers/index.js
-        universidade/**/*.js
       ]
     end
 
