@@ -12,6 +12,28 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Exportação de relatórios
 - Notificações por email
 
+## [0.1.7] - 2026-03-05
+
+### Changed
+- **Migração de importmap para Sprockets + esbuild**: JavaScript da engine agora é bundlado via esbuild e servido pelo Sprockets, eliminando a dependência de `importmap-rails`
+- Layouts `application.html.erb` e `admin.html.erb` agora usam `javascript_include_tag` em vez de `javascript_importmap_tags`
+- `engine.rb` atualizado: inicializador do importmap removido, builds path adicionado ao asset pipeline
+
+### Added
+- `app/javascript/universidade/sprockets_application.js`: entry point para o bundle (importa Turbo + todos os controllers)
+- `app/assets/builds/universidade/`: diretório de output do esbuild, servido pelo Sprockets
+- Scripts `build` e `build:watch` no `package.json` via esbuild (formato IIFE, target ES2017)
+
+### Removed
+- Dependência `importmap-rails` do gemspec e Gemfile
+- Inicializador `universidade.importmap` do engine.rb
+- `config/importmap.rb` da engine (não mais necessário)
+
+### Technical
+- esbuild adicionado como devDependency (`^0.23.0`)
+- Bundle inclui: `@hotwired/turbo-rails`, `@hotwired/stimulus`, `sortablejs` e todos os 23 controllers
+- Para compilar: `npm run build` (ou `npm run build:watch` em desenvolvimento)
+
 ## [0.1.6] - 2026-03-04
 
 ### Added
@@ -174,7 +196,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Security** - Correções de segurança
 - **Technical** - Mudanças técnicas/infraestrutura
 
-[Unreleased]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.6...v0.1.7
+[0.1.6]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.5...v0.1.6
+[0.1.5]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.1...v0.1.2

@@ -13,7 +13,6 @@ gem "sprockets-rails"
 # Hotwire
 gem "turbo-rails"
 gem "stimulus-rails"
-gem "importmap-rails"
 
 # Ink Components
 gem "ink_components", git: "https://github.com/rsv-ink/ink_components.git"

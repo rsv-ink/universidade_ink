@@ -21,15 +21,8 @@
     }
   </script>
   <%= stylesheet_link_tag "universidade/application", "data-turbo-track": "reload" %>
-  
-  <%# JavaScript loading strategy:
-      - If importmap is available (standalone or importmap-based monolith): use it
-      - If esbuild/webpack in monolith: JavaScript is bundled and loaded by the host app
-      - The engine's controllers will auto-register when window.Stimulus is available %>
-  <% if respond_to?(:javascript_importmap_tags) %>
-    <%= javascript_importmap_tags %>
-  <% end %>
-  
+  <%= javascript_include_tag "universidade/application", defer: true, "data-turbo-track": "reload" %>
+
   <style>
     /* Force light mode for all inputs and textareas */
     input[type="text"],
