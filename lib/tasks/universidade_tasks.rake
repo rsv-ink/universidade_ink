@@ -8,6 +8,10 @@ namespace :universidade do
     end
   end
 
+  if Rake::Task.task_defined?("assets:precompile")
+    Rake::Task["assets:precompile"].enhance(["universidade:js:build"])
+  end
+
   namespace :version do
     desc "Mostra a versão atual da gem"
     task :show do
