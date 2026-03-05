@@ -9,9 +9,13 @@
 /spec/dummy/db/*.sqlite3
 /spec/dummy/db/*.sqlite3-*
 
+# JS builds
+/app/assets/builds/universidade/application.js
+
 # NPM / Yarn
 node_modules/
 yarn-error.log
+package-lock.json
 
 # Gem builds
 *.gem

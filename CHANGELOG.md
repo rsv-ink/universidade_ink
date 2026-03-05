@@ -12,6 +12,20 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Exportação de relatórios
 - Notificações por email
 
+## [0.1.8] - 2026-03-05
+
+### Added
+- `jsbundling-rails` gem integrada ao pipeline de assets
+- `Procfile.dev`: workflow de desenvolvimento com Rails server + esbuild watch em paralelo
+- `bin/dev`: script de entrada para desenvolvimento via foreman
+
+### Fixed
+- `sprockets_application.js` reescrito para usar imports relativos (`./controllers/...`), corrigindo falha de build onde o esbuild não resolvia caminhos estilo importmap (`universidade/controllers/...`)
+
+### Technical
+- esbuild agora bundla corretamente os 23 controllers Stimulus via `npm run build`
+- `rake javascript:build` disponível para integração com `assets:precompile` em deploy
+
 ## [0.1.7] - 2026-03-05
 
 ### Changed
@@ -196,7 +210,8 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Security** - Correções de segurança
 - **Technical** - Mudanças técnicas/infraestrutura
 
-[Unreleased]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.8...HEAD
+[0.1.8]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/rsv-ink/universidade_ink/compare/v0.1.4...v0.1.5

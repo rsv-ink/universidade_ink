@@ -1,11 +1,11 @@
 module Universidade
-  VERSION = "0.1.7"
+  VERSION = "0.1.8"
 
   # Informações sobre a versão
   module Version
     MAJOR = 0
     MINOR = 1
-    PATCH = 7
+    PATCH = 8
     PRE   = nil
     
     STRING = [MAJOR, MINOR, PATCH, PRE].compact.join(".")
