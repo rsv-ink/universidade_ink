@@ -18,11 +18,7 @@ module Universidade
     initializer "universidade.assets", before: :set_autoload_paths do |app|
       app.config.assets.paths << root.join("app/assets/builds").to_s
 
-      app.config.assets.precompile += %w[
-        universidade_manifest.js
-        universidade/application.css
-        universidade/application.js
-      ]
+      app.config.assets.precompile += %w[ universidade_manifest.js ]
     end
   end
 end
