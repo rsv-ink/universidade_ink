@@ -1,6 +1,17 @@
 # frozen_string_literal: true
 
 namespace :universidade do
+  namespace :js do
+    desc "Compila o bundle JavaScript para distribuição na gem"
+    task :build do
+      system "cd #{Universidade::Engine.root} && yarn install && yarn build"
+    end
+  end
+
+  if Rake::Task.task_defined?("assets:precompile")
+    Rake::Task["assets:precompile"].enhance(["universidade:js:build"])
+  end
+
   namespace :version do
     desc "Mostra a versão atual da gem"
     task :show do
@@ -30,7 +41,7 @@ namespace :universidade do
 
     def bump_version(type)
       require_relative "../universidade/version"
-      
+
       old_version = Universidade::VERSION
       major = Universidade::Version::MAJOR
       minor = Universidade::Version::MINOR
@@ -49,21 +60,21 @@ namespace :universidade do
       end
 
       new_version = "#{major}.#{minor}.#{patch}"
-      
+
       # Atualiza o arquivo version.rb
       version_file = File.expand_path("../universidade/version.rb", __dir__)
       content = File.read(version_file)
-      
+
       # Atualiza VERSION
       content.gsub!(/VERSION = "#{Regexp.escape(old_version)}"/, "VERSION = \"#{new_version}\"")
-      
+
       # Atualiza constantes
       content.gsub!(/MAJOR = \d+/, "MAJOR = #{major}")
       content.gsub!(/MINOR = \d+/, "MINOR = #{minor}")
       content.gsub!(/PATCH = \d+/, "PATCH = #{patch}")
-      
+
       File.write(version_file, content)
-      
+
       puts "\n✓ Versão atualizada: #{old_version} -> #{new_version}"
       puts "  Não esqueça de:"
       puts "  1. Atualizar o CHANGELOG.md"
@@ -77,7 +88,7 @@ namespace :universidade do
   task :info do
     require_relative "../universidade/version"
     require_relative "../universidade"
-    
+
     puts "\n╔═══════════════════════════════════════════════════════════╗"
     puts "║              Universidade Gem Information                 ║"
     puts "╠═══════════════════════════════════════════════════════════╣"
@@ -130,7 +141,7 @@ namespace :universidade do
     puts "\n╔═══════════════════════════════════════════╗"
     puts "║        Validação da Gem                   ║"
     puts "╠═══════════════════════════════════════════╣"
-    
+
     if errors.empty? && warnings.empty?
       puts "║ ✓ Todos os checks passaram!              ║"
       puts "╚═══════════════════════════════════════════╝\n"
@@ -139,13 +150,13 @@ namespace :universidade do
         puts "║ ✗ Erros encontrados:                      ║"
         errors.each { |e| puts "║   - #{e.ljust(39)} ║" }
       end
-      
+
       if warnings.any?
         puts "║ ⚠ Avisos:                                 ║"
         warnings.each { |w| puts "║   - #{w.ljust(39)} ║" }
       end
       puts "╚═══════════════════════════════════════════╝\n"
-      
+
       exit 1 if errors.any?
     end
   end

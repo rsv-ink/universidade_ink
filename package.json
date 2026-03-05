@@ -19,8 +19,8 @@
     "sortablejs": "^1.15.0"
   },
   "scripts": {
-    "build": "node_modules/.bin/esbuild app/javascript/universidade/sprockets_application.js --bundle --outfile=app/assets/builds/universidade/application.js --format=iife --target=es2017",
-    "build:watch": "node_modules/.bin/esbuild app/javascript/universidade/sprockets_application.js --bundle --outfile=app/assets/builds/universidade/application.js --format=iife --target=es2017 --watch"
+    "build": "esbuild app/javascript/universidade/sprockets_application.js --bundle --outfile=app/assets/builds/universidade/application.js --format=iife --target=es2017",
+    "build:watch": "esbuild app/javascript/universidade/sprockets_application.js --bundle --outfile=app/assets/builds/universidade/application.js --format=iife --target=es2017 --watch"
   },
   "devDependencies": {
     "@hotwired/stimulus": "^3.2.2",
